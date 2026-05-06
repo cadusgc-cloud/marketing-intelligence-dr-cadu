@@ -7,6 +7,10 @@ const brl = "R\\$\\s*[\\d\\.]+(?:,\\d{1,2})?";
 const int = "[\\d\\.]+";
 const decimal = "[\\d\\.]+(?:,\\d+)?";
 
+function normalizeForSearch(value: string): string {
+  return value.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
 function firstNumber(text: string, patterns: RegExp[]): number | null {
   for (const pattern of patterns) {
     const match = text.match(pattern);
@@ -24,12 +28,12 @@ function firstMoney(text: string, patterns: RegExp[]): number | null {
 }
 
 function inferReportType(text: string): ReportType {
-  const normalized = text.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+  const normalized = normalizeForSearch(text);
   if (normalized.includes("quinzenal")) return "biweekly";
   if (normalized.includes("semanal")) return "weekly";
   if (normalized.includes("mensal")) return "monthly";
-  if (normalized.includes("conteudo") || normalized.includes("conteÃºdo") || normalized.includes("content")) return "content";
-  if (normalized.includes("trafego") || normalized.includes("trÃ¡fego") || normalized.includes("traffic")) return "traffic";
+  if (normalized.includes("conteudo") || normalized.includes("content")) return "content";
+  if (normalized.includes("trafego") || normalized.includes("traffic")) return "traffic";
   return "mixed";
 }
 
@@ -48,14 +52,10 @@ function splitLines(rawText: string): string[] {
     .filter(Boolean);
 }
 
-function normalizeForSearch(value: string): string {
-  return value.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
-}
-
 function mergeCreatives(creatives: ParsedCreative[]): ParsedCreative[] {
   const merged = new Map<string, ParsedCreative>();
   for (const creative of creatives) {
-    const key = creative.name.toLowerCase();
+    const key = normalizeForSearch(creative.name);
     const current = merged.get(key);
     if (!current) {
       merged.set(key, creative);
@@ -68,23 +68,29 @@ function mergeCreatives(creatives: ParsedCreative[]): ParsedCreative[] {
       conversations: current.conversations ?? creative.conversations,
       leads: current.leads ?? creative.leads,
       cpl: current.cpl ?? creative.cpl,
-      profileVisits: current.profileVisits ?? creative.profileVisits
+      profileVisits: current.profileVisits ?? creative.profileVisits,
+      reach: current.reach ?? creative.reach,
+      interactions: current.interactions ?? creative.interactions,
+      shares: current.shares ?? creative.shares
     });
   }
   return Array.from(merged.values());
 }
 
-function formatForLine(lower: string): ParsedCreative["format"] {
-  if (lower.includes("story")) return "story";
-  if (lower.includes("reel")) return "reel";
-  if (lower.includes("img")) return "image";
+function formatForLine(text: string): ParsedCreative["format"] {
+  const normalized = normalizeForSearch(text);
+  if (normalized.includes("carrossel")) return "carousel";
+  if (normalized.includes("story")) return "story";
+  if (normalized.includes("reel")) return "reel";
+  if (normalized.includes("img") || normalized.includes("imagem")) return "image";
   return "unknown";
 }
 
-function funnelForLine(lower: string): ParsedCreative["funnelStage"] {
-  if (lower.includes("tofu")) return "tofu";
-  if (lower.includes("mofu")) return "mofu";
-  if (lower.includes("bofu")) return "bofu";
+function funnelForLine(text: string): ParsedCreative["funnelStage"] {
+  const normalized = normalizeForSearch(text);
+  if (normalized.includes("tofu")) return "tofu";
+  if (normalized.includes("mofu")) return "mofu";
+  if (normalized.includes("bofu")) return "bofu";
   return "unknown";
 }
 
@@ -97,10 +103,26 @@ function extractCreatives(rawText: string): ParsedCreative[] {
   const quotedVisits = new RegExp(`["“]([^"”]+)["”][^\\.\\n]*?(${decimal})\\s*visitas? ao perfil[^\\.\\n]*?(${money})\\s*invest`, "gi");
   const quotedConversationInvestment = new RegExp(`["“]([^"”]+)["”][^\\.\\n]*?(${decimal})\\s*(?:conversa|conversas|lead|leads|conv\\.?).*?(${money})`, "gi");
   const quotedAggregatedLeads = new RegExp(`["“]([^"”]+)["”][^\\.\\n]*?somando\\s*(${decimal})\\s*(?:leads?|conversas?|conv\\.?)`, "gi");
+  const organicHighlight = new RegExp(`Destaque:\\s*([^"]+)?"([^"]+)"\\s*(?:—|-).*?(${int})\\s*alcance,\\s*(${int})\\s*intera\\S+,\\s*(${int})\\s*compartilhamentos?`, "i");
 
   for (const line of lines) {
     const lower = line.toLowerCase();
-    const looksCreative = lower.includes("criativo") || lower.includes("anuncio") || lower.includes("cpl") || lower.includes("conversa") || lower.includes("lead");
+    const searchable = normalizeForSearch(line);
+    const highlightMatch = line.match(organicHighlight);
+    if (highlightMatch) {
+      creatives.push({
+        platform: "instagram_organic",
+        name: highlightMatch[2].trim(),
+        format: formatForLine(highlightMatch[1] ?? line),
+        funnelStage: "unknown",
+        reach: parseNumber(highlightMatch[3]),
+        interactions: parseNumber(highlightMatch[4]),
+        shares: parseNumber(highlightMatch[5])
+      });
+      continue;
+    }
+
+    const looksCreative = searchable.includes("criativo") || searchable.includes("anuncio") || lower.includes("cpl") || lower.includes("conversa") || lower.includes("lead");
     if (!looksCreative) continue;
 
     for (const match of line.matchAll(quotedMetric)) {
@@ -108,8 +130,8 @@ function extractCreatives(rawText: string): ParsedCreative[] {
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
-        format: formatForLine(lower),
-        funnelStage: funnelForLine(lower),
+        format: formatForLine(line),
+        funnelStage: funnelForLine(line),
         conversations,
         leads: conversations,
         cpl: parseMoney(match[3])
@@ -121,8 +143,8 @@ function extractCreatives(rawText: string): ParsedCreative[] {
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
-        format: formatForLine(lower),
-        funnelStage: funnelForLine(lower),
+        format: formatForLine(line),
+        funnelStage: funnelForLine(line),
         conversations,
         leads: conversations,
         cpl: parseMoney(match[3])
@@ -134,7 +156,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
         platform: "meta_ads",
         name: match[1].trim(),
         format: "image",
-        funnelStage: funnelForLine(lower),
+        funnelStage: funnelForLine(line),
         investment: parseMoney(match[3]),
         profileVisits: parseNumber(match[2])
       });
@@ -145,8 +167,8 @@ function extractCreatives(rawText: string): ParsedCreative[] {
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
-        format: formatForLine(lower),
-        funnelStage: funnelForLine(lower),
+        format: formatForLine(line),
+        funnelStage: funnelForLine(line),
         investment: parseMoney(match[3]),
         conversations,
         leads: conversations
@@ -159,7 +181,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
         platform: "meta_ads",
         name: match[1].trim(),
         format: "unknown",
-        funnelStage: funnelForLine(lower),
+        funnelStage: funnelForLine(line),
         conversations: leads,
         leads
       });
@@ -176,8 +198,8 @@ function extractCreatives(rawText: string): ParsedCreative[] {
     creatives.push({
       platform: "meta_ads",
       name: name.replace(/^(vencedor(?:es)?|problematico):?\s*/i, "").trim(),
-      format: formatForLine(lower),
-      funnelStage: funnelForLine(lower),
+      format: formatForLine(line),
+      funnelStage: funnelForLine(line),
       investment,
       conversations: leads,
       leads,
@@ -215,7 +237,7 @@ function extractKeywords(rawText: string): ParsedKeyword[] {
       });
     }
   }
-  return dedupeBy(keywords, (keyword) => keyword.keyword.toLowerCase());
+  return dedupeBy(keywords, (keyword) => normalizeForSearch(keyword.keyword));
 }
 
 function dedupeBy<T>(items: T[], getKey: (item: T) => string): T[] {
@@ -255,7 +277,7 @@ export function parseReport(rawText: string): ParsedReport {
   ]);
   const reach = firstNumber(rawText, [/Alcance(?: Total)?:?\s*([\d\.]+)/i]);
   const impressions = firstNumber(rawText, [/Impress[^\s:]*:?\s*([\d\.]+)/i]);
-  const newFollowers = firstNumber(rawText, [/(?:Novos seguidores|Seguidores l\S*quidos?|Seguidores liquidos?|Seguidores lÃ­quidos):?\s*([\d\.]+)/i]);
+  const newFollowers = firstNumber(rawText, [/(?:Novos seguidores|Seguidores l\S*quidos?|Seguidores liquidos?):?\s*([\d\.]+)/i]);
   const conversations = firstNumber(rawText, [/(?:Conversas Meta|Leads Meta|Conversas geradas \(leads\)):?\s*([\d\.]+)/i]);
   const googleConversions = firstNumber(rawText, [
     /Google\s+convers\S*:?\s*([\d\.,]+)/i,
@@ -273,11 +295,20 @@ export function parseReport(rawText: string): ParsedReport {
   const cps = firstMoney(rawText, [new RegExp(`CPS:?\\s*(${money})`, "i")]);
   const clicks = firstNumber(rawText, [/Google cliques:?\s*([\d\.]+)/i, /Cliques:?\s*([\d\.]+)/i, /Google Ads:?\s*([\d\.]+)\s*cliques/i]);
   const frequency = firstNumber(rawText, [/Frequencia:?\s*([\d\.,]+)/i]);
-  const postCount = firstNumber(rawText, [/(?:Posts|Publicacoes):?\s*([\d\.]+)/i]);
-  const reelCount = firstNumber(rawText, [/Reels:?\s*([\d\.]+)/i]);
-  const storyCount = firstNumber(rawText, [/Stories:?\s*([\d\.]+)/i]);
+  const followersTotal = firstNumber(rawText, [/Seguidores:?\s*([\d\.]+)/i]);
+  const organicNewFollowers = firstNumber(rawText, [/Seguidores:?[^\r\n]*\+\s*([\d\.]+)\s*novos/i]);
+  const interactions = firstNumber(rawText, [/Engajamento:?\s*([\d\.]+)\s*intera/i]);
+  const engagementRate = (() => {
+    const match = rawText.match(/Engajamento:?[^\r\n]*\(([\d\.,]+)%\)/i);
+    return match?.[1] ? parsePercent(match[1]) : null;
+  })();
+  const shares = firstNumber(rawText, [/Compartilhamentos:?\s*([\d\.]+)/i]);
+  const postCount = firstNumber(rawText, [/Volume:?\s*([\d\.]+)\s*posts/i, /(?:Posts|Publicacoes):?\s*([\d\.]+)/i]);
+  const reelCount = firstNumber(rawText, [/Volume:?[^\r\n|]*\|\s*([\d\.]+)\s*reels?/i, /Reels:?\s*([\d\.]+)/i]);
+  const storyCount = firstNumber(rawText, [/Volume:?[^\r\n]*\|\s*[\d\.]+\s*reels?\s*\|\s*([\d\.]+)\s*stories/i, /(?:^|\n)Stories:?\s*([\d\.]+)\s*(?:stories|$)/i]);
+  const storyViews = firstNumber(rawText, [/Stories:?\s*([\d\.]+)\s*visualiza/i]);
   const storyRetention = (() => {
-    const match = rawText.match(/Retencao(?: de stories)?:?\s*([\d\.,]+)%/i);
+    const match = rawText.match(/Reten\S*(?: de stories)?:?\s*([\d\.,]+)%/i);
     return match?.[1] ? parsePercent(match[1]) : null;
   })();
   const profileVisits = firstNumber(rawText, [/Visitas? ao perfil:?\s*([\d\.]+)/i]);
@@ -299,9 +330,12 @@ export function parseReport(rawText: string): ParsedReport {
       cpl,
       cps,
       storyCount,
+      storyViews,
       storyRetention,
       reelCount,
-      postCount
+      postCount,
+      followersTotal,
+      engagementRate
     },
     {
       channel: "meta_ads",
@@ -327,12 +361,17 @@ export function parseReport(rawText: string): ParsedReport {
       reach,
       impressions,
       profileVisits,
-      newFollowers,
+      newFollowers: organicNewFollowers ?? newFollowers,
+      followersTotal,
+      interactions,
+      shares,
+      engagementRate,
       storyCount,
+      storyViews,
       storyRetention,
       reelCount,
       postCount
-    }
+    } as ParsedChannel
   ];
 
   const textualRecommendations = splitLines(rawText)

@@ -133,3 +133,39 @@ describe("parseReport fixtures de trafego", () => {
     });
   });
 });
+
+describe("parseReport fixture de conteudo organico", () => {
+  const parsed = parseReport(loadFixture("content-2026-03-09-2026-03-15.txt"));
+
+  it("extrai periodo e tipo do relatorio de conteudo", () => {
+    expect(parsed.periodStart?.toISOString()).toContain("2026-03-09");
+    expect(parsed.periodEnd?.toISOString()).toContain("2026-03-15");
+    expect(parsed.reportType).toBe("content");
+  });
+
+  it("extrai metricas organicas principais", () => {
+    const organic = getChannel(parsed, "instagram_organic");
+
+    expect(organic?.followersTotal).toBe(40014);
+    expect(organic?.newFollowers).toBe(140);
+    expect(organic?.reach).toBe(116847);
+    expect(organic?.interactions).toBe(94);
+    expect(organic?.engagementRate).toBeCloseTo(0.0129);
+    expect(organic?.shares).toBe(3);
+    expect(organic?.postCount).toBe(4);
+    expect(organic?.reelCount).toBe(1);
+    expect(organic?.storyCount).toBe(2);
+    expect(organic?.storyViews).toBe(1330);
+    expect(organic?.storyRetention).toBeCloseTo(0.6713);
+  });
+
+  it("extrai melhor conteudo organico como criativo", () => {
+    const content = getCreative(parsed, "Dreno na cirurgia plastica");
+
+    expect(content?.platform).toBe("instagram_organic");
+    expect(content?.format).toBe("carousel");
+    expect(content?.reach).toBe(3527);
+    expect(content?.interactions).toBe(55);
+    expect(content?.shares).toBe(3);
+  });
+});

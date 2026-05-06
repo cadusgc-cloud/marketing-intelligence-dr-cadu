@@ -169,3 +169,40 @@ describe("parseReport fixture de conteudo organico", () => {
     expect(content?.shares).toBe(3);
   });
 });
+
+describe("parseReport fixture de trafego 13/04 a 19/04/2026", () => {
+  const parsed = parseReport(loadFixture("traffic-2026-04-13-2026-04-19.txt"));
+
+  it("extrai periodo, tipo e metricas principais", () => {
+    expect(parsed.periodStart?.toISOString()).toContain("2026-04-13");
+    expect(parsed.periodEnd?.toISOString()).toContain("2026-04-19");
+    expect(parsed.reportType).toBe("weekly");
+    expect(getChannel(parsed, "consolidated")?.reach).toBe(105513);
+    expect(getChannel(parsed, "consolidated")?.impressions).toBe(167058);
+    expect(getChannel(parsed, "consolidated")?.newFollowers).toBe(473);
+  });
+
+  it("extrai bloco de Meta Ads", () => {
+    expect(getChannel(parsed, "meta_ads")?.conversations).toBe(27);
+    expect(getChannel(parsed, "meta_ads")?.cpl).toBeCloseTo(23.15);
+    expect(getChannel(parsed, "meta_ads")?.investment).toBeCloseTo(625.18);
+  });
+
+  it("extrai bloco de Google Ads", () => {
+    expect(getChannel(parsed, "google_ads")?.clicks).toBe(45);
+    expect(getChannel(parsed, "google_ads")?.conversions).toBe(6);
+    expect(getChannel(parsed, "google_ads")?.cpa).toBeCloseTo(24.1);
+    expect(getChannel(parsed, "google_ads")?.investment).toBeCloseTo(144.59);
+  });
+
+  it("extrai criativos e keywords do periodo", () => {
+    expect(getCreative(parsed, "Resultado 3 meses pos")?.conversations).toBe(12);
+    expect(getCreative(parsed, "Resultado 3 meses pos")?.cpl).toBeCloseTo(3.35);
+    expect(getCreative(parsed, "Nem toda mulher")?.conversations).toBe(8);
+    expect(getCreative(parsed, "Nem toda mulher")?.cpl).toBeCloseTo(5.03);
+    expect(getKeyword(parsed, "cirurgia plastica nos seios")?.conversions).toBe(4);
+    expect(getKeyword(parsed, "cirurgia plastica nos seios")?.cpa).toBeCloseTo(9.12);
+    expect(getKeyword(parsed, "mamoplastia redutora")?.conversions).toBe(2);
+    expect(getKeyword(parsed, "mamoplastia redutora")?.cpa).toBeCloseTo(8.19);
+  });
+});

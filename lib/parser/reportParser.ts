@@ -108,6 +108,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
   for (const line of lines) {
     const lower = line.toLowerCase();
     const searchable = normalizeForSearch(line);
+    const quotedConvCpl = new RegExp(`"([^"]+)"[^\\r\\n]*?(${decimal})\\s*conv\\s*a\\s*(${money})`, "gi");
     const highlightMatch = line.match(organicHighlight);
     if (highlightMatch) {
       creatives.push({
@@ -122,7 +123,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
       continue;
     }
 
-    const looksCreative = searchable.includes("criativo") || searchable.includes("anuncio") || lower.includes("cpl") || lower.includes("conversa") || lower.includes("lead");
+    const looksCreative = searchable.includes("criativo") || searchable.includes("anuncio") || lower.includes("cpl") || lower.includes("conversa") || lower.includes("lead") || lower.includes("conv");
     if (!looksCreative) continue;
 
     for (const match of line.matchAll(quotedMetric)) {
@@ -187,6 +188,19 @@ function extractCreatives(rawText: string): ParsedCreative[] {
       });
     }
 
+    for (const match of line.matchAll(quotedConvCpl)) {
+      const conversations = parseNumber(match[2]);
+      creatives.push({
+        platform: "meta_ads",
+        name: match[1].trim(),
+        format: formatForLine(line),
+        funnelStage: funnelForLine(line),
+        conversations,
+        leads: conversations,
+        cpl: parseMoney(match[3])
+      });
+    }
+
     const nameMatch = line.match(creativeLine);
     const cpl = firstMoney(line, [new RegExp(`CPL\\s*(${money})`, "i")]);
     const investment = firstMoney(line, [new RegExp(`(${money})\\s*invest`, "i")]);
@@ -227,6 +241,14 @@ function extractKeywords(rawText: string): ParsedKeyword[] {
       });
     }
     const pieces = line.split(/;|,\s*(?=[a-záéíóúãõç ]+\s*—)/i);
+    const quotedConvKeyword = new RegExp(`"([^"]+)"[^\\r\\n]*?(${decimal})\\s*conv\\s*a\\s*(${money})`, "gi");
+    for (const match of line.matchAll(quotedConvKeyword)) {
+      keywords.push({
+        keyword: match[1].trim(),
+        conversions: parseNumber(match[2]),
+        cpa: parseMoney(match[3])
+      });
+    }
     for (const piece of pieces) {
       const match = piece.match(new RegExp(`(?:keywords?(?: vencedoras?)?:\\s*)?(.+?)\\s*(?:—|-)\\s*(?:(${decimal})\\s*convers(?:o|oe|õe)s?\\s*(?:—|-)\\s*)?(?:CPA\\s*)?(${money})`, "i"));
       if (!match) continue;
@@ -267,30 +289,33 @@ export function parseReport(rawText: string): ParsedReport {
   const metaInvestment = firstMoney(rawText, [
     new RegExp(`(?:Meta Ads|Investimento Meta):?\\s*(${brl})`, "i"),
     new RegExp(`Meta:?\\s*(${brl})`, "i"),
-    new RegExp(`(${money})\\s*Meta Ads`, "i")
+    new RegExp(`(${money})\\s*Meta Ads`, "i"),
+    new RegExp(`Meta Ads[\\s\\S]*?Investimento:?\\s*(${brl})`, "i")
   ]);
   const googleInvestment = firstMoney(rawText, [
     new RegExp(`(?:Google Ads|Investimento Google):?\\s*(${brl})`, "i"),
     new RegExp(`Google:?\\s*(${brl})`, "i"),
-    new RegExp(`(${money})\\s*Google Ads`, "i"),
-    new RegExp(`Custo\\s*(${money})`, "i")
+    new RegExp(`(${brl})\\s*Google Ads`, "i"),
+    new RegExp(`Custo:?\\s*(${money})`, "i")
   ]);
   const reach = firstNumber(rawText, [/Alcance(?: Total)?:?\s*([\d\.]+)/i]);
   const impressions = firstNumber(rawText, [/Impress[^\s:]*:?\s*([\d\.]+)/i]);
-  const newFollowers = firstNumber(rawText, [/(?:Novos seguidores|Seguidores l\S*quidos?|Seguidores liquidos?):?\s*([\d\.]+)/i]);
-  const conversations = firstNumber(rawText, [/(?:Conversas Meta|Leads Meta|Conversas geradas \(leads\)):?\s*([\d\.]+)/i]);
+  const newFollowers = firstNumber(rawText, [/(?:Novos seguidores|Seguidores l\S*quidos?|Seguidores liquidos?):?\s*\+?([\d\.]+)/i]);
+  const conversations = firstNumber(rawText, [/(?:Conversas Meta|Leads Meta|Conversas geradas \(leads\)|Conversas iniciadas):?\s*([\d\.]+)/i]);
   const googleConversions = firstNumber(rawText, [
     /Google\s+convers\S*:?\s*([\d\.,]+)/i,
     /Google[^\r\n]*?convers\S*:?\s*([\d\.,]+)/i,
     /Google Ads:?\s*([\d\.,]+)\s*convers/i,
-    /Google Ads:?\s*[\d\.,]+\s*cliques?\s*com\s*([\d\.,]+)\s*convers/i
+    /Google Ads:?\s*[\d\.,]+\s*cliques?\s*com\s*([\d\.,]+)\s*convers/i,
+    /Convers[^\s:]*:?\s*([\d\.,]+)/i
   ]);
-  const cpl = firstMoney(rawText, [new RegExp(`CPL Meta:?\\s*(${money})`, "i"), new RegExp(`CPL \\(custo por lead\\):?\\s*(${money})`, "i")]);
+  const cpl = firstMoney(rawText, [new RegExp(`CPL Meta:?\\s*(${money})`, "i"), new RegExp(`CPL \\(custo por lead\\):?\\s*(${money})`, "i"), new RegExp(`CPL:?\\s*(${money})`, "i")]);
   const cpa = firstMoney(rawText, [
     new RegExp(`Google CPA:?\\s*(${money})`, "i"),
     new RegExp(`CPA Google:?\\s*(${money})`, "i"),
     new RegExp(`Google Ads:?.*?convers\\S*\\s*a\\s*(${money})`, "i"),
-    new RegExp(`CPA de\\s*(${money})`, "i")
+    new RegExp(`CPA de\\s*(${money})`, "i"),
+    new RegExp(`CPA:?\\s*(${money})`, "i")
   ]);
   const cps = firstMoney(rawText, [new RegExp(`CPS:?\\s*(${money})`, "i")]);
   const clicks = firstNumber(rawText, [/Google cliques:?\s*([\d\.]+)/i, /Cliques:?\s*([\d\.]+)/i, /Google Ads:?\s*([\d\.]+)\s*cliques/i]);

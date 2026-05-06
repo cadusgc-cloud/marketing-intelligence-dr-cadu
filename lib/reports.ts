@@ -1,10 +1,20 @@
 import { prisma } from "@/lib/db";
-import { analyzeReport } from "@/lib/engine/analyzeReport";
+import { analyzeParsedReportWithHistory } from "@/lib/engine/analyzeReport";
+import { parseReport } from "@/lib/parser/reportParser";
 import type { ParsedReport } from "@/lib/types";
 
 export async function saveAnalyzedReport(rawText: string) {
-  const parsed = analyzeReport(rawText);
-  return createReportFromParsed(parsed);
+  const parsed = parseReport(rawText);
+  const existingReports = await prisma.report.findMany({
+    select: {
+      title: true,
+      periodStart: true,
+      periodEnd: true,
+      isOperationalAnomaly: true
+    }
+  });
+  const analyzed = analyzeParsedReportWithHistory(parsed, existingReports);
+  return createReportFromParsed(analyzed);
 }
 
 export async function createReportFromParsed(parsed: ParsedReport) {

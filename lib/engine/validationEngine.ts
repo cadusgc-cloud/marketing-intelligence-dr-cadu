@@ -3,6 +3,10 @@ import { isInsideDecember2025 } from "@/lib/utils/dates";
 
 type PeriodComparable = Pick<ParsedReport, "periodStart" | "periodEnd" | "isOperationalAnomaly" | "title">;
 
+function hasValue(value: number | null | undefined): value is number {
+  return value !== null && value !== undefined;
+}
+
 function differsMoreThanFivePercent(expected: number, found: number): boolean {
   if (found === 0) return expected !== 0;
   return Math.abs(expected - found) / Math.abs(found) > 0.05;
@@ -47,7 +51,7 @@ export function validateReport(parsed: ParsedReport): ParsedDataIssue[] {
   const meta = parsed.channels.find((channel) => channel.channel === "meta_ads");
   const google = parsed.channels.find((channel) => channel.channel === "google_ads");
 
-  if (meta?.investment && meta.conversations && meta.cpl) {
+  if (hasValue(meta?.investment) && hasValue(meta?.conversations) && hasValue(meta?.cpl)) {
     const expected = meta.investment / meta.conversations;
     if (differsMoreThanFivePercent(expected, meta.cpl)) {
       issues.push(
@@ -62,7 +66,7 @@ export function validateReport(parsed: ParsedReport): ParsedDataIssue[] {
     }
   }
 
-  if (google?.investment && google.conversions && google.cpa) {
+  if (hasValue(google?.investment) && hasValue(google?.conversions) && hasValue(google?.cpa)) {
     const expected = google.investment / google.conversions;
     if (differsMoreThanFivePercent(expected, google.cpa)) {
       issues.push(
@@ -77,7 +81,7 @@ export function validateReport(parsed: ParsedReport): ParsedDataIssue[] {
     }
   }
 
-  if (consolidated?.investment && meta?.investment && google?.investment) {
+  if (hasValue(consolidated?.investment) && hasValue(meta?.investment) && hasValue(google?.investment)) {
     const expected = meta.investment + google.investment;
     if (differsMoreThanFivePercent(expected, consolidated.investment)) {
       issues.push(

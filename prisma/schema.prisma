@@ -1,0 +1,154 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Report {
+  id                   String                @id @default(cuid())
+  title                String
+  rawText              String
+  reportType           String
+  periodStart          DateTime?
+  periodEnd            DateTime?
+  receivedAt           DateTime?
+  sourceLabel          String?
+  isOperationalAnomaly Boolean               @default(false)
+  anomalyReason        String?
+  confidenceScore      Float                 @default(0)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  channelSummaries     ChannelSummary[]
+  creatives            CreativePerformance[]
+  keywords             KeywordPerformance[]
+  recommendations      Recommendation[]
+  dataIssues           DataIssue[]
+  agentRuns            AgentRun[]
+}
+
+model ChannelSummary {
+  id              String   @id @default(cuid())
+  reportId        String
+  report          Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  channel         String
+  investment      Float?
+  reach           Int?
+  impressions     Int?
+  frequency       Float?
+  clicks          Int?
+  profileVisits   Int?
+  newFollowers    Int?
+  followersTotal  Int?
+  conversations   Int?
+  conversions     Int?
+  opportunities   Int?
+  cpl             Float?
+  cpa             Float?
+  cps             Float?
+  cpc             Float?
+  ctr             Float?
+  engagementRate  Float?
+  storyCount      Int?
+  storyViews      Int?
+  storyRetention  Float?
+  reelCount       Int?
+  postCount       Int?
+  createdAt       DateTime @default(now())
+
+  @@index([reportId])
+  @@unique([reportId, channel])
+}
+
+model CreativePerformance {
+  id             String         @id @default(cuid())
+  reportId       String
+  report         Report         @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  platform       String
+  name           String
+  format         String         @default("unknown")
+  funnelStage    String         @default("unknown")
+  investment     Float?
+  conversations  Int?
+  conversions    Int?
+  leads          Int?
+  cpl            Float?
+  cpa            Float?
+  profileVisits  Int?
+  reach          Int?
+  impressions    Int?
+  interactions   Int?
+  saves          Int?
+  shares         Int?
+  comments       Int?
+  diagnosis      String         @default("unknown")
+  createdAt      DateTime       @default(now())
+
+  @@index([reportId])
+}
+
+model KeywordPerformance {
+  id          String    @id @default(cuid())
+  reportId    String
+  report      Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  keyword     String
+  investment  Float?
+  clicks      Int?
+  conversions Int?
+  cpa         Float?
+  diagnosis   String   @default("unknown")
+  createdAt   DateTime  @default(now())
+
+  @@index([reportId])
+}
+
+model Recommendation {
+  id             String                 @id @default(cuid())
+  reportId       String
+  report         Report                 @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  category       String
+  priority       String
+  title          String
+  evidence       String
+  recommendation String
+  confidence     Float
+  createdAt      DateTime               @default(now())
+
+  @@index([reportId])
+}
+
+model DataIssue {
+  id            String    @id @default(cuid())
+  reportId      String
+  report        Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  severity      String
+  issueType     String
+  description   String
+  fieldName     String?
+  expectedValue String?
+  foundValue    String?
+  createdAt     DateTime  @default(now())
+
+  @@index([reportId])
+}
+
+model BenchmarkSetting {
+  id          String @id @default(cuid())
+  key         String @unique
+  label       String
+  value       Float
+  unit        String
+  description String?
+}
+
+model AgentRun {
+  id            String   @id @default(cuid())
+  reportId      String
+  report        Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  diagnosisJson String
+  createdAt     DateTime @default(now())
+
+  @@index([reportId])
+}

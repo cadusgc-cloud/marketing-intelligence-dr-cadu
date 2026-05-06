@@ -26,6 +26,10 @@ export type ParsedChannel = {
   cpc?: number | null;
   ctr?: number | null;
   engagementRate?: number | null;
+  interactions?: number | null;
+  saves?: number | null;
+  shares?: number | null;
+  comments?: number | null;
   storyCount?: number | null;
   storyViews?: number | null;
   storyRetention?: number | null;

@@ -371,7 +371,7 @@ export function parseReport(rawText: string): ParsedReport {
       storyRetention,
       reelCount,
       postCount
-    } as ParsedChannel
+    }
   ];
 
   const textualRecommendations = splitLines(rawText)

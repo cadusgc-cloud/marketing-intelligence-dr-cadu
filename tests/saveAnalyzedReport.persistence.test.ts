@@ -289,4 +289,31 @@ describe("saveAnalyzedReport persistence", () => {
     expect(hasRecommendation(loaded, "tofu", "Queda real de ToFu")).toBe(true);
     expect(hasRecommendation(loaded, "tofu", "Saturacao de audiencia")).toBe(true);
   });
+
+  it("persiste metricas organicas da fixture 09/03 sem falso positivo de boa retencao", async () => {
+    const saved = await saveAnalyzedReport(loadFixture("content-2026-03-09-2026-03-15.txt"));
+    const loaded = await getReport(saved.id);
+    const organic = getChannel(loaded, "instagram_organic");
+    const creative = getCreative(loaded, "Dreno na cirurgia plastica");
+
+    expect(organic?.followersTotal).toBe(40014);
+    expect(organic?.newFollowers).toBe(140);
+    expect(organic?.reach).toBe(116847);
+    expect(organic?.engagementRate).toBeCloseTo(0.0129);
+    expect(organic?.postCount).toBe(4);
+    expect(organic?.reelCount).toBe(1);
+    expect(organic?.storyCount).toBe(2);
+    expect(organic?.storyViews).toBe(1330);
+    expect(organic?.storyRetention).toBeCloseTo(0.6713);
+    expect(creative).toEqual(
+      expect.objectContaining({
+        platform: "instagram_organic",
+        format: "carousel",
+        reach: 3527,
+        interactions: 55,
+        shares: 3
+      })
+    );
+    expect(hasRecommendation(loaded, "content", "Stories sao ativo")).toBe(false);
+  });
 });

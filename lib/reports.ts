@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { mapBenchmarkSettingsToRecommendationBenchmarks } from "@/lib/benchmarks";
 import type { RecommendationHistoryReport } from "@/lib/engine/recommendationEngine";
 import { analyzeParsedReportWithHistory } from "@/lib/engine/analyzeReport";
 import { parseReport } from "@/lib/parser/reportParser";
@@ -77,7 +78,15 @@ export async function saveAnalyzedReport(rawText: string) {
       keywords: true
     }
   });
-  const analyzed = analyzeParsedReportWithHistory(parsed, existingReports.map(mapReportToRecommendationHistory));
+  const benchmarkSettings = await prisma.benchmarkSetting.findMany({
+    select: {
+      key: true,
+      value: true,
+      unit: true
+    }
+  });
+  const benchmarks = mapBenchmarkSettingsToRecommendationBenchmarks(benchmarkSettings);
+  const analyzed = analyzeParsedReportWithHistory(parsed, existingReports.map(mapReportToRecommendationHistory), benchmarks);
   return createReportFromParsed(analyzed);
 }
 

@@ -91,6 +91,21 @@ describe("analyzeParsedReportWithHistory", () => {
     expect(analyzed.recommendations).toContainEqual(expect.objectContaining({ category: "tofu", title: "Queda real de ToFu" }));
   });
 
+  it("aceita benchmarks customizados e suprime ToFu quando queda fica abaixo do limite", () => {
+    const current = {
+      ...parseReport(rawReport("08/04/2026 a 14/04/2026")),
+      channels: [{ channel: "consolidated" as const, reach: 90000, impressions: 100000, newFollowers: 400 }]
+    };
+    const existing = {
+      ...parseReport(rawReport("01/04/2026 a 07/04/2026")),
+      channels: [{ channel: "consolidated" as const, reach: 120000, impressions: 100000, newFollowers: 600 }]
+    };
+
+    const analyzed = analyzeParsedReportWithHistory(current, [existing], { reachDropAttention: 0.5 });
+
+    expect(analyzed.recommendations.some((item) => item.title === "Queda real de ToFu")).toBe(false);
+  });
+
   it("gera recomendação consolidada quando CPA crítico e conversões Google caem", () => {
     const current = {
       ...parseReport(rawReport("08/04/2026 a 14/04/2026")),

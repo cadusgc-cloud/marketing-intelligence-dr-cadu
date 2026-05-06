@@ -75,6 +75,7 @@ beforeEach(async () => {
   await prisma.channelSummary.deleteMany();
   await prisma.agentRun.deleteMany();
   await prisma.report.deleteMany();
+  await prisma.benchmarkSetting.deleteMany();
 });
 
 afterAll(async () => {
@@ -184,5 +185,41 @@ describe("saveAnalyzedReport persistence", () => {
     const loaded = await getReport(second.id);
 
     expect(loaded?.recommendations.some((item) => item.title === "Queda real de ToFu")).toBe(false);
+  });
+
+  it("usa BenchmarkSetting real para suprimir ToFu quando queda fica abaixo do limite configurado", async () => {
+    await prisma.benchmarkSetting.create({
+      data: {
+        key: "reach_drop_attention",
+        label: "Queda importante de alcance",
+        value: 50,
+        unit: "%",
+        description: "Teste sintético"
+      }
+    });
+
+    await saveAnalyzedReport(rawReportWithMetrics("13/04/2026 a 19/04/2026", { reach: "120.000", impressions: "100.000" }));
+    const second = await saveAnalyzedReport(rawReportWithMetrics("20/04/2026 a 26/04/2026", { reach: "90.000", impressions: "100.000" }));
+    const loaded = await getReport(second.id);
+
+    expect(loaded?.recommendations.some((item) => item.title === "Queda real de ToFu")).toBe(false);
+  });
+
+  it("usa default quando BenchmarkSetting é inválido", async () => {
+    await prisma.benchmarkSetting.create({
+      data: {
+        key: "reach_drop_attention",
+        label: "Queda importante de alcance",
+        value: 50,
+        unit: "BRL",
+        description: "Unidade inválida para teste sintético"
+      }
+    });
+
+    await saveAnalyzedReport(rawReportWithMetrics("13/04/2026 a 19/04/2026", { reach: "120.000", impressions: "100.000" }));
+    const second = await saveAnalyzedReport(rawReportWithMetrics("20/04/2026 a 26/04/2026", { reach: "90.000", impressions: "100.000" }));
+    const loaded = await getReport(second.id);
+
+    expect(loaded?.recommendations).toContainEqual(expect.objectContaining({ category: "tofu", title: "Queda real de ToFu" }));
   });
 });

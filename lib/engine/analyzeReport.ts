@@ -1,5 +1,10 @@
 import type { ParsedReport } from "@/lib/types";
-import { generateRecommendations, generateRecommendationsWithHistory, type RecommendationHistoryReport } from "@/lib/engine/recommendationEngine";
+import {
+  generateRecommendations,
+  generateRecommendationsWithHistory,
+  type RecommendationBenchmarks,
+  type RecommendationHistoryReport
+} from "@/lib/engine/recommendationEngine";
 import { validateReport, validateReportWithHistory } from "@/lib/engine/validationEngine";
 import { parseReport } from "@/lib/parser/reportParser";
 
@@ -15,15 +20,21 @@ export function analyzeParsedReport(parsed: ParsedReport): ParsedReport {
 
 export function analyzeParsedReportWithHistory(
   parsed: ParsedReport,
-  existingReports: RecommendationHistoryReport[]
+  existingReports: RecommendationHistoryReport[],
+  benchmarks?: Partial<RecommendationBenchmarks>
 ): ParsedReport {
   const issues = validateReportWithHistory(parsed, existingReports);
-  return applyAnalysis(parsed, issues, existingReports);
+  return applyAnalysis(parsed, issues, existingReports, benchmarks);
 }
 
-function applyAnalysis(parsed: ParsedReport, issues: ParsedReport["dataIssues"], history: RecommendationHistoryReport[] = []): ParsedReport {
+function applyAnalysis(
+  parsed: ParsedReport,
+  issues: ParsedReport["dataIssues"],
+  history: RecommendationHistoryReport[] = [],
+  benchmarks?: Partial<RecommendationBenchmarks>
+): ParsedReport {
   const analyzed = { ...parsed, dataIssues: issues };
-  const generated = history.length ? generateRecommendationsWithHistory(analyzed, history) : generateRecommendations(analyzed);
+  const generated = history.length || benchmarks ? generateRecommendationsWithHistory(analyzed, history, benchmarks) : generateRecommendations(analyzed);
   return {
     ...parsed,
     dataIssues: issues,

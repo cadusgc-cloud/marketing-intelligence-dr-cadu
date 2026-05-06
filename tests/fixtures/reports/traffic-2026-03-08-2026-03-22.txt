@@ -1,0 +1,34 @@
+27/03/2026
+
+Relatório Quinzenal Tráfego - 08/03 a 22/03
+📊 Resumo do Desempenho
+
+Total gasto nas campanhas: R$ 1.559,29 (R$ 1.351,98 Meta Ads + R$ 207,31 Google Ads)
+
+Principais Métricas:
+
+Alcance Total: 154.382 (-23,88% vs quinzena anterior)
+Impressões: 820.856 (+67,84% vs quinzena anterior)
+Seguidores Líquido: 341 (-25,71% vs quinzena anterior)
+CPS: R$ 3,97 (custo por seguidor)
+Conversas geradas (leads): 85 (-2,3% vs quinzena anterior)
+CPL (custo por lead): R$ 15,91 (-0,84% vs quinzena anterior)
+
+📈 Análise de Campanhas
+
+Campanhas ToFu: 341 seguidores na quinzena, com média de 24,4 por dia — abaixo do mínimo esperado de 39/dia para o investimento de R$ 3.000/mês. O alcance também recuou quase 24% em relação à quinzena anterior, indicando possível saturação de público ou criativos de topo sem volume suficiente.
+
+Campanhas MoFu: Sem dados de MoFu separados no relatório. As impressões subiram 67% mas o alcance caiu — sinal de que os mesmos usuários estão vendo os anúncios várias vezes, o que pode indicar frequência alta e necessidade de novos criativos.
+
+Campanhas BoFu: 85 conversas a R$ 15,91 cada — resultado estável, com queda mínima de 2,3% no volume e 0,84% no CPL. Destaque para o criativo "Resultado 3 meses pós" com 33 leads a apenas R$ 3,52 cada. Os criativos de "Maternidade" também performaram bem, somando 24 leads entre as três variações.
+
+Google Ads: 14 conversões a R$ 14,81 cada, com R$ 207,31 investidos — resultado positivo, apesar da queda de 36% no volume vs quinzena anterior. Destaques: "lipoaspiração" (R$ 4,93/conv.) e "cirurgia plástica nos seios" (R$ 7,34/conv.).
+
+🚩 Próximos passos:
+
+ToFu: Inserir novos criativos de topo para reverter a queda de alcance e seguidores — a frequência alta sugere público saturado, precisando de peças frescas para ampliar a distribuição
+MoFu: Revisar a frequência dos anúncios ativos — com impressões subindo 67% e alcance caindo 24%, o público está vendo os mesmos criativos repetidamente; testar novas peças ou ampliar a segmentação
+BoFu (Google Ads): Aumentar o lance em "lipoaspiração" e "cirurgia plástica nos seios", que entregaram os menores CPLs da conta no Google (R$ 4,93 e R$ 7,34), e pausar palavras sem conversão que estão consumindo verba como "cirurgião plástico em MG" e "clínica de cirurgia plástica"
+
+Relatório Semanal - Dr. Cadu Gazinelli
+08/03/2026 a 22/03/2026

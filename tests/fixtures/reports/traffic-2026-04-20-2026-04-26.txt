@@ -1,0 +1,33 @@
+26/04/2026
+
+Relatório Semanal — 20/04 a 26/04/2026
+📊 Relatório Semanal Tráfego - 20/04 a 26/04/2026 *Dr. Cadu Gazinelli*
+
+📈 Resumo do Desempenho
+
+Total gasto nas campanhas: R$ 750,71 (R$ 622,87 Meta Ads + R$ 127,84 Google Ads)
+
+Principais Métricas:
+- Alcance Total: 87.698 (-16,96%)
+- Impressões: 155.322 (-7,03%)
+- Novos Seguidores: 436 (-7,82%)
+- Conversas geradas (leads): 27 (estável)
+- CPL (custo por lead): R$ 23,07 (-0,37%)
+
+📈 Análise de Campanhas
+
+Campanhas ToFu: Alcance caiu 16,96% em relação à semana anterior — de 105.614 para 87.698. Queda importante que requer revisão dos criativos de topo de funil e possível saturação de públicos.
+
+Campanhas MoFu: Anúncio "G1_IMG" gerou 899 visitas ao perfil com R$215 investidos (CPV R$0,24). Outros criativos (TBT Dia especial, AD-G1) gerando visitas ao perfil a custo controlado.
+
+Campanhas BoFu: 27 conversas com CPL de R$23,07 — acima do benchmark (R$6–15). Melhores anúncios: "Resultado 3 meses pós" (9 conv, R$5,89), "Nem toda mulher" (8 conv, R$4,89), "Você pesquisou" (8 conv, R$4,03).
+
+Google Ads: 49 cliques com 4 conversões (-33% vs semana anterior), CPA de R$31,96 (+33%). Custo R$127,84. Keyword mais ativa: "cirurgia plástica nos seios" (10 cliques, 1,33 conv).
+
+🚩 Próximos passos:
+1. ToFu: Investigar a queda de 17% no alcance — checar anúncios expirados e públicos saturados. Inserir novos criativos de ToFu com urgência.
+2. MoFu: Pausar o anúncio "G1_IMG" que gerou apenas 1 conversa a R$215,93 — custo alto para o resultado gerado.
+3. BoFu: Escalar os 3 melhores anúncios com CPL abaixo de R$6 e revisar configuração do Google Ads para recuperar as conversões perdidas (-33%).
+
+Relatório Semanal - Dr. Cadu Gazinelli
+20/04/2026 a 26/04/2026

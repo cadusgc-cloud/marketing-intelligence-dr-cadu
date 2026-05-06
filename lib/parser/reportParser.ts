@@ -125,9 +125,12 @@ function extractCreatives(rawText: string): ParsedCreative[] {
 
     const looksCreative = searchable.includes("criativo") || searchable.includes("anuncio") || lower.includes("cpl") || lower.includes("conversa") || lower.includes("lead") || lower.includes("conv");
     if (!looksCreative) continue;
+    if (/(keyword|palavra|lipoaspiracao|mamoplastia|cirurgia plastica|seios)/i.test(searchable)) continue;
+    let matchedStructuredCreative = false;
 
     for (const match of line.matchAll(quotedMetric)) {
       const conversations = parseNumber(match[2]);
+      matchedStructuredCreative = true;
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
@@ -141,6 +144,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
 
     for (const match of line.matchAll(quotedLeadCpl)) {
       const conversations = parseNumber(match[2]);
+      matchedStructuredCreative = true;
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
@@ -153,6 +157,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
     }
 
     for (const match of line.matchAll(quotedVisits)) {
+      matchedStructuredCreative = true;
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
@@ -165,6 +170,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
 
     for (const match of line.matchAll(quotedConversationInvestment)) {
       const conversations = parseNumber(match[2]);
+      matchedStructuredCreative = true;
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
@@ -178,6 +184,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
 
     for (const match of line.matchAll(quotedAggregatedLeads)) {
       const leads = parseNumber(match[2]);
+      matchedStructuredCreative = true;
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
@@ -190,6 +197,7 @@ function extractCreatives(rawText: string): ParsedCreative[] {
 
     for (const match of line.matchAll(quotedConvCpl)) {
       const conversations = parseNumber(match[2]);
+      matchedStructuredCreative = true;
       creatives.push({
         platform: "meta_ads",
         name: match[1].trim(),
@@ -200,6 +208,8 @@ function extractCreatives(rawText: string): ParsedCreative[] {
         cpl: parseMoney(match[3])
       });
     }
+
+    if (matchedStructuredCreative) continue;
 
     const nameMatch = line.match(creativeLine);
     const cpl = firstMoney(line, [new RegExp(`CPL\\s*(${money})`, "i")]);

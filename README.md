@@ -45,9 +45,13 @@ O produto não solicita, processa ou exibe dados de pacientes. Use apenas métri
 - `lib/engine/analyzeReport.ts`: orquestra parser, validações e recomendações.
 - `prisma/schema.prisma`: modelos do banco SQLite local.
 
-## Limitações do MVP
+## Limitações conhecidas do MVP
 
 - Parser regex cobre formatos comuns, mas relatórios muito livres podem exigir ajustes.
 - Benchmarks são configuráveis, porém as regras ainda usam constantes internas em alguns pontos.
 - Comparações de queda entre períodos ainda são heurísticas baseadas no texto e nas médias do dashboard.
 - Compliance médico é checklist de risco para revisão humana, não parecer jurídico.
+- `ChannelSummary` ainda não persiste `interactions`, `shares`, `saves` e `comments` como métricas agregadas de canal.
+- Essas métricas são preservadas em `CreativePerformance` quando pertencem a conteúdos ou criativos específicos.
+- O alinhamento do schema deve ser retomado quando o dashboard precisar comparar interações agregadas por período, quando o `recommendationEngine` passar a usar interações agregadas do canal ou quando houver necessidade de relatórios orgânicos consolidados mais completos.
+- Esta decisão mantém o MVP enxuto e evita uma migração Prisma desnecessária neste momento.

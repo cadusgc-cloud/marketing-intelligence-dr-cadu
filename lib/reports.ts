@@ -1,7 +1,68 @@
 import { prisma } from "@/lib/db";
+import type { RecommendationHistoryReport } from "@/lib/engine/recommendationEngine";
 import { analyzeParsedReportWithHistory } from "@/lib/engine/analyzeReport";
 import { parseReport } from "@/lib/parser/reportParser";
-import type { ParsedReport } from "@/lib/types";
+import type { Channel, CreativeFormat, Diagnosis, FunnelStage, ParsedReport, Platform } from "@/lib/types";
+
+type ReportHistoryRecord = {
+  title: string;
+  periodStart: Date | null;
+  periodEnd: Date | null;
+  isOperationalAnomaly: boolean;
+  channelSummaries: Array<{
+    channel: string;
+    investment: number | null;
+    reach: number | null;
+    impressions: number | null;
+    frequency: number | null;
+    clicks: number | null;
+    profileVisits: number | null;
+    newFollowers: number | null;
+    followersTotal: number | null;
+    conversations: number | null;
+    conversions: number | null;
+    opportunities: number | null;
+    cpl: number | null;
+    cpa: number | null;
+    cps: number | null;
+    cpc: number | null;
+    ctr: number | null;
+    engagementRate: number | null;
+    storyCount: number | null;
+    storyViews: number | null;
+    storyRetention: number | null;
+    reelCount: number | null;
+    postCount: number | null;
+  }>;
+  creatives: Array<{
+    platform: string;
+    name: string;
+    format: string;
+    funnelStage: string;
+    investment: number | null;
+    conversations: number | null;
+    conversions: number | null;
+    leads: number | null;
+    cpl: number | null;
+    cpa: number | null;
+    profileVisits: number | null;
+    reach: number | null;
+    impressions: number | null;
+    interactions: number | null;
+    saves: number | null;
+    shares: number | null;
+    comments: number | null;
+    diagnosis: string;
+  }>;
+  keywords: Array<{
+    keyword: string;
+    investment: number | null;
+    clicks: number | null;
+    conversions: number | null;
+    cpa: number | null;
+    diagnosis: string;
+  }>;
+};
 
 export async function saveAnalyzedReport(rawText: string) {
   const parsed = parseReport(rawText);
@@ -10,11 +71,76 @@ export async function saveAnalyzedReport(rawText: string) {
       title: true,
       periodStart: true,
       periodEnd: true,
-      isOperationalAnomaly: true
+      isOperationalAnomaly: true,
+      channelSummaries: true,
+      creatives: true,
+      keywords: true
     }
   });
-  const analyzed = analyzeParsedReportWithHistory(parsed, existingReports);
+  const analyzed = analyzeParsedReportWithHistory(parsed, existingReports.map(mapReportToRecommendationHistory));
   return createReportFromParsed(analyzed);
+}
+
+function mapReportToRecommendationHistory(report: ReportHistoryRecord): RecommendationHistoryReport {
+  return {
+    title: report.title,
+    periodStart: report.periodStart,
+    periodEnd: report.periodEnd,
+    isOperationalAnomaly: report.isOperationalAnomaly,
+    channels: report.channelSummaries.map((channel) => ({
+      channel: channel.channel as Channel,
+      investment: channel.investment,
+      reach: channel.reach,
+      impressions: channel.impressions,
+      frequency: channel.frequency,
+      clicks: channel.clicks,
+      profileVisits: channel.profileVisits,
+      newFollowers: channel.newFollowers,
+      followersTotal: channel.followersTotal,
+      conversations: channel.conversations,
+      conversions: channel.conversions,
+      opportunities: channel.opportunities,
+      cpl: channel.cpl,
+      cpa: channel.cpa,
+      cps: channel.cps,
+      cpc: channel.cpc,
+      ctr: channel.ctr,
+      engagementRate: channel.engagementRate,
+      storyCount: channel.storyCount,
+      storyViews: channel.storyViews,
+      storyRetention: channel.storyRetention,
+      reelCount: channel.reelCount,
+      postCount: channel.postCount
+    })),
+    creatives: report.creatives.map((creative) => ({
+      platform: creative.platform as Platform,
+      name: creative.name,
+      format: creative.format as CreativeFormat,
+      funnelStage: creative.funnelStage as FunnelStage,
+      investment: creative.investment,
+      conversations: creative.conversations,
+      conversions: creative.conversions,
+      leads: creative.leads,
+      cpl: creative.cpl,
+      cpa: creative.cpa,
+      profileVisits: creative.profileVisits,
+      reach: creative.reach,
+      impressions: creative.impressions,
+      interactions: creative.interactions,
+      saves: creative.saves,
+      shares: creative.shares,
+      comments: creative.comments,
+      diagnosis: creative.diagnosis as Diagnosis
+    })),
+    keywords: report.keywords.map((keyword) => ({
+      keyword: keyword.keyword,
+      investment: keyword.investment,
+      clicks: keyword.clicks,
+      conversions: keyword.conversions,
+      cpa: keyword.cpa,
+      diagnosis: keyword.diagnosis as Diagnosis
+    }))
+  };
 }
 
 export async function createReportFromParsed(parsed: ParsedReport) {

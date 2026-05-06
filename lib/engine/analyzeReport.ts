@@ -1,5 +1,5 @@
 import type { ParsedReport } from "@/lib/types";
-import { generateRecommendations } from "@/lib/engine/recommendationEngine";
+import { generateRecommendations, generateRecommendationsWithHistory, type RecommendationHistoryReport } from "@/lib/engine/recommendationEngine";
 import { validateReport, validateReportWithHistory } from "@/lib/engine/validationEngine";
 import { parseReport } from "@/lib/parser/reportParser";
 
@@ -15,14 +15,15 @@ export function analyzeParsedReport(parsed: ParsedReport): ParsedReport {
 
 export function analyzeParsedReportWithHistory(
   parsed: ParsedReport,
-  existingReports: Array<Pick<ParsedReport, "periodStart" | "periodEnd" | "isOperationalAnomaly" | "title">>
+  existingReports: RecommendationHistoryReport[]
 ): ParsedReport {
   const issues = validateReportWithHistory(parsed, existingReports);
-  return applyAnalysis(parsed, issues);
+  return applyAnalysis(parsed, issues, existingReports);
 }
 
-function applyAnalysis(parsed: ParsedReport, issues: ParsedReport["dataIssues"]): ParsedReport {
-  const generated = generateRecommendations({ ...parsed, dataIssues: issues });
+function applyAnalysis(parsed: ParsedReport, issues: ParsedReport["dataIssues"], history: RecommendationHistoryReport[] = []): ParsedReport {
+  const analyzed = { ...parsed, dataIssues: issues };
+  const generated = history.length ? generateRecommendationsWithHistory(analyzed, history) : generateRecommendations(analyzed);
   return {
     ...parsed,
     dataIssues: issues,

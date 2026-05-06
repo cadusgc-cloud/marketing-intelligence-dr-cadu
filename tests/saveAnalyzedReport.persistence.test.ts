@@ -25,16 +25,28 @@ function prismaCommand() {
 }
 
 function rawReport(period: string): string {
+  return rawReportWithMetrics(period, {});
+}
+
+function rawReportWithMetrics(
+  period: string,
+  overrides: {
+    reach?: string;
+    impressions?: string;
+    googleConversions?: number;
+    googleCpa?: string;
+  }
+): string {
   return `Relatório Semanal — ${period}
 Investimento total: R$ 300,00
 Meta Ads: R$ 200,00
 Google Ads: R$ 100,00
-Alcance: 50.000
-Impressões: 80.000
+Alcance: ${overrides.reach ?? "50.000"}
+Impressões: ${overrides.impressions ?? "80.000"}
 Conversas Meta: 20
 CPL Meta: R$ 10,00
-Google conversões: 10
-Google CPA: R$ 10,00`;
+Google conversões: ${overrides.googleConversions ?? 10}
+Google CPA: ${overrides.googleCpa ?? "R$ 10,00"}`;
 }
 
 beforeAll(async () => {
@@ -123,5 +135,54 @@ describe("saveAnalyzedReport persistence", () => {
 
     expect(loaded?.id).toBe(second.id);
     expect(loaded?.dataIssues.map((issue) => issue.issueType)).toContain("period_conflict");
+  });
+
+  it("persiste recomendação histórica de ToFu", async () => {
+    await saveAnalyzedReport(rawReportWithMetrics("13/04/2026 a 19/04/2026", { reach: "120.000", impressions: "100.000" }));
+    const second = await saveAnalyzedReport(rawReportWithMetrics("20/04/2026 a 26/04/2026", { reach: "90.000", impressions: "100.000" }));
+    const loaded = await getReport(second.id);
+
+    expect(loaded?.recommendations).toContainEqual(expect.objectContaining({ category: "tofu", title: "Queda real de ToFu" }));
+  });
+
+  it("persiste recomendação histórica de saturação", async () => {
+    await saveAnalyzedReport(rawReportWithMetrics("13/04/2026 a 19/04/2026", { reach: "120.000", impressions: "100.000" }));
+    const second = await saveAnalyzedReport(rawReportWithMetrics("20/04/2026 a 26/04/2026", { reach: "90.000", impressions: "167.000" }));
+    const loaded = await getReport(second.id);
+
+    expect(loaded?.recommendations).toContainEqual(expect.objectContaining({ category: "tofu", title: "Saturação de audiência" }));
+  });
+
+  it("persiste recomendação consolidada de Google Ads crítico sem duplicação excessiva", async () => {
+    await saveAnalyzedReport(rawReportWithMetrics("13/04/2026 a 19/04/2026", { googleConversions: 6, googleCpa: "R$ 20,00" }));
+    const second = await saveAnalyzedReport(rawReportWithMetrics("20/04/2026 a 26/04/2026", { googleConversions: 4, googleCpa: "R$ 31,96" }));
+    const loaded = await getReport(second.id);
+    const criticalGoogle = loaded?.recommendations.filter((item) => item.category === "google_ads" && item.priority === "critical") ?? [];
+
+    expect(criticalGoogle).toHaveLength(1);
+    expect(criticalGoogle[0].title).toBe("Google Ads em estado crítico");
+  });
+
+  it("não persiste recomendação histórica indevida quando o histórico é anômalo", async () => {
+    await prisma.report.create({
+      data: {
+        title: "Histórico anômalo sintético",
+        rawText: rawReportWithMetrics("01/02/2026 a 07/02/2026", { reach: "200.000", impressions: "100.000" }),
+        reportType: "weekly",
+        periodStart: new Date("2026-02-01T12:00:00.000Z"),
+        periodEnd: new Date("2026-02-07T12:00:00.000Z"),
+        isOperationalAnomaly: true,
+        anomalyReason: "Teste de anomalia operacional",
+        confidenceScore: 1,
+        channelSummaries: {
+          create: [{ channel: "consolidated", reach: 200000, impressions: 100000, newFollowers: 800 }]
+        }
+      }
+    });
+
+    const second = await saveAnalyzedReport(rawReportWithMetrics("08/02/2026 a 14/02/2026", { reach: "90.000", impressions: "100.000" }));
+    const loaded = await getReport(second.id);
+
+    expect(loaded?.recommendations.some((item) => item.title === "Queda real de ToFu")).toBe(false);
   });
 });

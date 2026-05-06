@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
-import { closeSync, existsSync, openSync, rmSync } from "node:fs";
-import { resolve } from "node:path";
+import { closeSync, existsSync, openSync, readFileSync, rmSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 const TEST_DATABASE_URL = "file:./test.db";
@@ -26,6 +26,28 @@ function prismaCommand() {
 
 function rawReport(period: string): string {
   return rawReportWithMetrics(period, {});
+}
+
+function loadFixture(name: string): string {
+  return readFileSync(join(process.cwd(), "tests", "fixtures", "reports", name), "utf8");
+}
+
+function normalizeSearch(value: string): string {
+  return value.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
+
+function hasRecommendation(report: Awaited<ReturnType<typeof getReport>>, category: string, titleIncludes: string): boolean {
+  const needle = normalizeSearch(titleIncludes);
+  return report?.recommendations.some((item) => item.category === category && normalizeSearch(item.title).includes(needle)) ?? false;
+}
+
+function getChannel(report: Awaited<ReturnType<typeof getReport>>, channel: string) {
+  return report?.channelSummaries.find((item) => item.channel === channel);
+}
+
+function getCreative(report: Awaited<ReturnType<typeof getReport>>, nameIncludes: string) {
+  const needle = normalizeSearch(nameIncludes);
+  return report?.creatives.find((item) => normalizeSearch(item.name).includes(needle));
 }
 
 function rawReportWithMetrics(
@@ -221,5 +243,50 @@ describe("saveAnalyzedReport persistence", () => {
     const loaded = await getReport(second.id);
 
     expect(loaded?.recommendations).toContainEqual(expect.objectContaining({ category: "tofu", title: "Queda real de ToFu" }));
+  });
+
+  it("persiste recomendacoes da fixture real 20/04 apos historico 13/04", async () => {
+    await saveAnalyzedReport(loadFixture("traffic-2026-04-13-2026-04-19.txt"));
+    const current = await saveAnalyzedReport(loadFixture("traffic-2026-04-20-2026-04-26.txt"));
+    const loaded = await getReport(current.id);
+
+    expect(hasRecommendation(loaded, "google_ads", "Google Ads em estado critico")).toBe(true);
+    expect(hasRecommendation(loaded, "creative", "Criativo problematico: G1_IMG")).toBe(true);
+    expect(getCreative(loaded, "Resultado 3 meses pos")?.diagnosis).toBe("scale");
+    expect(getCreative(loaded, "Nem toda mulher")?.diagnosis).toBe("scale");
+    expect(getCreative(loaded, "Voce pesquisou")?.diagnosis).toBe("scale");
+  });
+
+  it("persiste concentracao top 2 calculada por dados estruturados da fixture 13/04", async () => {
+    const saved = await saveAnalyzedReport(loadFixture("traffic-2026-04-13-2026-04-19.txt"));
+    const loaded = await getReport(saved.id);
+
+    expect(getChannel(loaded, "meta_ads")?.conversations).toBe(27);
+    expect(getCreative(loaded, "Resultado 3 meses pos")?.conversations).toBe(12);
+    expect(getCreative(loaded, "Nem toda mulher")?.conversations).toBe(8);
+    expect(hasRecommendation(loaded, "creative", "Concentracao perigosa")).toBe(true);
+  });
+
+  it("persiste queda real de ToFu e saturacao usando fixture 08/03 com historico sintetico", async () => {
+    await prisma.report.create({
+      data: {
+        title: "Historico sintetico elegivel",
+        rawText: rawReportWithMetrics("16/02/2026 a 01/03/2026", { reach: "200.000", impressions: "490.000" }),
+        reportType: "biweekly",
+        periodStart: new Date("2026-02-16T12:00:00.000Z"),
+        periodEnd: new Date("2026-03-01T12:00:00.000Z"),
+        isOperationalAnomaly: false,
+        confidenceScore: 1,
+        channelSummaries: {
+          create: [{ channel: "consolidated", reach: 200000, impressions: 490000, newFollowers: 500 }]
+        }
+      }
+    });
+
+    const current = await saveAnalyzedReport(loadFixture("traffic-2026-03-08-2026-03-22.txt"));
+    const loaded = await getReport(current.id);
+
+    expect(hasRecommendation(loaded, "tofu", "Queda real de ToFu")).toBe(true);
+    expect(hasRecommendation(loaded, "tofu", "Saturacao de audiencia")).toBe(true);
   });
 });

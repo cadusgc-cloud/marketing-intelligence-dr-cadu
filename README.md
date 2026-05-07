@@ -45,6 +45,12 @@ O produto não solicita, processa ou exibe dados de pacientes. Use apenas métri
 - `lib/engine/analyzeReport.ts`: orquestra parser, validações e recomendações.
 - `prisma/schema.prisma`: modelos do banco SQLite local.
 
+## Diagnóstico executivo e AgentRun
+
+O diagnóstico executivo é gerado em runtime a partir dos dados persistidos do relatório, canais, recomendações, criativos, keywords e DataIssues. O modelo `AgentRun` já existe no schema, mas fica reservado para uma etapa futura em que seja necessário diagnóstico auditável, versionamento do engine, integração com LLM, botão de reprocessamento ou comparação de diagnósticos gerados em momentos diferentes.
+
+Não persistir esse diagnóstico agora evita que ele fique obsoleto quando benchmarks, parser ou `recommendationEngine` mudarem.
+
 ## Limitações conhecidas do MVP
 
 - Parser regex cobre formatos comuns, mas relatórios muito livres podem exigir ajustes.

@@ -75,7 +75,7 @@ describe("generateExecutiveDiagnosis", () => {
       ]
     });
 
-    expect(withIssue.criticalAlerts).toContain("CPL informado diverge do investimento dividido por conversas");
+    expect(withIssue.criticalAlerts).toContain("Validação de dados: CPL informado diverge do investimento dividido por conversas");
     expect(withIssue.healthScore).toBeLessThan(clean.healthScore);
   });
 
@@ -115,7 +115,7 @@ describe("generateExecutiveDiagnosis", () => {
       ]
     });
 
-    expect(diagnosis.nextWeekActionPlan).toHaveLength(5);
+    expect(diagnosis.nextWeekActionPlan.length).toBeLessThanOrEqual(5);
     expect(diagnosis.nextWeekActionPlan[0]).toContain("Google Ads");
   });
 
@@ -182,5 +182,92 @@ describe("generateExecutiveDiagnosis", () => {
     expect(manyProblems.healthScore).toBeLessThanOrEqual(100);
     expect(manyWins.healthScore).toBeLessThanOrEqual(100);
     expect(manyWins.status).toBe("good");
+  });
+
+  it("mantém topWins limpo, sem investimento ausente e sem duplicar recomendação de escala", () => {
+    const diagnosis = generateExecutiveDiagnosis({
+      creatives: [
+        { name: "Resultado 3 meses pós", diagnosis: "scale", cpl: 5.89, leads: 9 }
+      ],
+      recommendations: [
+        recommendation({
+          category: "creative",
+          priority: "high",
+          title: "Escalar criativo: Resultado 3 meses pós",
+          recommendation: "Escalar Resultado 3 meses pós e criar variações."
+        })
+      ]
+    });
+
+    expect(diagnosis.topWins).toEqual(["Resultado 3 meses pós: 9 leads, CPL R$ 5,89"]);
+    expect(diagnosis.topWins.join(" ")).not.toContain("investidos");
+  });
+
+  it("penaliza período duplicado menos que Google Ads crítico", () => {
+    const duplicatedPeriod = generateExecutiveDiagnosis({
+      dataIssues: [
+        dataIssue({
+          severity: "high",
+          issueType: "duplicated_period",
+          description: "Relatório com período duplicado"
+        })
+      ]
+    });
+    const googleCritical = generateExecutiveDiagnosis({
+      recommendations: [
+        recommendation({
+          category: "google_ads",
+          priority: "critical",
+          title: "Google Ads crítico",
+          recommendation: "Revisar Google Ads antes de ampliar orçamento."
+        })
+      ]
+    });
+
+    expect(duplicatedPeriod.criticalAlerts).toContain("Validação de dados: Relatório com período duplicado");
+    expect(duplicatedPeriod.healthScore).toBeGreaterThan(googleCritical.healthScore);
+  });
+
+  it("não trata período duplicado isolado como piora de marketing", () => {
+    const diagnosis = generateExecutiveDiagnosis({
+      dataIssues: [
+        dataIssue({
+          severity: "high",
+          issueType: "duplicated_period",
+          description: "Relatório com período duplicado"
+        })
+      ]
+    });
+
+    expect(diagnosis.summary).toContain("desempenho estável");
+    expect(diagnosis.wastePoints).toEqual([]);
+  });
+
+  it("deduplica ações quase iguais no plano da próxima semana", () => {
+    const diagnosis = generateExecutiveDiagnosis({
+      recommendations: [
+        recommendation({
+          category: "google_ads",
+          priority: "critical",
+          title: "Google Ads crítico",
+          recommendation: "Revisar Google Ads antes de ampliar orçamento."
+        }),
+        recommendation({
+          category: "google_ads",
+          priority: "high",
+          title: "Google Ads com queda de conversões",
+          recommendation: "Revisar Google Ads e tracking antes de aumentar verba."
+        }),
+        recommendation({
+          category: "creative",
+          priority: "high",
+          title: "Criativo problemático",
+          recommendation: "Pausar criativo problemático."
+        })
+      ]
+    });
+
+    expect(diagnosis.nextWeekActionPlan.filter((action) => /Google Ads/i.test(action))).toHaveLength(1);
+    expect(diagnosis.nextWeekActionPlan).toContain("Pausar criativo problemático.");
   });
 });

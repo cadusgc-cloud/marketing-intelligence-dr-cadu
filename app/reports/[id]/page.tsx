@@ -178,7 +178,7 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
             <p className="mt-2 max-w-3xl text-sm text-slate-600">{executiveDiagnosis.summary}</p>
           </div>
           <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 md:text-right">
-            <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">Health score</p>
+            <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">Score do relatório</p>
             <p className="mt-1 text-2xl font-semibold text-ink">{executiveDiagnosis.healthScore}</p>
             <span className={`badge mt-2 ${executiveStatusClasses[executiveDiagnosis.status]}`}>
               {executiveStatusLabels[executiveDiagnosis.status]}

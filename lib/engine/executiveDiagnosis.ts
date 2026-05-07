@@ -59,6 +59,21 @@ function titleOf(item: { title: string }): string {
   return item.title;
 }
 
+function hasValue(value?: number | null): value is number {
+  return value !== null && value !== undefined && Number.isFinite(value);
+}
+
+function normalizeText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function formatMoney(value: number): string {
+  return `R$ ${value.toFixed(2).replace(".", ",")}`;
+}
+
 function creativeVolume(creative: Pick<ParsedCreative, "conversations" | "leads">): number {
   return creative.leads ?? creative.conversations ?? 0;
 }
@@ -91,6 +106,20 @@ function getMainProblemAreas(recommendations: ParsedRecommendation[]): string[] 
   return unique(recommendations.map((item) => item.category)).map((category) => areaLabels[category] ?? category);
 }
 
+function dataIssuePenalty(issue: ParsedDataIssue): number {
+  const basePenalty: Record<ParsedDataIssue["issueType"], number> = {
+    duplicated_period: 2,
+    period_conflict: 4,
+    metric_mismatch: 4,
+    inferred_metric: 3,
+    template_error: 3,
+    missing_data: 4,
+    operational_anomaly: 6
+  };
+  const severityBoost = issue.severity === "critical" ? 2 : 0;
+  return basePenalty[issue.issueType] + severityBoost;
+}
+
 function buildHealthScore(input: {
   criticalRecommendations: ParsedRecommendation[];
   highRecommendations: ParsedRecommendation[];
@@ -99,10 +128,11 @@ function buildHealthScore(input: {
   scaleCreatives: NonNullable<ExecutiveDiagnosisInput["creatives"]>;
   scaleKeywords: NonNullable<ExecutiveDiagnosisInput["keywords"]>;
 }): number {
+  const dataPenalty = input.criticalDataIssues.reduce((total, issue) => total + dataIssuePenalty(issue), 0);
   const penalty =
     Math.min(45, input.criticalRecommendations.length * 15) +
     Math.min(32, input.highRecommendations.length * 8) +
-    Math.min(30, input.criticalDataIssues.length * 10) +
+    Math.min(18, dataPenalty) +
     Math.min(24, input.problematicCreatives.length * 8);
   const wins = Math.min(20, (input.scaleCreatives.length + input.scaleKeywords.length) * 4);
   return clamp(75 - penalty + wins, 0, 100);
@@ -137,25 +167,52 @@ function buildNextWeekActionPlan(input: {
   highRecommendations: ParsedRecommendation[];
   criticalDataIssues: ParsedDataIssue[];
 }): string[] {
-  const fromCritical = input.criticalRecommendations.map((item) => item.recommendation || item.title);
-  const fromHigh = input.highRecommendations.map((item) => item.recommendation || item.title);
-  const fromIssues = input.criticalDataIssues.map((item) => `Revisar validação: ${item.description}`);
-  return unique([...fromCritical, ...fromHigh, ...fromIssues]).slice(0, 5);
+  const seenKeys = new Set<string>();
+  const actions: string[] = [];
+
+  function addAction(action: string, key: string) {
+    if (!action || seenKeys.has(key)) return;
+    seenKeys.add(key);
+    actions.push(action);
+  }
+
+  for (const item of input.criticalRecommendations) {
+    addAction(item.recommendation || item.title, item.category);
+  }
+
+  for (const item of input.highRecommendations) {
+    addAction(item.recommendation || item.title, item.category);
+  }
+
+  for (const item of input.criticalDataIssues) {
+    addAction(`Revisar validação de dados: ${item.description}`, `validation:${item.issueType}`);
+  }
+
+  return actions.slice(0, 5);
 }
 
 function describeCreative(creative: NonNullable<ExecutiveDiagnosisInput["creatives"]>[number]): string {
   const volume = creativeVolume(creative);
-  const details = [`${volume} lead(s)`];
-  if (creative.cpl !== null && creative.cpl !== undefined) details.push(`CPL R$ ${creative.cpl.toFixed(2)}`);
-  if (creative.investment !== null && creative.investment !== undefined) details.push(`R$ ${creative.investment.toFixed(2)} investidos`);
+  const details = [`${volume} ${volume === 1 ? "lead" : "leads"}`];
+  if (hasValue(creative.cpl)) details.push(`CPL ${formatMoney(creative.cpl)}`);
+  if (hasValue(creative.investment) && creative.investment !== creative.cpl) details.push(`${formatMoney(creative.investment)} investidos`);
   return `${creative.name}: ${details.join(", ")}`;
 }
 
 function describeKeyword(keyword: NonNullable<ExecutiveDiagnosisInput["keywords"]>[number]): string {
-  const details = [];
-  if (keyword.conversions !== null && keyword.conversions !== undefined) details.push(`${keyword.conversions} conversão(ões)`);
-  if (keyword.cpa !== null && keyword.cpa !== undefined) details.push(`CPA R$ ${keyword.cpa.toFixed(2)}`);
+  const details: string[] = [];
+  if (hasValue(keyword.conversions)) details.push(`${keyword.conversions} conversão(ões)`);
+  if (hasValue(keyword.cpa)) details.push(`CPA ${formatMoney(keyword.cpa)}`);
   return `${keyword.keyword}${details.length ? `: ${details.join(", ")}` : ""}`;
+}
+
+function recommendationDuplicatesScalePoint(
+  recommendation: ParsedRecommendation,
+  scaleCreatives: NonNullable<ExecutiveDiagnosisInput["creatives"]>,
+  scaleKeywords: NonNullable<ExecutiveDiagnosisInput["keywords"]>
+): boolean {
+  const text = normalizeText(`${recommendation.title} ${recommendation.recommendation}`);
+  return [...scaleCreatives.map((item) => item.name), ...scaleKeywords.map((item) => item.keyword)].some((name) => text.includes(normalizeText(name)));
 }
 
 export function generateExecutiveDiagnosis(input: ExecutiveDiagnosisInput): ExecutiveDiagnosis {
@@ -172,13 +229,19 @@ export function generateExecutiveDiagnosis(input: ExecutiveDiagnosisInput): Exec
   const healthScore = buildHealthScore({ criticalRecommendations, highRecommendations, criticalDataIssues, problematicCreatives, scaleCreatives, scaleKeywords });
   const criticalAlerts = [
     ...criticalRecommendations.map(titleOf),
-    ...criticalDataIssues.map((item) => item.description)
+    ...criticalDataIssues.map((item) => `Validação de dados: ${item.description}`)
   ];
   const scalePoints = [...scaleCreatives.map(describeCreative), ...scaleKeywords.map(describeKeyword)];
   const investigateOrPause = problematicCreatives.map(describeCreative);
   const wasteRecommendations = recommendations.filter((item) => /desperd|problem|pausar|investig/i.test(`${item.title} ${item.recommendation}`));
   const wastePoints = unique([...investigateOrPause, ...wasteRecommendations.map(titleOf)]);
-  const topWins = unique([...scalePoints, ...recommendations.filter((item) => /escalar|vencedor/i.test(`${item.title} ${item.recommendation}`)).map(titleOf)]);
+  const topWins = unique([
+    ...scalePoints,
+    ...recommendations
+      .filter((item) => /escalar|vencedor/i.test(`${item.title} ${item.recommendation}`))
+      .filter((item) => !recommendationDuplicatesScalePoint(item, scaleCreatives, scaleKeywords))
+      .map(titleOf)
+  ]);
   const mainProblemAreas = getMainProblemAreas(recommendations);
   const nextWeekActionPlan = buildNextWeekActionPlan({ criticalRecommendations, highRecommendations, criticalDataIssues });
   const budgetSuggestions = unique([

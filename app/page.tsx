@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { TrendChart } from "@/components/TrendChart";
-import { CompactReportTable, DiagnosisBadge, MetricCard, PriorityBadge, formatCurrency, formatNumber } from "@/components/ui";
+import { CompactReportTable, DiagnosisBadge, EmptyState, MetricCard, PriorityBadge, formatCurrency, formatNumber } from "@/components/ui";
 import { getReports } from "@/lib/reports";
 import { dateLabel } from "@/lib/utils/dates";
 
@@ -27,6 +27,17 @@ export default async function DashboardPage() {
         alcance: summary?.reach ?? 0
       };
     });
+
+  if (!reports.length) {
+    return (
+      <EmptyState
+        title="Ainda não há relatórios analisados."
+        description="Importe um relatório agregado de marketing para preencher o dashboard, gerar alertas e criar recomendações."
+        href="/reports/new"
+        actionLabel="Importar primeiro relatório"
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -74,7 +85,7 @@ export default async function DashboardPage() {
         <div className="panel">
           <h2 className="text-lg font-semibold">Criativos para escalar</h2>
           <div className="mt-4 space-y-3">
-            {scaleCreatives.map((creative) => (
+            {scaleCreatives.length ? scaleCreatives.map((creative) => (
               <div key={creative.id} className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
                 <div>
                   <p className="font-medium">{creative.name}</p>
@@ -82,14 +93,16 @@ export default async function DashboardPage() {
                 </div>
                 <DiagnosisBadge value={creative.diagnosis} />
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-slate-500">Nenhum criativo com diagnóstico de escala ainda.</p>
+            )}
           </div>
         </div>
 
         <div className="panel">
           <h2 className="text-lg font-semibold">Keywords vencedoras</h2>
           <div className="mt-4 space-y-3">
-            {scaleKeywords.map((keyword) => (
+            {scaleKeywords.length ? scaleKeywords.map((keyword) => (
               <div key={keyword.id} className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
                 <div>
                   <p className="font-medium">{keyword.keyword}</p>
@@ -97,20 +110,24 @@ export default async function DashboardPage() {
                 </div>
                 <DiagnosisBadge value={keyword.diagnosis} />
               </div>
-            ))}
+            )) : (
+              <p className="text-sm text-slate-500">Nenhuma keyword com diagnóstico de escala ainda.</p>
+            )}
           </div>
         </div>
 
         <div className="panel">
           <h2 className="text-lg font-semibold">Recomendações da semana</h2>
           <div className="mt-4 space-y-3">
-            {recommendations.map((recommendation) => (
+            {recommendations.length ? recommendations.map((recommendation) => (
               <Link key={recommendation.id} href={`/reports/${recommendation.report.id}`} className="block rounded-md border border-slate-100 p-3 hover:bg-slate-50">
                 <PriorityBadge value={recommendation.priority} />
                 <p className="mt-2 font-medium">{recommendation.title}</p>
                 <p className="text-sm text-slate-500">{recommendation.recommendation}</p>
               </Link>
-            ))}
+            )) : (
+              <p className="text-sm text-slate-500">Nenhuma recomendação de alta prioridade neste momento.</p>
+            )}
           </div>
         </div>
       </section>

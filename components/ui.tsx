@@ -11,6 +11,18 @@ export function MetricCard({ label, value, tone = "default" }: { label: string; 
   );
 }
 
+export function EmptyState({ title, description, href, actionLabel }: { title: string; description: string; href: string; actionLabel: string }) {
+  return (
+    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center">
+      <p className="text-base font-semibold text-ink">{title}</p>
+      <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">{description}</p>
+      <Link href={href} className="mt-4 inline-flex rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+        {actionLabel}
+      </Link>
+    </div>
+  );
+}
+
 export function PriorityBadge({ value }: { value: string }) {
   const classes: Record<string, string> = {
     critical: "bg-red-50 text-danger",

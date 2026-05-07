@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PriorityBadge } from "@/components/ui";
+import { EmptyState, PriorityBadge } from "@/components/ui";
 import { getReports } from "@/lib/reports";
 
 export default async function InsightsPage() {
@@ -9,7 +9,7 @@ export default async function InsightsPage() {
     <div className="panel">
       <h2 className="text-xl font-semibold">Central de insights e recomendações</h2>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        {insights.map((insight) => (
+        {insights.length ? insights.map((insight) => (
           <Link key={insight.id} href={`/reports/${insight.report.id}`} className="rounded-lg border border-slate-200 p-4 hover:bg-slate-50">
             <div className="flex items-center justify-between gap-3">
               <PriorityBadge value={insight.priority} />
@@ -19,7 +19,16 @@ export default async function InsightsPage() {
             <p className="mt-1 text-sm text-slate-500">{insight.evidence}</p>
             <p className="mt-2 text-sm">{insight.recommendation}</p>
           </Link>
-        ))}
+        )) : (
+          <div className="md:col-span-2">
+            <EmptyState
+              title="Ainda não há insights gerados."
+              description="Importe um relatório para gerar recomendações de marketing."
+              href="/reports/new"
+              actionLabel="Importar relatório"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

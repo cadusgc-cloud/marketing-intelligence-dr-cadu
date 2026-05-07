@@ -30,8 +30,7 @@ export function PriorityBadge({ value }: { value: string }) {
     medium: "bg-cyan-50 text-ocean",
     low: "bg-slate-100 text-slate-600"
   };
-  const label: Record<string, string> = { critical: "crítico", high: "alto", medium: "médio", low: "baixo" };
-  return <span className={`badge ${classes[value] ?? classes.low}`}>{label[value] ?? value}</span>;
+  return <span className={`badge ${classes[value] ?? classes.low}`}>{priorityLabel(value)}</span>;
 }
 
 export function DiagnosisBadge({ value }: { value?: string | null }) {
@@ -43,24 +42,79 @@ export function DiagnosisBadge({ value }: { value?: string | null }) {
     investigate: "bg-amber-50 text-amber",
     unknown: "bg-slate-100 text-slate-600"
   };
-  const label: Record<string, string> = {
-    scale: "escalar",
-    keep: "manter",
-    vary: "variar",
-    pause: "pausar",
-    investigate: "investigar",
-    unknown: "sem diagnóstico"
-  };
-  return <span className={`badge ${classes[value ?? "unknown"]}`}>{label[value ?? "unknown"]}</span>;
+  return <span className={`badge ${classes[value ?? "unknown"] ?? classes.unknown}`}>{diagnosisLabel(value)}</span>;
 }
 
-export function channelLabel(channel: string) {
+function humanize(value?: string | null) {
+  if (!value) return "Não classificado";
+  const normalized = value.replace(/_/g, " ").trim();
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+export function reportTypeLabel(value?: string | null) {
+  return {
+    weekly: "Semanal",
+    biweekly: "Quinzenal",
+    monthly: "Mensal",
+    content: "Conteúdo",
+    traffic: "Tráfego",
+    mixed: "Misto"
+  }[value ?? ""] ?? humanize(value);
+}
+
+export function channelLabel(value: string) {
   return {
     meta_ads: "Meta Ads",
     google_ads: "Google Ads",
     instagram_organic: "Instagram orgânico",
     consolidated: "Consolidado"
-  }[channel] ?? channel;
+  }[value] ?? humanize(value);
+}
+
+export function recommendationCategoryLabel(value?: string | null) {
+  return {
+    tofu: "Topo de funil",
+    mofu: "Meio de funil",
+    bofu: "Fundo de funil",
+    google_ads: "Google Ads",
+    content: "Conteúdo",
+    validation: "Validação",
+    compliance: "Compliance",
+    budget: "Orçamento",
+    creative: "Criativo"
+  }[value ?? ""] ?? humanize(value);
+}
+
+export function priorityLabel(value?: string | null) {
+  return {
+    critical: "Crítica",
+    high: "Alta",
+    medium: "Média",
+    low: "Baixa"
+  }[value ?? ""] ?? humanize(value);
+}
+
+export function diagnosisLabel(value?: string | null) {
+  return {
+    scale: "Escalar",
+    keep: "Manter",
+    vary: "Testar variação",
+    pause: "Pausar",
+    investigate: "Investigar",
+    unknown: "Não classificado"
+  }[value ?? ""] ?? humanize(value);
+}
+
+export function issueTypeLabel(value?: string | null) {
+  return {
+    period_conflict: "Período sobreposto",
+    duplicated_period: "Período duplicado",
+    metric_mismatch: "Divergência de métrica",
+    operational_anomaly: "Anomalia operacional",
+    missing_data: "Dados ausentes",
+    inferred_metric: "Métrica inferida",
+    template_error: "Erro de template"
+  }[value ?? ""] ?? humanize(value);
 }
 
 export function CompactReportTable({ reports }: { reports: Awaited<ReturnType<typeof import("@/lib/reports").getReports>> }) {
@@ -88,7 +142,7 @@ export function CompactReportTable({ reports }: { reports: Awaited<ReturnType<ty
                   </Link>
                   {report.isOperationalAnomaly ? <p className="text-xs text-danger">{report.anomalyReason}</p> : null}
                 </td>
-                <td className="py-3 pr-4">{report.reportType}</td>
+                <td className="py-3 pr-4">{reportTypeLabel(report.reportType)}</td>
                 <td className="py-3 pr-4">{formatCurrency(consolidated?.investment)}</td>
                 <td className="py-3 pr-4">{formatNumber(consolidated?.opportunities)}</td>
                 <td className="py-3 pr-4">

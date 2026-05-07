@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { EmptyState, PriorityBadge } from "@/components/ui";
+import { EmptyState, PriorityBadge, recommendationCategoryLabel } from "@/components/ui";
 import { getReports } from "@/lib/reports";
 
 export default async function InsightsPage() {
@@ -13,7 +13,7 @@ export default async function InsightsPage() {
           <Link key={insight.id} href={`/reports/${insight.report.id}`} className="rounded-lg border border-slate-200 p-4 hover:bg-slate-50">
             <div className="flex items-center justify-between gap-3">
               <PriorityBadge value={insight.priority} />
-              <span className="text-xs text-slate-500">{insight.category}</span>
+              <span className="text-xs text-slate-500">{recommendationCategoryLabel(insight.category)}</span>
             </div>
             <p className="mt-3 font-semibold">{insight.title}</p>
             <p className="mt-1 text-sm text-slate-500">{insight.evidence}</p>

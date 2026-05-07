@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { DiagnosisBadge, PriorityBadge, channelLabel, formatCurrency, formatNumber, formatPercent } from "@/components/ui";
+import { DiagnosisBadge, PriorityBadge, channelLabel, formatCurrency, formatNumber, formatPercent, issueTypeLabel, recommendationCategoryLabel, reportTypeLabel } from "@/components/ui";
 import { getReport } from "@/lib/reports";
 import { dateLabel } from "@/lib/utils/dates";
 
@@ -14,7 +14,7 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
   return (
     <div className="space-y-6">
       <section className="panel">
-        <p className="text-sm text-slate-500">{dateLabel(report.periodStart, report.periodEnd)} • confiança {formatPercent(report.confidenceScore)}</p>
+        <p className="text-sm text-slate-500">{dateLabel(report.periodStart, report.periodEnd)} • {reportTypeLabel(report.reportType)} • confiança {formatPercent(report.confidenceScore)}</p>
         <h2 className="mt-1 text-2xl font-semibold">{report.title}</h2>
         {report.isOperationalAnomaly ? <p className="mt-3 rounded-md bg-red-50 p-3 text-sm font-medium text-danger">{report.anomalyReason}</p> : null}
       </section>
@@ -55,7 +55,8 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
               report.dataIssues.map((issue) => (
                 <div key={issue.id} className="rounded-md border border-slate-100 p-3">
                   <PriorityBadge value={issue.severity} />
-                  <p className="mt-2 font-medium">{issue.description}</p>
+                  <p className="mt-2 text-xs font-semibold uppercase tracking-normal text-slate-500">{issueTypeLabel(issue.issueType)}</p>
+                  <p className="mt-1 font-medium">{issue.description}</p>
                   <p className="text-sm text-slate-500">{issue.fieldName ?? "campo"}: esperado {issue.expectedValue ?? "-"}; encontrado {issue.foundValue ?? "-"}</p>
                 </div>
               ))
@@ -104,7 +105,8 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
           {sortedRecommendations.map((recommendation) => (
             <div key={recommendation.id} className="rounded-md border border-slate-100 p-4">
               <PriorityBadge value={recommendation.priority} />
-              <p className="mt-2 font-semibold">{recommendation.title}</p>
+              <p className="mt-2 text-xs font-semibold uppercase tracking-normal text-slate-500">{recommendationCategoryLabel(recommendation.category)}</p>
+              <p className="mt-1 font-semibold">{recommendation.title}</p>
               <p className="mt-1 text-sm text-slate-500">{recommendation.evidence}</p>
               <p className="mt-2 text-sm">{recommendation.recommendation}</p>
             </div>

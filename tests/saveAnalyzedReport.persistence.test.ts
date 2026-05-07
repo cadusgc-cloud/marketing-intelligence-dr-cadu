@@ -252,6 +252,7 @@ describe("saveAnalyzedReport persistence", () => {
 
     expect(hasRecommendation(loaded, "google_ads", "Google Ads em estado critico")).toBe(true);
     expect(hasRecommendation(loaded, "creative", "Criativo problematico: G1_IMG")).toBe(true);
+    expect(["investigate", "pause"]).toContain(getCreative(loaded, "G1_IMG")?.diagnosis);
     expect(getCreative(loaded, "Resultado 3 meses pos")?.diagnosis).toBe("scale");
     expect(getCreative(loaded, "Nem toda mulher")?.diagnosis).toBe("scale");
     expect(getCreative(loaded, "Voce pesquisou")?.diagnosis).toBe("scale");

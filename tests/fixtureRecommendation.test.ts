@@ -51,6 +51,7 @@ describe("fixtures reais ligadas ao motor de recomendacoes", () => {
 
     expect(hasRecommendation(analyzed, "google_ads", "Google Ads em CPA critico")).toBe(true);
     expect(hasRecommendation(analyzed, "creative", "Criativo problematico: G1_IMG")).toBe(true);
+    expect(["investigate", "pause"]).toContain(getCreative(analyzed, "G1_IMG")?.diagnosis);
     expect(getCreative(analyzed, "Resultado 3 meses pos")?.diagnosis).toBe("scale");
     expect(getCreative(analyzed, "Nem toda mulher")?.diagnosis).toBe("scale");
     expect(getCreative(analyzed, "Voce pesquisou")?.diagnosis).toBe("scale");

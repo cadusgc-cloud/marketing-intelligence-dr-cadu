@@ -181,6 +181,18 @@ describe("recommendationEngine", () => {
     expect(analysis.recommendations).toContainEqual(expect.objectContaining({ priority: "high", title: "Criativo problemático: G1_IMG" }));
   });
 
+  it("classifica criativo problemático usando leads quando conversas não existem", () => {
+    const analysis = generateRecommendationsWithHistory(
+      report({
+        creatives: [{ platform: "meta_ads", name: "G1_IMG", investment: 215, profileVisits: 899, leads: 1 }]
+      }),
+      []
+    );
+
+    expect(["investigate", "pause"]).toContain(analysis.creatives[0].diagnosis);
+    expect(analysis.recommendations).toContainEqual(expect.objectContaining({ priority: "high", title: "Criativo problemático: G1_IMG" }));
+  });
+
   it("gera recomendação quando top 2 criativos concentram 74% das conversas", () => {
     const analysis = generateRecommendationsWithHistory(
       report({

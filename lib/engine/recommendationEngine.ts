@@ -72,8 +72,8 @@ function isCommercialIntentCreative(creative: ParsedCreative): boolean {
 }
 
 function isProblematicCreative(creative: ParsedCreative): boolean {
-  const conversations = creative.conversations ?? creative.leads ?? 0;
-  return conversations <= 1 && ((creative.profileVisits ?? 0) >= 500 || (creative.investment ?? 0) >= 200);
+  const volume = creativeVolume(creative);
+  return volume <= 1 && ((creative.profileVisits ?? 0) >= 500 || (creative.investment ?? 0) >= 200);
 }
 
 export function classifyCreative(creative: ParsedCreative, benchmarks: RecommendationBenchmarks = DEFAULT_RECOMMENDATION_BENCHMARKS): ParsedCreative {

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getReports } from "@/lib/reports";
-import { formatCurrency, formatNumber } from "@/components/ui";
+import { benchmarkKeyLabel, benchmarkUnitHint, benchmarkValueLabel, formatCurrency, formatNumber } from "@/components/ui";
 
 export default async function BenchmarksPage() {
   const [settings, reports] = await Promise.all([prisma.benchmarkSetting.findMany({ orderBy: { label: "asc" } }), getReports()]);
@@ -29,8 +29,14 @@ export default async function BenchmarksPage() {
             <tbody className="divide-y divide-slate-100">
               {settings.map((setting) => (
                 <tr key={setting.id}>
-                  <td className="py-2 pr-3 font-medium">{setting.label}</td>
-                  <td className="py-2 pr-3">{setting.value} {setting.unit}</td>
+                  <td className="py-2 pr-3">
+                    <p className="font-medium">{benchmarkKeyLabel(setting.key)}</p>
+                    <p className="text-xs text-slate-500">{setting.key}</p>
+                  </td>
+                  <td className="py-2 pr-3">
+                    <p className="font-medium">{benchmarkValueLabel(setting.value, setting.unit)}</p>
+                    <p className="text-xs text-slate-500">{benchmarkUnitHint(setting.unit)}</p>
+                  </td>
                   <td className="py-2 pr-3 text-slate-500">{setting.description}</td>
                 </tr>
               ))}

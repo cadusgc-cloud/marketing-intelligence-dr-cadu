@@ -117,6 +117,42 @@ export function issueTypeLabel(value?: string | null) {
   }[value ?? ""] ?? humanize(value);
 }
 
+export function benchmarkKeyLabel(value?: string | null) {
+  return {
+    meta_cpl_excelente: "Meta Ads — CPL excelente",
+    meta_cpl_atencao: "Meta Ads — CPL de atenção",
+    google_cpa_critico: "Google Ads — CPA crítico",
+    stories_retention_good: "Stories — retenção boa",
+    reach_drop_attention: "Alcance — queda de atenção",
+    google_conversion_drop_critical: "Google Ads — queda crítica de conversões",
+    creative_concentration_risk: "Criativos — concentração de risco",
+    meta_cpl_ideal_min: "Meta Ads — CPL ideal mínimo",
+    meta_cpl_ideal_max: "Meta Ads — CPL ideal máximo",
+    google_cpa_excelente: "Google Ads — CPA excelente",
+    google_cpa_atencao: "Google Ads — CPA de atenção",
+    followers_daily_min_3000: "Seguidores — mínimo diário para R$ 3.000/mês"
+  }[value ?? ""] ?? humanize(value);
+}
+
+export function benchmarkUnitHint(unit?: string | null) {
+  if (unit === "BRL") return "Valor em reais. Ex.: 30 para R$ 30,00.";
+  if (unit === "%") return "Digite 75 para 75%. Não use 0.75.";
+  return unit ? `Unidade: ${unit}.` : "Informe um valor numérico.";
+}
+
+export function benchmarkValueLabel(value?: number | null, unit?: string | null) {
+  if (value === null || value === undefined) return "-";
+  if (unit === "BRL") return formatCurrency(value);
+  if (unit === "%") return `${formatNumber(value)}%`;
+  return `${formatNumber(value)}${unit ? ` ${unit}` : ""}`;
+}
+
+export function benchmarkPlaceholder(unit?: string | null) {
+  if (unit === "BRL") return "30";
+  if (unit === "%") return "75";
+  return "Valor";
+}
+
 export function CompactReportTable({ reports }: { reports: Awaited<ReturnType<typeof import("@/lib/reports").getReports>> }) {
   return (
     <div className="overflow-x-auto">

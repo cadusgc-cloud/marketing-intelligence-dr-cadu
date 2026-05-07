@@ -1,4 +1,5 @@
 import { updateBenchmark } from "@/app/settings/actions";
+import { benchmarkKeyLabel, benchmarkPlaceholder, benchmarkUnitHint } from "@/components/ui";
 import { prisma } from "@/lib/db";
 
 export default async function SettingsPage() {
@@ -9,15 +10,18 @@ export default async function SettingsPage() {
       <p className="mt-1 text-sm text-slate-500">Ajustes simples para calibrar as regras internas do MVP.</p>
       <div className="mt-5 space-y-3">
         {settings.map((setting) => (
-          <form key={setting.id} action={updateBenchmark} className="grid gap-3 rounded-lg border border-slate-200 p-4 md:grid-cols-[1fr_160px_100px] md:items-center">
+          <form key={setting.id} action={updateBenchmark} className="grid gap-3 rounded-lg border border-slate-200 p-4 md:grid-cols-[1fr_180px_100px] md:items-center">
             <input type="hidden" name="id" value={setting.id} />
+            <input type="hidden" name="unit" value={setting.unit ?? ""} />
             <div>
-              <p className="font-medium">{setting.label}</p>
-              <p className="text-sm text-slate-500">{setting.description}</p>
+              <p className="font-medium">{benchmarkKeyLabel(setting.key)}</p>
+              <p className="text-xs text-slate-500">{setting.key}</p>
+              <p className="mt-1 text-sm text-slate-500">{setting.description}</p>
             </div>
             <label className="text-sm">
-              <span className="mb-1 block text-slate-500">{setting.unit}</span>
-              <input name="value" defaultValue={setting.value} className="w-full rounded-md border border-slate-300 px-3 py-2" />
+              <span className="mb-1 block text-slate-500">{setting.unit === "BRL" ? "R$" : setting.unit}</span>
+              <input name="value" defaultValue={setting.value} placeholder={benchmarkPlaceholder(setting.unit)} className="w-full rounded-md border border-slate-300 px-3 py-2" />
+              <span className="mt-1 block text-xs text-slate-500">{benchmarkUnitHint(setting.unit)}</span>
             </label>
             <button type="submit" className="rounded-md bg-ink px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700">
               Salvar

@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { DiagnosisBadge, PriorityBadge, channelLabel, formatCurrency, formatNumber, formatPercent, issueTypeLabel, recommendationCategoryLabel, reportTypeLabel } from "@/components/ui";
 import { generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
+import { buildExecutiveDiagnosisInput } from "@/lib/engine/executiveDiagnosisInput";
 import { getReport } from "@/lib/reports";
-import type { Diagnosis, ParsedDataIssue, Priority, RecommendationCategory } from "@/lib/types";
 import { dateLabel } from "@/lib/utils/dates";
 
 const executiveStatusLabels = {
@@ -19,65 +19,10 @@ const executiveStatusClasses = {
   good: "bg-green-50 text-leaf"
 };
 
-const diagnoses: Diagnosis[] = ["scale", "keep", "vary", "pause", "investigate", "unknown"];
-const priorities: Priority[] = ["low", "medium", "high", "critical"];
-const recommendationCategories: RecommendationCategory[] = ["tofu", "mofu", "bofu", "google_ads", "content", "validation", "compliance", "budget", "creative"];
-const issueTypes: ParsedDataIssue["issueType"][] = ["period_conflict", "metric_mismatch", "duplicated_period", "inferred_metric", "template_error", "missing_data", "operational_anomaly"];
-
-function asDiagnosis(value: string): Diagnosis {
-  return diagnoses.includes(value as Diagnosis) ? (value as Diagnosis) : "unknown";
-}
-
-function asPriority(value: string): Priority {
-  return priorities.includes(value as Priority) ? (value as Priority) : "medium";
-}
-
-function asRecommendationCategory(value: string): RecommendationCategory {
-  return recommendationCategories.includes(value as RecommendationCategory) ? (value as RecommendationCategory) : "validation";
-}
-
-function asIssueType(value: string): ParsedDataIssue["issueType"] {
-  return issueTypes.includes(value as ParsedDataIssue["issueType"]) ? (value as ParsedDataIssue["issueType"]) : "template_error";
-}
-
 export default async function ReportDetailPage({ params }: { params: { id: string } }) {
   const report = await getReport(params.id);
   if (!report) notFound();
-  const executiveDiagnosis = generateExecutiveDiagnosis({
-    report,
-    channels: report.channelSummaries.map((channel) => ({ ...channel })),
-    creatives: report.creatives.map((creative) => ({
-      name: creative.name,
-      diagnosis: asDiagnosis(creative.diagnosis),
-      cpl: creative.cpl,
-      investment: creative.investment,
-      profileVisits: creative.profileVisits,
-      conversations: creative.conversations,
-      leads: creative.leads
-    })),
-    keywords: report.keywords.map((keyword) => ({
-      keyword: keyword.keyword,
-      diagnosis: asDiagnosis(keyword.diagnosis),
-      cpa: keyword.cpa,
-      conversions: keyword.conversions
-    })),
-    recommendations: report.recommendations.map((recommendation) => ({
-      category: asRecommendationCategory(recommendation.category),
-      priority: asPriority(recommendation.priority),
-      title: recommendation.title,
-      evidence: recommendation.evidence,
-      recommendation: recommendation.recommendation,
-      confidence: recommendation.confidence
-    })),
-    dataIssues: report.dataIssues.map((issue) => ({
-      severity: asPriority(issue.severity),
-      issueType: asIssueType(issue.issueType),
-      description: issue.description,
-      fieldName: issue.fieldName,
-      expectedValue: issue.expectedValue,
-      foundValue: issue.foundValue
-    }))
-  });
+  const executiveDiagnosis = generateExecutiveDiagnosis(buildExecutiveDiagnosisInput(report));
   const sortedRecommendations = [...report.recommendations].sort((a, b) => {
     const weight: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
     return weight[b.priority] - weight[a.priority];

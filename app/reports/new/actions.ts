@@ -3,11 +3,29 @@
 import { redirect } from "next/navigation";
 import { saveAnalyzedReport } from "@/lib/reports";
 
-export async function importReport(formData: FormData) {
+export type ImportReportState = {
+  error: string | null;
+  rawText: string;
+};
+
+export async function importReport(_previousState: ImportReportState, formData: FormData): Promise<ImportReportState> {
   const rawText = String(formData.get("rawText") ?? "").trim();
-  if (rawText.length < 20) {
-    throw new Error("Cole um relatório com texto suficiente para análise.");
+  if (rawText.length < 50) {
+    return {
+      error: "Cole um relatório de marketing mais completo para análise.",
+      rawText
+    };
   }
-  const report = await saveAnalyzedReport(rawText);
+
+  let report: Awaited<ReturnType<typeof saveAnalyzedReport>>;
+  try {
+    report = await saveAnalyzedReport(rawText);
+  } catch {
+    return {
+      error: "Não foi possível analisar este relatório. Revise o texto colado e tente novamente.",
+      rawText
+    };
+  }
+
   redirect(`/reports/${report.id}`);
 }

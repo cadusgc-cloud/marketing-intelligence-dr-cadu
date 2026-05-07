@@ -1,12 +1,84 @@
 import { notFound } from "next/navigation";
 import { DiagnosisBadge, PriorityBadge, channelLabel, formatCurrency, formatNumber, formatPercent, issueTypeLabel, recommendationCategoryLabel, reportTypeLabel } from "@/components/ui";
+import { generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
 import { getReport } from "@/lib/reports";
+import type { Diagnosis, ParsedDataIssue, Priority, RecommendationCategory } from "@/lib/types";
 import { dateLabel } from "@/lib/utils/dates";
+
+const executiveStatusLabels = {
+  critical: "Crítico",
+  attention: "Atenção",
+  stable: "Estável",
+  good: "Bom"
+};
+
+const executiveStatusClasses = {
+  critical: "bg-red-50 text-danger",
+  attention: "bg-amber-50 text-amber",
+  stable: "bg-cyan-50 text-ocean",
+  good: "bg-green-50 text-leaf"
+};
+
+const diagnoses: Diagnosis[] = ["scale", "keep", "vary", "pause", "investigate", "unknown"];
+const priorities: Priority[] = ["low", "medium", "high", "critical"];
+const recommendationCategories: RecommendationCategory[] = ["tofu", "mofu", "bofu", "google_ads", "content", "validation", "compliance", "budget", "creative"];
+const issueTypes: ParsedDataIssue["issueType"][] = ["period_conflict", "metric_mismatch", "duplicated_period", "inferred_metric", "template_error", "missing_data", "operational_anomaly"];
+
+function asDiagnosis(value: string): Diagnosis {
+  return diagnoses.includes(value as Diagnosis) ? (value as Diagnosis) : "unknown";
+}
+
+function asPriority(value: string): Priority {
+  return priorities.includes(value as Priority) ? (value as Priority) : "medium";
+}
+
+function asRecommendationCategory(value: string): RecommendationCategory {
+  return recommendationCategories.includes(value as RecommendationCategory) ? (value as RecommendationCategory) : "validation";
+}
+
+function asIssueType(value: string): ParsedDataIssue["issueType"] {
+  return issueTypes.includes(value as ParsedDataIssue["issueType"]) ? (value as ParsedDataIssue["issueType"]) : "template_error";
+}
 
 export default async function ReportDetailPage({ params }: { params: { id: string } }) {
   const report = await getReport(params.id);
   if (!report) notFound();
-  const sortedRecommendations = report.recommendations.sort((a, b) => {
+  const executiveDiagnosis = generateExecutiveDiagnosis({
+    report,
+    channels: report.channelSummaries.map((channel) => ({ ...channel })),
+    creatives: report.creatives.map((creative) => ({
+      name: creative.name,
+      diagnosis: asDiagnosis(creative.diagnosis),
+      cpl: creative.cpl,
+      investment: creative.investment,
+      profileVisits: creative.profileVisits,
+      conversations: creative.conversations,
+      leads: creative.leads
+    })),
+    keywords: report.keywords.map((keyword) => ({
+      keyword: keyword.keyword,
+      diagnosis: asDiagnosis(keyword.diagnosis),
+      cpa: keyword.cpa,
+      conversions: keyword.conversions
+    })),
+    recommendations: report.recommendations.map((recommendation) => ({
+      category: asRecommendationCategory(recommendation.category),
+      priority: asPriority(recommendation.priority),
+      title: recommendation.title,
+      evidence: recommendation.evidence,
+      recommendation: recommendation.recommendation,
+      confidence: recommendation.confidence
+    })),
+    dataIssues: report.dataIssues.map((issue) => ({
+      severity: asPriority(issue.severity),
+      issueType: asIssueType(issue.issueType),
+      description: issue.description,
+      fieldName: issue.fieldName,
+      expectedValue: issue.expectedValue,
+      foundValue: issue.foundValue
+    }))
+  });
+  const sortedRecommendations = [...report.recommendations].sort((a, b) => {
     const weight: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
     return weight[b.priority] - weight[a.priority];
   });
@@ -100,17 +172,78 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
       </section>
 
       <section className="panel">
-        <h3 className="text-lg font-semibold">Diagnóstico executivo</h3>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold">Resumo executivo</h3>
+            <p className="mt-2 max-w-3xl text-sm text-slate-600">{executiveDiagnosis.summary}</p>
+          </div>
+          <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 md:text-right">
+            <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">Health score</p>
+            <p className="mt-1 text-2xl font-semibold text-ink">{executiveDiagnosis.healthScore}</p>
+            <span className={`badge mt-2 ${executiveStatusClasses[executiveDiagnosis.status]}`}>
+              {executiveStatusLabels[executiveDiagnosis.status]}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-md border border-slate-100 p-4">
+            <h4 className="text-sm font-semibold">Alertas críticos</h4>
+            {executiveDiagnosis.criticalAlerts.length ? (
+              <ul className="mt-3 list-disc space-y-2 pl-4 text-sm text-slate-600">
+                {executiveDiagnosis.criticalAlerts.slice(0, 4).map((alert) => (
+                  <li key={alert}>{alert}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm text-slate-500">Nenhum alerta crítico identificado neste relatório.</p>
+            )}
+          </div>
+
+          <div className="rounded-md border border-slate-100 p-4">
+            <h4 className="text-sm font-semibold">Principais vitórias</h4>
+            {executiveDiagnosis.topWins.length ? (
+              <ul className="mt-3 list-disc space-y-2 pl-4 text-sm text-slate-600">
+                {executiveDiagnosis.topWins.slice(0, 4).map((win) => (
+                  <li key={win}>{win}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-sm text-slate-500">Nenhuma vitória clara detectada pelos dados estruturados.</p>
+            )}
+          </div>
+
+          <div className="rounded-md border border-slate-100 p-4">
+            <h4 className="text-sm font-semibold">Plano da próxima semana</h4>
+            {executiveDiagnosis.nextWeekActionPlan.length ? (
+              <ol className="mt-3 list-decimal space-y-2 pl-4 text-sm text-slate-600">
+                {executiveDiagnosis.nextWeekActionPlan.map((action) => (
+                  <li key={action}>{action}</li>
+                ))}
+              </ol>
+            ) : (
+              <p className="mt-3 text-sm text-slate-500">Manter acompanhamento e importar o próximo relatório para comparar evolução.</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <h3 className="text-lg font-semibold">Recomendações detalhadas</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {sortedRecommendations.map((recommendation) => (
-            <div key={recommendation.id} className="rounded-md border border-slate-100 p-4">
-              <PriorityBadge value={recommendation.priority} />
-              <p className="mt-2 text-xs font-semibold uppercase tracking-normal text-slate-500">{recommendationCategoryLabel(recommendation.category)}</p>
-              <p className="mt-1 font-semibold">{recommendation.title}</p>
-              <p className="mt-1 text-sm text-slate-500">{recommendation.evidence}</p>
-              <p className="mt-2 text-sm">{recommendation.recommendation}</p>
-            </div>
-          ))}
+          {sortedRecommendations.length ? (
+            sortedRecommendations.map((recommendation) => (
+              <div key={recommendation.id} className="rounded-md border border-slate-100 p-4">
+                <PriorityBadge value={recommendation.priority} />
+                <p className="mt-2 text-xs font-semibold uppercase tracking-normal text-slate-500">{recommendationCategoryLabel(recommendation.category)}</p>
+                <p className="mt-1 font-semibold">{recommendation.title}</p>
+                <p className="mt-1 text-sm text-slate-500">{recommendation.evidence}</p>
+                <p className="mt-2 text-sm">{recommendation.recommendation}</p>
+              </div>
+            ))
+          ) : (
+            <p className="text-sm text-slate-500">Nenhuma recomendação detalhada foi gerada para este relatório.</p>
+          )}
         </div>
       </section>
 

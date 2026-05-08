@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
-import { buildExecutiveDiagnosisInput } from "@/lib/engine/executiveDiagnosisInput";
+import { buildExecutiveDiagnosisInput, findLatestExecutiveDiagnosisReport } from "@/lib/engine/executiveDiagnosisInput";
 
-function makeReport() {
+function makeReport(overrides: Record<string, unknown> = {}) {
   return {
     title: "Relatório sintético de marketing",
     periodStart: new Date("2026-04-20T00:00:00.000Z"),
     periodEnd: new Date("2026-04-26T00:00:00.000Z"),
+    isOperationalAnomaly: false,
+    anomalyReason: null,
     channelSummaries: [
       {
         channel: "meta_ads",
@@ -53,7 +55,8 @@ function makeReport() {
         expectedValue: "período único",
         foundValue: "período repetido"
       }
-    ]
+    ],
+    ...overrides
   };
 }
 
@@ -136,5 +139,52 @@ describe("buildExecutiveDiagnosisInput", () => {
     input.creatives?.push({ name: "Novo criativo", diagnosis: "scale" });
 
     expect(JSON.stringify(report)).toBe(before);
+  });
+});
+
+describe("findLatestExecutiveDiagnosisReport", () => {
+  it("seleciona o relatorio valido mais recente para score executivo", () => {
+    const latestValid = makeReport({ title: "Relatorio valido mais recente" });
+    const olderValid = makeReport({
+      title: "Relatorio valido anterior",
+      periodStart: new Date("2026-04-13T00:00:00.000Z"),
+      periodEnd: new Date("2026-04-19T00:00:00.000Z")
+    });
+
+    expect(findLatestExecutiveDiagnosisReport([latestValid, olderValid])).toBe(latestValid);
+  });
+
+  it("ignora relatorio anomalo ao selecionar score executivo da home", () => {
+    const anomaly = makeReport({
+      title: "Dezembro anomalo",
+      periodStart: new Date("2025-12-01T00:00:00.000Z"),
+      periodEnd: new Date("2025-12-31T00:00:00.000Z"),
+      isOperationalAnomaly: true
+    });
+    const valid = makeReport({ title: "Relatorio valido" });
+
+    expect(findLatestExecutiveDiagnosisReport([anomaly, valid])).toBe(valid);
+  });
+
+  it("ignora dezembro de 2025 mesmo sem flag de anomalia", () => {
+    const december = makeReport({
+      title: "Dezembro 2025",
+      periodStart: new Date("2025-12-01T00:00:00.000Z"),
+      periodEnd: new Date("2025-12-31T00:00:00.000Z"),
+      isOperationalAnomaly: false
+    });
+    const valid = makeReport({ title: "Relatorio valido" });
+
+    expect(findLatestExecutiveDiagnosisReport([december, valid])).toBe(valid);
+  });
+
+  it("retorna null quando nao ha relatorio valido para score executivo", () => {
+    const anomaly = makeReport({ isOperationalAnomaly: true });
+    const december = makeReport({
+      periodStart: new Date("2025-12-01T00:00:00.000Z"),
+      periodEnd: new Date("2025-12-31T00:00:00.000Z")
+    });
+
+    expect(findLatestExecutiveDiagnosisReport([anomaly, december])).toBeNull();
   });
 });

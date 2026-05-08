@@ -1,5 +1,6 @@
 import type { ExecutiveDiagnosisInput } from "@/lib/engine/executiveDiagnosis";
 import type { Diagnosis, ParsedDataIssue, Priority, RecommendationCategory } from "@/lib/types";
+import { isExcludedFromNormalAnalysis } from "@/lib/utils/dates";
 
 type ReportLike = NonNullable<ExecutiveDiagnosisInput["report"]> & {
   channelSummaries?: Array<Record<string, unknown>>;
@@ -55,6 +56,14 @@ function asRecommendationCategory(value?: string | null): RecommendationCategory
 
 function asIssueType(value?: string | null): ParsedDataIssue["issueType"] {
   return issueTypes.includes(value as ParsedDataIssue["issueType"]) ? (value as ParsedDataIssue["issueType"]) : "template_error";
+}
+
+export function isExecutiveDiagnosisEligibleReport(report: Pick<ReportLike, "periodStart" | "periodEnd" | "isOperationalAnomaly">): boolean {
+  return !isExcludedFromNormalAnalysis(report);
+}
+
+export function findLatestExecutiveDiagnosisReport<T extends ReportLike>(reports: T[]): T | null {
+  return reports.find(isExecutiveDiagnosisEligibleReport) ?? null;
 }
 
 export function buildExecutiveDiagnosisInput(report: ReportLike): ExecutiveDiagnosisInput {

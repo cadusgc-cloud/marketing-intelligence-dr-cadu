@@ -3,10 +3,26 @@ import { TrendChart } from "@/components/TrendChart";
 import { CompactReportTable, DiagnosisBadge, EmptyState, MetricCard, PriorityBadge, formatCurrency, formatNumber } from "@/components/ui";
 import { resolveRecommendationBenchmarks } from "@/lib/benchmarks";
 import { prisma } from "@/lib/db";
+import { generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
+import { buildExecutiveDiagnosisInput, findLatestExecutiveDiagnosisReport, isExecutiveDiagnosisEligibleReport } from "@/lib/engine/executiveDiagnosisInput";
 import { getReports } from "@/lib/reports";
 import { dateLabel } from "@/lib/utils/dates";
 
 export const dynamic = "force-dynamic";
+
+const executiveStatusLabels = {
+  critical: "CrÃ­tico",
+  attention: "AtenÃ§Ã£o",
+  stable: "EstÃ¡vel",
+  good: "Bom"
+};
+
+const executiveStatusClasses = {
+  critical: "bg-red-50 text-danger",
+  attention: "bg-amber-50 text-amber",
+  stable: "bg-cyan-50 text-ocean",
+  good: "bg-green-50 text-leaf"
+};
 
 export default async function DashboardPage() {
   const [reports, benchmarkSettings] = await Promise.all([
@@ -14,8 +30,9 @@ export default async function DashboardPage() {
     prisma.benchmarkSetting.findMany({ select: { key: true, value: true, unit: true } })
   ]);
   const benchmarks = resolveRecommendationBenchmarks(benchmarkSettings);
-  const validReports = reports.filter((report) => !report.isOperationalAnomaly);
-  const latest = validReports[0];
+  const validReports = reports.filter(isExecutiveDiagnosisEligibleReport);
+  const latest = findLatestExecutiveDiagnosisReport(reports);
+  const executiveDiagnosis = latest ? generateExecutiveDiagnosis(buildExecutiveDiagnosisInput(latest)) : null;
   const consolidated = latest?.channelSummaries.find((item) => item.channel === "consolidated");
   const meta = latest?.channelSummaries.find((item) => item.channel === "meta_ads");
   const google = latest?.channelSummaries.find((item) => item.channel === "google_ads");
@@ -49,6 +66,34 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      <section className="panel">
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold">Score executivo mais recente</h2>
+            {executiveDiagnosis && latest ? (
+              <>
+                <p className="mt-1 text-sm text-slate-500">{latest.title} â€¢ {dateLabel(latest.periodStart, latest.periodEnd)}</p>
+                <p className="mt-2 max-w-3xl text-sm text-slate-600">{executiveDiagnosis.summary}</p>
+              </>
+            ) : (
+              <p className="mt-2 max-w-3xl text-sm text-slate-500">Nenhum relatÃ³rio vÃ¡lido disponÃ­vel para score executivo. PerÃ­odos anÃ´malos ficam apenas como contexto histÃ³rico.</p>
+            )}
+          </div>
+          {executiveDiagnosis && latest ? (
+            <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 md:text-right">
+              <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">Score do relatÃ³rio</p>
+              <p className="mt-1 text-2xl font-semibold text-ink">{executiveDiagnosis.healthScore}</p>
+              <span className={`badge mt-2 ${executiveStatusClasses[executiveDiagnosis.status]}`}>
+                {executiveStatusLabels[executiveDiagnosis.status]}
+              </span>
+              <Link href={`/reports/${latest.id}`} className="mt-3 block text-sm font-semibold text-ocean hover:underline">
+                Ver relatÃ³rio
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      </section>
+
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Investimento total" value={formatCurrency(consolidated?.investment)} />
         <MetricCard label="Oportunidades comerciais" value={formatNumber(consolidated?.opportunities)} />

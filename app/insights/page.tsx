@@ -2,6 +2,8 @@ import Link from "next/link";
 import { EmptyState, PriorityBadge, recommendationCategoryLabel } from "@/components/ui";
 import { getReports } from "@/lib/reports";
 
+export const dynamic = "force-dynamic";
+
 export default async function InsightsPage() {
   const reports = await getReports();
   const insights = reports.flatMap((report) => report.recommendations.map((recommendation) => ({ ...recommendation, report })));

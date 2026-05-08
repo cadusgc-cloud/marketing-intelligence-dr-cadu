@@ -4,10 +4,24 @@ MVP full-stack em Next.js para analisar relatórios agregados de marketing de um
 
 ## Rodando localmente
 
+Configure `.env` com as strings PostgreSQL do Neon:
+
+```bash
+DATABASE_URL="postgresql://USER:PASSWORD@HOST/neondb?sslmode=require"
+DIRECT_URL="postgresql://USER:PASSWORD@HOST/neondb?sslmode=require"
+```
+
+Para rodar os testes de persistência, configure também um banco PostgreSQL separado e descartável:
+
+```bash
+TEST_DATABASE_URL="postgresql://USER:PASSWORD@HOST/testdb?sslmode=require"
+TEST_DIRECT_URL="postgresql://USER:PASSWORD@HOST/testdb?sslmode=require"
+```
+
 ```bash
 npm install
 npm run db:generate
-npm run db:push
+npx prisma migrate dev
 npm run db:seed
 npm run dev
 ```
@@ -20,6 +34,8 @@ Acesse `http://localhost:3000`.
 npm run dev       # servidor local
 npm run build     # build Next.js com Prisma generate
 npm test          # testes unitários com Vitest
+npx prisma migrate dev     # aplica migrações no banco local/dev
+npx prisma migrate deploy  # aplica migrações em produção
 npm run db:seed   # recria benchmarks e relatórios iniciais
 ```
 
@@ -43,7 +59,7 @@ O produto não solicita, processa ou exibe dados de pacientes. Use apenas métri
 - `lib/engine/validationEngine.ts`: validações de CPL, CPA, anomalias e dados ausentes.
 - `lib/engine/recommendationEngine.ts`: classificação de criativos, keywords e recomendações.
 - `lib/engine/analyzeReport.ts`: orquestra parser, validações e recomendações.
-- `prisma/schema.prisma`: modelos do banco SQLite local.
+- `prisma/schema.prisma`: modelos do banco PostgreSQL usado pelo Prisma.
 
 ## Diagnóstico executivo e AgentRun
 

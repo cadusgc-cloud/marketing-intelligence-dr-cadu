@@ -1,6 +1,8 @@
 import { CompactReportTable, EmptyState } from "@/components/ui";
 import { getReports } from "@/lib/reports";
 
+export const dynamic = "force-dynamic";
+
 export default async function ReportsPage() {
   const reports = await getReports();
   return (

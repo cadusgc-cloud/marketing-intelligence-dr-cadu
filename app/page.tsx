@@ -4,6 +4,8 @@ import { CompactReportTable, DiagnosisBadge, EmptyState, MetricCard, PriorityBad
 import { getReports } from "@/lib/reports";
 import { dateLabel } from "@/lib/utils/dates";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const reports = await getReports();
   const validReports = reports.filter((report) => !report.isOperationalAnomaly);

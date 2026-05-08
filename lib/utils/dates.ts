@@ -1,3 +1,11 @@
+export const DECEMBER_2025_OPERATIONAL_ANOMALY_REASON = "Período excluído da análise normal por hackeamento da conta.";
+
+export type NormalAnalysisPeriod = {
+  periodStart?: Date | null;
+  periodEnd?: Date | null;
+  isOperationalAnomaly?: boolean | null;
+};
+
 export function parseBrazilianDate(value?: string | null, fallbackYear?: number): Date | null {
   if (!value) return null;
   const match = value.match(/(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
@@ -26,6 +34,15 @@ export function isInsideDecember2025(start?: Date | null, end?: Date | null): bo
   const startTime = start?.getTime() ?? end?.getTime() ?? 0;
   const endTime = end?.getTime() ?? start?.getTime() ?? 0;
   return startTime <= decemberEnd && endTime >= decemberStart;
+}
+
+export function isExcludedFromNormalAnalysis(period: NormalAnalysisPeriod): boolean {
+  return Boolean(period.isOperationalAnomaly || isInsideDecember2025(period.periodStart, period.periodEnd));
+}
+
+export function operationalAnomalyReasonForPeriod(start?: Date | null, end?: Date | null, fallbackReason?: string | null): string | null {
+  if (isInsideDecember2025(start, end)) return DECEMBER_2025_OPERATIONAL_ANOMALY_REASON;
+  return fallbackReason ?? null;
 }
 
 export function dateLabel(start?: Date | null, end?: Date | null): string {

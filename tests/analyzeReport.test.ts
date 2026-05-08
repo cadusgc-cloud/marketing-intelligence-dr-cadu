@@ -59,7 +59,7 @@ describe("analyzeParsedReportWithHistory", () => {
   });
 
   it("ignora histórico de dezembro de 2025 mesmo quando não está marcado como anômalo", () => {
-    const current = parseReport(rawReport("05/12/2025 a 12/12/2025").replace("2025", "2026").replace("12/12/2025", "12/12/2026"));
+    const current = parseReport(rawReport("05/12/2026 a 12/12/2026"));
     const existing = {
       ...analyzeReport(rawReport("01/12/2025 a 07/12/2025")),
       isOperationalAnomaly: false
@@ -74,6 +74,26 @@ describe("analyzeParsedReportWithHistory", () => {
 
     expect(analyzed.recommendations.length).toBeGreaterThan(0);
     expect(analyzed.dataIssues).toEqual([]);
+  });
+
+  it("não gera recomendações nem diagnósticos de escala para relatório de dezembro de 2025", () => {
+    const analyzed = analyzeReport(rawReport("01/12/2025 a 31/12/2025"));
+
+    expect(analyzed.isOperationalAnomaly).toBe(true);
+    expect(analyzed.recommendations).toEqual([]);
+    expect(analyzed.creatives.every((creative) => creative.diagnosis === "unknown" || creative.diagnosis === undefined)).toBe(true);
+    expect(analyzed.keywords.every((keyword) => keyword.diagnosis === "unknown" || keyword.diagnosis === undefined)).toBe(true);
+    expect(analyzed.dataIssues).toContainEqual(expect.objectContaining({ issueType: "operational_anomaly", severity: "critical" }));
+  });
+
+  it("ignora histórico normal ao analisar relatório atual de dezembro de 2025", () => {
+    const current = parseReport(rawReport("08/12/2025 a 14/12/2025"));
+    const existing = analyzeReport(rawReport("01/12/2024 a 07/12/2024"));
+    const analyzed = analyzeParsedReportWithHistory(current, [existing]);
+
+    expect(analyzed.isOperationalAnomaly).toBe(true);
+    expect(analyzed.recommendations).toEqual([]);
+    expect(analyzed.dataIssues.some((issue) => issue.issueType === "period_conflict" || issue.issueType === "duplicated_period")).toBe(false);
   });
 
   it("gera recomendação histórica de ToFu quando alcance cai vs histórico", () => {

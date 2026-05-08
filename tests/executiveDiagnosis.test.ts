@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
+import { ANOMALY_EXECUTIVE_DIAGNOSIS_MESSAGE, generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
 import type { ParsedDataIssue, ParsedRecommendation } from "@/lib/types";
 
 function recommendation(overrides: Partial<ParsedRecommendation>): ParsedRecommendation {
@@ -138,6 +138,51 @@ describe("generateExecutiveDiagnosis", () => {
     expect(diagnosis.healthScore).toBeTypeOf("number");
     expect(diagnosis.topWins).toEqual([]);
     expect(diagnosis.nextWeekActionPlan).toEqual([]);
+  });
+
+  it("desativa score e recomendações executivas para relatório anômalo", () => {
+    const diagnosis = generateExecutiveDiagnosis({
+      report: {
+        title: "Dezembro 2025",
+        periodStart: new Date("2025-12-01T00:00:00.000Z"),
+        periodEnd: new Date("2025-12-31T00:00:00.000Z"),
+        isOperationalAnomaly: true,
+        anomalyReason: "Teste de anomalia operacional"
+      },
+      creatives: [
+        { name: "Criativo vencedor sintético", diagnosis: "scale", cpl: 4.5, leads: 12 },
+        { name: "Criativo problemático sintético", diagnosis: "pause", investment: 250, leads: 1 }
+      ],
+      recommendations: [
+        recommendation({
+          category: "google_ads",
+          priority: "critical",
+          title: "Google Ads crítico",
+          recommendation: "Revisar Google Ads."
+        }),
+        recommendation({
+          category: "creative",
+          priority: "high",
+          title: "Escalar criativo vencedor",
+          recommendation: "Escalar criativo vencedor."
+        })
+      ],
+      dataIssues: [
+        dataIssue({
+          severity: "critical",
+          issueType: "operational_anomaly",
+          description: "Período mantido como contexto histórico"
+        })
+      ]
+    });
+
+    expect(diagnosis.summary).toBe(ANOMALY_EXECUTIVE_DIAGNOSIS_MESSAGE);
+    expect(diagnosis.healthScore).toBe(0);
+    expect(diagnosis.criticalAlerts).toEqual([]);
+    expect(diagnosis.topWins).toEqual([]);
+    expect(diagnosis.nextWeekActionPlan).toEqual([]);
+    expect(diagnosis.budgetSuggestions).toEqual([]);
+    expect(diagnosis.creativeSuggestions).toEqual([]);
   });
 
   it("mantém o health score entre 0 e 100", () => {

@@ -67,13 +67,29 @@ type ReportHistoryRecord = {
   }>;
 };
 
+type ReportWithOptionalAnalysisArrays = {
+  recommendations?: unknown;
+  creatives?: Array<{ diagnosis?: string | null }>;
+  keywords?: Array<{ diagnosis?: string | null }>;
+};
+
 function normalizeOperationalAnomaly<T extends { periodStart: Date | null; periodEnd: Date | null; isOperationalAnomaly: boolean; anomalyReason?: string | null }>(report: T): T {
   const isOperationalAnomaly = isExcludedFromNormalAnalysis(report);
-  return {
+  const normalized = {
     ...report,
     isOperationalAnomaly,
     anomalyReason: isOperationalAnomaly ? operationalAnomalyReasonForPeriod(report.periodStart, report.periodEnd, report.anomalyReason) : report.anomalyReason ?? null
   };
+
+  if (!isOperationalAnomaly) return normalized;
+
+  const reportWithArrays = report as T & ReportWithOptionalAnalysisArrays;
+  return {
+    ...normalized,
+    recommendations: Array.isArray(reportWithArrays.recommendations) ? [] : reportWithArrays.recommendations,
+    creatives: Array.isArray(reportWithArrays.creatives) ? reportWithArrays.creatives.map((creative) => ({ ...creative, diagnosis: "unknown" })) : reportWithArrays.creatives,
+    keywords: Array.isArray(reportWithArrays.keywords) ? reportWithArrays.keywords.map((keyword) => ({ ...keyword, diagnosis: "unknown" })) : reportWithArrays.keywords
+  } as T;
 }
 
 export async function saveAnalyzedReport(rawText: string) {
@@ -226,7 +242,7 @@ export async function createReportFromParsed(parsed: ParsedReport) {
           saves: creative.saves,
           shares: creative.shares,
           comments: creative.comments,
-          diagnosis: creative.diagnosis ?? "unknown"
+          diagnosis: isOperationalAnomaly ? "unknown" : creative.diagnosis ?? "unknown"
         }))
       },
       keywords: {
@@ -236,7 +252,7 @@ export async function createReportFromParsed(parsed: ParsedReport) {
           clicks: keyword.clicks,
           conversions: keyword.conversions,
           cpa: keyword.cpa,
-          diagnosis: keyword.diagnosis ?? "unknown"
+          diagnosis: isOperationalAnomaly ? "unknown" : keyword.diagnosis ?? "unknown"
         }))
       },
       recommendations: {

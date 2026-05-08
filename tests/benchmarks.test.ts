@@ -1,15 +1,23 @@
 import { describe, expect, it } from "vitest";
-import { mapBenchmarkSettingsToRecommendationBenchmarks } from "@/lib/benchmarks";
+import { mapBenchmarkSettingsToRecommendationBenchmarks, resolveRecommendationBenchmarks } from "@/lib/benchmarks";
 
 describe("mapBenchmarkSettingsToRecommendationBenchmarks", () => {
   it("mapeia keys monetárias para valores diretos", () => {
     const benchmarks = mapBenchmarkSettingsToRecommendationBenchmarks([
       { key: "meta_cpl_excelente", value: 5, unit: "BRL" },
       { key: "meta_cpl_atencao", value: 21, unit: "BRL" },
+      { key: "google_cpa_excelente", value: 8, unit: "BRL" },
+      { key: "google_cpa_atencao", value: 22, unit: "BRL" },
       { key: "google_cpa_critico", value: 32, unit: "BRL" }
     ]);
 
-    expect(benchmarks).toMatchObject({ metaCplExcellent: 5, metaCplAttention: 21, googleCpaCritical: 32 });
+    expect(benchmarks).toMatchObject({
+      metaCplExcellent: 5,
+      metaCplAttention: 21,
+      googleCpaExcellent: 8,
+      googleCpaAttention: 22,
+      googleCpaCritical: 32
+    });
   });
 
   it("mapeia keys percentuais para decimal", () => {
@@ -72,5 +80,18 @@ describe("mapBenchmarkSettingsToRecommendationBenchmarks", () => {
     const benchmarks = mapBenchmarkSettingsToRecommendationBenchmarks([{ key: "stories_retention_good", value: 0.75, unit: "%" }]);
 
     expect(benchmarks.storiesRetentionGood).toBe(0.0075);
+  });
+});
+
+describe("resolveRecommendationBenchmarks", () => {
+  it("resolve benchmarks com fallback seguro para valores ausentes", () => {
+    const benchmarks = resolveRecommendationBenchmarks([
+      { key: "meta_cpl_atencao", value: 25, unit: "BRL" },
+      { key: "google_cpa_critico", value: null, unit: "BRL" }
+    ]);
+
+    expect(benchmarks.metaCplAttention).toBe(25);
+    expect(benchmarks.googleCpaCritical).toBe(30);
+    expect(benchmarks.creativeConcentrationRisk).toBe(0.7);
   });
 });

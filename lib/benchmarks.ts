@@ -1,4 +1,4 @@
-import type { RecommendationBenchmarks } from "@/lib/engine/recommendationEngine";
+import { DEFAULT_RECOMMENDATION_BENCHMARKS, type RecommendationBenchmarks } from "@/lib/engine/recommendationEngine";
 
 export type BenchmarkSettingLike = {
   key: string;
@@ -14,6 +14,8 @@ type BenchmarkMapEntry = {
 const BENCHMARK_MAP: Record<string, BenchmarkMapEntry> = {
   meta_cpl_excelente: { target: "metaCplExcellent", unit: "BRL" },
   meta_cpl_atencao: { target: "metaCplAttention", unit: "BRL" },
+  google_cpa_excelente: { target: "googleCpaExcellent", unit: "BRL" },
+  google_cpa_atencao: { target: "googleCpaAttention", unit: "BRL" },
   google_cpa_critico: { target: "googleCpaCritical", unit: "BRL" },
   stories_retention_good: { target: "storiesRetentionGood", unit: "%" },
   reach_drop_attention: { target: "reachDropAttention", unit: "%" },
@@ -33,4 +35,11 @@ export function mapBenchmarkSettingsToRecommendationBenchmarks(settings: Benchma
   }
 
   return benchmarks;
+}
+
+export function resolveRecommendationBenchmarks(settings: BenchmarkSettingLike[]): RecommendationBenchmarks {
+  return {
+    ...DEFAULT_RECOMMENDATION_BENCHMARKS,
+    ...mapBenchmarkSettingsToRecommendationBenchmarks(settings)
+  };
 }

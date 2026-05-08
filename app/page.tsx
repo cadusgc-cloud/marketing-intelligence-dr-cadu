@@ -1,22 +1,28 @@
 import Link from "next/link";
 import { TrendChart } from "@/components/TrendChart";
 import { CompactReportTable, DiagnosisBadge, EmptyState, MetricCard, PriorityBadge, formatCurrency, formatNumber } from "@/components/ui";
+import { resolveRecommendationBenchmarks } from "@/lib/benchmarks";
+import { prisma } from "@/lib/db";
 import { getReports } from "@/lib/reports";
 import { dateLabel } from "@/lib/utils/dates";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const reports = await getReports();
+  const [reports, benchmarkSettings] = await Promise.all([
+    getReports(),
+    prisma.benchmarkSetting.findMany({ select: { key: true, value: true, unit: true } })
+  ]);
+  const benchmarks = resolveRecommendationBenchmarks(benchmarkSettings);
   const validReports = reports.filter((report) => !report.isOperationalAnomaly);
   const latest = validReports[0];
   const consolidated = latest?.channelSummaries.find((item) => item.channel === "consolidated");
   const meta = latest?.channelSummaries.find((item) => item.channel === "meta_ads");
   const google = latest?.channelSummaries.find((item) => item.channel === "google_ads");
   const criticalAlerts = reports.flatMap((report) => report.dataIssues.filter((issue) => issue.severity === "critical" || issue.severity === "high").map((issue) => ({ ...issue, report }))).slice(0, 6);
-  const scaleCreatives = reports.flatMap((report) => report.creatives.filter((creative) => creative.diagnosis === "scale").map((creative) => ({ ...creative, report }))).slice(0, 6);
-  const scaleKeywords = reports.flatMap((report) => report.keywords.filter((keyword) => keyword.diagnosis === "scale").map((keyword) => ({ ...keyword, report }))).slice(0, 6);
-  const recommendations = reports.flatMap((report) => report.recommendations.map((recommendation) => ({ ...recommendation, report }))).filter((item) => item.priority === "critical" || item.priority === "high").slice(0, 6);
+  const scaleCreatives = validReports.flatMap((report) => report.creatives.filter((creative) => creative.diagnosis === "scale").map((creative) => ({ ...creative, report }))).slice(0, 6);
+  const scaleKeywords = validReports.flatMap((report) => report.keywords.filter((keyword) => keyword.diagnosis === "scale").map((keyword) => ({ ...keyword, report }))).slice(0, 6);
+  const recommendations = validReports.flatMap((report) => report.recommendations.map((recommendation) => ({ ...recommendation, report }))).filter((item) => item.priority === "critical" || item.priority === "high").slice(0, 6);
   const chartData = validReports
     .slice()
     .reverse()
@@ -46,12 +52,12 @@ export default async function DashboardPage() {
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Investimento total" value={formatCurrency(consolidated?.investment)} />
         <MetricCard label="Oportunidades comerciais" value={formatNumber(consolidated?.opportunities)} />
-        <MetricCard label="CPL médio Meta" value={formatCurrency(meta?.cpl)} tone={(meta?.cpl ?? 0) > 20 ? "bad" : "default"} />
+        <MetricCard label="CPL médio Meta" value={formatCurrency(meta?.cpl)} tone={(meta?.cpl ?? 0) > benchmarks.metaCplAttention ? "bad" : "default"} />
         <MetricCard label="Alcance" value={formatNumber(consolidated?.reach)} />
         <MetricCard label="Impressões" value={formatNumber(consolidated?.impressions)} />
         <MetricCard label="Crescimento de audiência" value={formatNumber(consolidated?.newFollowers)} />
         <MetricCard label="Conversões Google" value={formatNumber(google?.conversions)} />
-        <MetricCard label="CPA Google" value={formatCurrency(google?.cpa)} tone={(google?.cpa ?? 0) > 30 ? "bad" : "default"} />
+        <MetricCard label="CPA Google" value={formatCurrency(google?.cpa)} tone={(google?.cpa ?? 0) > benchmarks.googleCpaCritical ? "bad" : "default"} />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">

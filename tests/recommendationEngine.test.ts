@@ -237,3 +237,33 @@ describe("recommendationEngine", () => {
     expect(titles(analysis)).not.toContain("Queda real de ToFu");
   });
 });
+
+describe("recommendationEngine com benchmarks customizados", () => {
+  it("usa benchmark customizado de CPL de atencao para classificar criativo", () => {
+    const analysis = generateRecommendationsWithHistory(
+      report({
+        creatives: [{ platform: "meta_ads", name: "Criativo sintetico", cpl: 18, conversations: 4, leads: 4 }]
+      }),
+      [],
+      { metaCplAttention: 16 }
+    );
+
+    expect(analysis.creatives[0].diagnosis).toBe("investigate");
+  });
+
+  it("usa benchmarks customizados de CPA Google para classificar keywords", () => {
+    const analysis = generateRecommendationsWithHistory(
+      report({
+        keywords: [
+          { keyword: "keyword excelente", cpa: 8, conversions: 2 },
+          { keyword: "keyword atencao", cpa: 23, conversions: 1 }
+        ]
+      }),
+      [],
+      { googleCpaExcellent: 9, googleCpaAttention: 22 }
+    );
+
+    expect(analysis.keywords[0].diagnosis).toBe("scale");
+    expect(analysis.keywords[1].diagnosis).toBe("investigate");
+  });
+});

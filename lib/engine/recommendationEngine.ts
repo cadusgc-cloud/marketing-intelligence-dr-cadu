@@ -10,6 +10,8 @@ export type RecommendationHistoryReport = Pick<ParsedReport, "title" | "periodSt
 export type RecommendationBenchmarks = {
   metaCplExcellent: number;
   metaCplAttention: number;
+  googleCpaExcellent: number;
+  googleCpaAttention: number;
   googleCpaCritical: number;
   storiesRetentionGood: number;
   reachDropAttention: number;
@@ -20,6 +22,8 @@ export type RecommendationBenchmarks = {
 export const DEFAULT_RECOMMENDATION_BENCHMARKS: RecommendationBenchmarks = {
   metaCplExcellent: 6,
   metaCplAttention: 20,
+  googleCpaExcellent: 7,
+  googleCpaAttention: 20,
   googleCpaCritical: 30,
   storiesRetentionGood: 0.75,
   reachDropAttention: 0.1,
@@ -81,7 +85,7 @@ export function classifyCreative(creative: ParsedCreative, benchmarks: Recommend
   if (isProblematicCreative(creative)) return { ...creative, diagnosis: volume === 0 ? "pause" : "investigate" };
   if (hasValue(creative.cpl)) {
     if (creative.cpl < benchmarks.metaCplExcellent && volume >= 5) return { ...creative, diagnosis: "scale" };
-    if (creative.cpl >= benchmarks.metaCplExcellent && creative.cpl <= 15) return { ...creative, diagnosis: "keep" };
+    if (creative.cpl >= benchmarks.metaCplExcellent && creative.cpl <= benchmarks.metaCplAttention) return { ...creative, diagnosis: "keep" };
     if (creative.cpl > benchmarks.metaCplAttention) return { ...creative, diagnosis: volume >= 3 ? "investigate" : "pause" };
   }
   return { ...creative, diagnosis: creative.diagnosis ?? "unknown" };
@@ -122,8 +126,8 @@ export function generateRecommendationsWithHistory(
   const resolvedBenchmarks = { ...DEFAULT_RECOMMENDATION_BENCHMARKS, ...benchmarks };
   const creatives = parsed.creatives.map((creative) => classifyCreative(creative, resolvedBenchmarks));
   const keywords = parsed.keywords.map((keyword) => {
-    if ((keyword.cpa ?? Infinity) <= 7 && (keyword.conversions ?? 0) >= 2) return { ...keyword, diagnosis: "scale" as const };
-    if ((keyword.cpa ?? 0) > 20) return { ...keyword, diagnosis: "investigate" as const };
+    if ((keyword.cpa ?? Infinity) <= resolvedBenchmarks.googleCpaExcellent && (keyword.conversions ?? 0) >= 2) return { ...keyword, diagnosis: "scale" as const };
+    if ((keyword.cpa ?? 0) > resolvedBenchmarks.googleCpaAttention) return { ...keyword, diagnosis: "investigate" as const };
     return { ...keyword, diagnosis: keyword.diagnosis ?? "unknown" };
   });
   const meta = getChannel(parsed, "meta_ads");
@@ -275,12 +279,13 @@ export function generateRecommendationsWithHistory(
   }
 
   if (leadShareTopTwo(creatives) > resolvedBenchmarks.creativeConcentrationRisk) {
+    const concentrationPercent = Math.round(resolvedBenchmarks.creativeConcentrationRisk * 100);
     recommendations.push(
       rec({
         category: "creative",
         priority: "high",
         title: "Concentração perigosa em poucos criativos",
-        evidence: "Top 2 criativos geram mais de 70% das oportunidades do conjunto identificado.",
+        evidence: `Top 2 criativos geram mais de ${concentrationPercent}% das oportunidades do conjunto identificado.`,
         recommendation: "Produzir 3 variações de cada criativo vencedor para diluir dependência e preservar performance.",
         confidence: 0.84
       })

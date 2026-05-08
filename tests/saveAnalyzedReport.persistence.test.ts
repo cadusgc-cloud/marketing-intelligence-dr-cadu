@@ -1,27 +1,21 @@
 import { execFileSync } from "node:child_process";
-import { closeSync, existsSync, openSync, readFileSync, rmSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
-const TEST_DATABASE_URL = "file:./test.db";
-const TEST_DB_PATH = resolve(process.cwd(), "prisma", "test.db");
-const TEST_DB_JOURNAL_PATH = resolve(process.cwd(), "prisma", "test.db-journal");
+const TEST_DATABASE_URL = process.env.TEST_DATABASE_URL;
+const TEST_DIRECT_URL = process.env.TEST_DIRECT_URL ?? TEST_DATABASE_URL;
+const describePersistence = TEST_DATABASE_URL ? describe : describe.skip;
 
 let prisma: typeof import("@/lib/db").prisma;
 let saveAnalyzedReport: typeof import("@/lib/reports").saveAnalyzedReport;
 let getReport: typeof import("@/lib/reports").getReport;
 
-function removeTestDatabase() {
-  for (const path of [TEST_DB_PATH, TEST_DB_JOURNAL_PATH]) {
-    if (existsSync(path)) rmSync(path, { force: true });
-  }
-}
-
 function prismaCommand() {
   if (process.platform === "win32") {
-    return { command: "cmd.exe", args: ["/c", "node_modules\\.bin\\prisma.cmd", "db", "push", "--skip-generate"] };
+    return { command: "cmd.exe", args: ["/c", "node_modules\\.bin\\prisma.cmd", "migrate", "deploy"] };
   }
-  return { command: "node_modules/.bin/prisma", args: ["db", "push", "--skip-generate"] };
+  return { command: "node_modules/.bin/prisma", args: ["migrate", "deploy"] };
 }
 
 function rawReport(period: string): string {
@@ -72,13 +66,13 @@ Google CPA: ${overrides.googleCpa ?? "R$ 10,00"}`;
 }
 
 beforeAll(async () => {
+  if (!TEST_DATABASE_URL) return;
   process.env.DATABASE_URL = TEST_DATABASE_URL;
-  removeTestDatabase();
-  closeSync(openSync(TEST_DB_PATH, "a"));
+  process.env.DIRECT_URL = TEST_DIRECT_URL;
   const command = prismaCommand();
   execFileSync(command.command, command.args, {
     cwd: process.cwd(),
-    env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL },
+    env: { ...process.env, DATABASE_URL: TEST_DATABASE_URL, DIRECT_URL: TEST_DIRECT_URL },
     stdio: "pipe"
   });
 
@@ -90,6 +84,7 @@ beforeAll(async () => {
 });
 
 beforeEach(async () => {
+  if (!prisma) return;
   await prisma.dataIssue.deleteMany();
   await prisma.recommendation.deleteMany();
   await prisma.keywordPerformance.deleteMany();
@@ -102,10 +97,9 @@ beforeEach(async () => {
 
 afterAll(async () => {
   await prisma?.$disconnect();
-  removeTestDatabase();
 });
 
-describe("saveAnalyzedReport persistence", () => {
+describePersistence("saveAnalyzedReport persistence", () => {
   it("persiste duplicated_period no segundo relatório salvo com mesmo período", async () => {
     await saveAnalyzedReport(rawReport("13/04/2026 a 19/04/2026"));
     const second = await saveAnalyzedReport(rawReport("13/04/2026 a 19/04/2026"));

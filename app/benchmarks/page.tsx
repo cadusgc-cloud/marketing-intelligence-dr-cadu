@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db";
 import { getReports } from "@/lib/reports";
 import { benchmarkKeyLabel, benchmarkUnitHint, benchmarkValueLabel, formatCurrency, formatNumber } from "@/components/ui";
 
+export const dynamic = "force-dynamic";
+
 export default async function BenchmarksPage() {
   const [settings, reports] = await Promise.all([prisma.benchmarkSetting.findMany({ orderBy: { label: "asc" } }), getReports()]);
   const validReports = reports.filter((report) => !report.isOperationalAnomaly);

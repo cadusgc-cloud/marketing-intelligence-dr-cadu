@@ -103,7 +103,33 @@ async function main() {
         isOperationalAnomaly: parsed.isOperationalAnomaly,
         anomalyReason: parsed.anomalyReason,
         confidenceScore: parsed.confidenceScore,
-        channelSummaries: { create: parsed.channels },
+        channelSummaries: {
+          create: parsed.channels.map((channel) => ({
+            channel: channel.channel,
+            investment: channel.investment,
+            reach: channel.reach,
+            impressions: channel.impressions,
+            frequency: channel.frequency,
+            clicks: channel.clicks,
+            profileVisits: channel.profileVisits,
+            newFollowers: channel.newFollowers,
+            followersTotal: channel.followersTotal,
+            conversations: channel.conversations,
+            conversions: channel.conversions,
+            opportunities: channel.opportunities,
+            cpl: channel.cpl,
+            cpa: channel.cpa,
+            cps: channel.cps,
+            cpc: channel.cpc,
+            ctr: channel.ctr,
+            engagementRate: channel.engagementRate,
+            storyCount: channel.storyCount,
+            storyViews: channel.storyViews,
+            storyRetention: channel.storyRetention,
+            reelCount: channel.reelCount,
+            postCount: channel.postCount
+          }))
+        },
         creatives: {
           create: parsed.creatives.map((creative) => ({
             platform: creative.platform,

@@ -61,6 +61,14 @@ O produto não solicita, processa ou exibe dados de pacientes. Use apenas métri
 - `lib/engine/analyzeReport.ts`: orquestra parser, validações e recomendações.
 - `prisma/schema.prisma`: modelos do banco PostgreSQL usado pelo Prisma.
 
+## Anomalias operacionais
+
+Dezembro/2025 é tratado como anomalia operacional porque a conta do Instagram/Meta foi hackeada nesse período.
+
+Regra aplicada: qualquer relatório cujo período cruze dezembro/2025 recebe `isOperationalAnomaly = true` e a observação: “Período excluído da análise normal por hackeamento da conta.”
+
+Relatórios marcados como anomalia operacional permanecem visíveis apenas como contexto histórico. Eles não entram em médias históricas, benchmarks, score executivo, thresholds, projeções, recomendações, diagnósticos de criativos/keywords nem comparações de performance normal.
+
 ## Diagnóstico executivo e AgentRun
 
 O diagnóstico executivo é gerado em runtime a partir dos dados persistidos do relatório, canais, recomendações, criativos, keywords e DataIssues. O modelo `AgentRun` já existe no schema, mas fica reservado para uma etapa futura em que seja necessário diagnóstico auditável, versionamento do engine, integração com LLM, botão de reprocessamento ou comparação de diagnósticos gerados em momentos diferentes.

@@ -7,6 +7,8 @@ export type ExecutiveDiagnosisInput = {
     title?: string | null;
     periodStart?: Date | null;
     periodEnd?: Date | null;
+    isOperationalAnomaly?: boolean | null;
+    anomalyReason?: string | null;
   } | null;
   channels?: Array<Record<string, unknown>>;
   creatives?: Array<Pick<ParsedCreative, "name" | "diagnosis" | "cpl" | "investment" | "profileVisits" | "conversations" | "leads">>;
@@ -16,6 +18,9 @@ export type ExecutiveDiagnosisInput = {
   benchmarkSettings?: Array<Record<string, unknown>>;
   rawText?: string | null;
 };
+
+export const ANOMALY_EXECUTIVE_DIAGNOSIS_MESSAGE =
+  "Este período foi mantido apenas como contexto histórico. Score executivo, recomendações, thresholds, projeções e comparações de performance normal foram desativados para esta análise.";
 
 export type ExecutiveDiagnosis = {
   summary: string;
@@ -216,6 +221,26 @@ function recommendationDuplicatesScalePoint(
 }
 
 export function generateExecutiveDiagnosis(input: ExecutiveDiagnosisInput): ExecutiveDiagnosis {
+  if (input.report?.isOperationalAnomaly) {
+    return {
+      summary: ANOMALY_EXECUTIVE_DIAGNOSIS_MESSAGE,
+      healthScore: 0,
+      status: "attention",
+      whatHappened: [],
+      worsened: [],
+      improved: [],
+      wastePoints: [],
+      scalePoints: [],
+      investigateOrPause: [],
+      mainProblemAreas: [],
+      criticalAlerts: [],
+      topWins: [],
+      nextWeekActionPlan: [],
+      budgetSuggestions: [],
+      creativeSuggestions: []
+    };
+  }
+
   const creatives = input.creatives ?? [];
   const keywords = input.keywords ?? [];
   const recommendations = input.recommendations ?? [];

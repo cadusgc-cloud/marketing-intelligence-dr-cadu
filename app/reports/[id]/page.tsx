@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { DiagnosisBadge, PriorityBadge, channelLabel, formatCurrency, formatNumber, formatPercent, issueTypeLabel, recommendationCategoryLabel, reportTypeLabel } from "@/components/ui";
-import { generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
+import { ANOMALY_EXECUTIVE_DIAGNOSIS_MESSAGE, generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
 import { buildExecutiveDiagnosisInput } from "@/lib/engine/executiveDiagnosisInput";
 import { getReport } from "@/lib/reports";
 import { dateLabel } from "@/lib/utils/dates";
@@ -22,7 +22,8 @@ const executiveStatusClasses = {
 export default async function ReportDetailPage({ params }: { params: { id: string } }) {
   const report = await getReport(params.id);
   if (!report) notFound();
-  const executiveDiagnosis = generateExecutiveDiagnosis(buildExecutiveDiagnosisInput(report));
+  const isOperationalAnomaly = report.isOperationalAnomaly;
+  const executiveDiagnosis = isOperationalAnomaly ? null : generateExecutiveDiagnosis(buildExecutiveDiagnosisInput(report));
   const sortedRecommendations = [...report.recommendations].sort((a, b) => {
     const weight: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1 };
     return weight[b.priority] - weight[a.priority];
@@ -94,7 +95,7 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
                   <p className="font-medium">{creative.name}</p>
                   <p className="text-sm text-slate-500">{formatNumber(creative.leads ?? creative.conversations)} leads • {formatCurrency(creative.cpl)} • {formatCurrency(creative.investment)}</p>
                 </div>
-                <DiagnosisBadge value={creative.diagnosis} />
+                {isOperationalAnomaly ? null : <DiagnosisBadge value={creative.diagnosis} />}
               </div>
             ))}
           </div>
@@ -109,7 +110,7 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
                   <p className="font-medium">{keyword.keyword}</p>
                   <p className="text-sm text-slate-500">{formatNumber(keyword.conversions)} conversões • {formatCurrency(keyword.cpa)}</p>
                 </div>
-                <DiagnosisBadge value={keyword.diagnosis} />
+                {isOperationalAnomaly ? null : <DiagnosisBadge value={keyword.diagnosis} />}
               </div>
             ))}
           </div>
@@ -120,8 +121,9 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h3 className="text-lg font-semibold">Resumo executivo</h3>
-            <p className="mt-2 max-w-3xl text-sm text-slate-600">{executiveDiagnosis.summary}</p>
+            <p className="mt-2 max-w-3xl text-sm text-slate-600">{isOperationalAnomaly ? ANOMALY_EXECUTIVE_DIAGNOSIS_MESSAGE : executiveDiagnosis?.summary}</p>
           </div>
+          {executiveDiagnosis ? (
           <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 md:text-right">
             <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">Score do relatório</p>
             <p className="mt-1 text-2xl font-semibold text-ink">{executiveDiagnosis.healthScore}</p>
@@ -129,8 +131,10 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
               {executiveStatusLabels[executiveDiagnosis.status]}
             </span>
           </div>
+          ) : null}
         </div>
 
+        {executiveDiagnosis ? (
         <div className="mt-5 grid gap-4 lg:grid-cols-3">
           <div className="rounded-md border border-slate-100 p-4">
             <h4 className="text-sm font-semibold">Alertas críticos</h4>
@@ -171,8 +175,10 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
             )}
           </div>
         </div>
+        ) : null}
       </section>
 
+      {isOperationalAnomaly ? null : (
       <section className="panel">
         <h3 className="text-lg font-semibold">Recomendações detalhadas</h3>
         <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -191,6 +197,7 @@ export default async function ReportDetailPage({ params }: { params: { id: strin
           )}
         </div>
       </section>
+      )}
 
       <section className="panel">
         <h3 className="text-lg font-semibold">Texto bruto</h3>

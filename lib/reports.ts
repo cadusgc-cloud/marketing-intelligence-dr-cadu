@@ -4,12 +4,14 @@ import type { RecommendationHistoryReport } from "@/lib/engine/recommendationEng
 import { analyzeParsedReportWithHistory } from "@/lib/engine/analyzeReport";
 import { parseReport } from "@/lib/parser/reportParser";
 import type { Channel, CreativeFormat, Diagnosis, FunnelStage, ParsedReport, Platform } from "@/lib/types";
+import { isExcludedFromNormalAnalysis, operationalAnomalyReasonForPeriod } from "@/lib/utils/dates";
 
 type ReportHistoryRecord = {
   title: string;
   periodStart: Date | null;
   periodEnd: Date | null;
   isOperationalAnomaly: boolean;
+  anomalyReason?: string | null;
   channelSummaries: Array<{
     channel: string;
     investment: number | null;
@@ -65,6 +67,31 @@ type ReportHistoryRecord = {
   }>;
 };
 
+type ReportWithOptionalAnalysisArrays = {
+  recommendations?: unknown;
+  creatives?: Array<{ diagnosis?: string | null }>;
+  keywords?: Array<{ diagnosis?: string | null }>;
+};
+
+function normalizeOperationalAnomaly<T extends { periodStart: Date | null; periodEnd: Date | null; isOperationalAnomaly: boolean; anomalyReason?: string | null }>(report: T): T {
+  const isOperationalAnomaly = isExcludedFromNormalAnalysis(report);
+  const normalized = {
+    ...report,
+    isOperationalAnomaly,
+    anomalyReason: isOperationalAnomaly ? operationalAnomalyReasonForPeriod(report.periodStart, report.periodEnd, report.anomalyReason) : report.anomalyReason ?? null
+  };
+
+  if (!isOperationalAnomaly) return normalized;
+
+  const reportWithArrays = report as T & ReportWithOptionalAnalysisArrays;
+  return {
+    ...normalized,
+    recommendations: Array.isArray(reportWithArrays.recommendations) ? [] : reportWithArrays.recommendations,
+    creatives: Array.isArray(reportWithArrays.creatives) ? reportWithArrays.creatives.map((creative) => ({ ...creative, diagnosis: "unknown" })) : reportWithArrays.creatives,
+    keywords: Array.isArray(reportWithArrays.keywords) ? reportWithArrays.keywords.map((keyword) => ({ ...keyword, diagnosis: "unknown" })) : reportWithArrays.keywords
+  } as T;
+}
+
 export async function saveAnalyzedReport(rawText: string) {
   const parsed = parseReport(rawText);
   const existingReports = await prisma.report.findMany({
@@ -73,6 +100,7 @@ export async function saveAnalyzedReport(rawText: string) {
       periodStart: true,
       periodEnd: true,
       isOperationalAnomaly: true,
+      anomalyReason: true,
       channelSummaries: true,
       creatives: true,
       keywords: true
@@ -86,7 +114,7 @@ export async function saveAnalyzedReport(rawText: string) {
     }
   });
   const benchmarks = mapBenchmarkSettingsToRecommendationBenchmarks(benchmarkSettings);
-  const analyzed = analyzeParsedReportWithHistory(parsed, existingReports.map(mapReportToRecommendationHistory), benchmarks);
+  const analyzed = analyzeParsedReportWithHistory(parsed, existingReports.map((report) => mapReportToRecommendationHistory(normalizeOperationalAnomaly(report))), benchmarks);
   return createReportFromParsed(analyzed);
 }
 
@@ -95,7 +123,7 @@ function mapReportToRecommendationHistory(report: ReportHistoryRecord): Recommen
     title: report.title,
     periodStart: report.periodStart,
     periodEnd: report.periodEnd,
-    isOperationalAnomaly: report.isOperationalAnomaly,
+    isOperationalAnomaly: isExcludedFromNormalAnalysis(report),
     channels: report.channelSummaries.map((channel) => ({
       channel: channel.channel as Channel,
       investment: channel.investment,
@@ -153,6 +181,9 @@ function mapReportToRecommendationHistory(report: ReportHistoryRecord): Recommen
 }
 
 export async function createReportFromParsed(parsed: ParsedReport) {
+  const isOperationalAnomaly = isExcludedFromNormalAnalysis(parsed);
+  const anomalyReason = isOperationalAnomaly ? operationalAnomalyReasonForPeriod(parsed.periodStart, parsed.periodEnd, parsed.anomalyReason) : parsed.anomalyReason;
+
   return prisma.report.create({
     data: {
       title: parsed.title,
@@ -162,8 +193,8 @@ export async function createReportFromParsed(parsed: ParsedReport) {
       periodEnd: parsed.periodEnd,
       receivedAt: parsed.receivedAt,
       sourceLabel: parsed.sourceLabel,
-      isOperationalAnomaly: parsed.isOperationalAnomaly,
-      anomalyReason: parsed.anomalyReason,
+      isOperationalAnomaly,
+      anomalyReason,
       confidenceScore: parsed.confidenceScore,
       channelSummaries: {
         create: parsed.channels.map((channel) => ({
@@ -211,7 +242,7 @@ export async function createReportFromParsed(parsed: ParsedReport) {
           saves: creative.saves,
           shares: creative.shares,
           comments: creative.comments,
-          diagnosis: creative.diagnosis ?? "unknown"
+          diagnosis: isOperationalAnomaly ? "unknown" : creative.diagnosis ?? "unknown"
         }))
       },
       keywords: {
@@ -221,18 +252,20 @@ export async function createReportFromParsed(parsed: ParsedReport) {
           clicks: keyword.clicks,
           conversions: keyword.conversions,
           cpa: keyword.cpa,
-          diagnosis: keyword.diagnosis ?? "unknown"
+          diagnosis: isOperationalAnomaly ? "unknown" : keyword.diagnosis ?? "unknown"
         }))
       },
       recommendations: {
-        create: parsed.recommendations.map((recommendation) => ({
-          category: recommendation.category,
-          priority: recommendation.priority,
-          title: recommendation.title,
-          evidence: recommendation.evidence,
-          recommendation: recommendation.recommendation,
-          confidence: recommendation.confidence
-        }))
+        create: isOperationalAnomaly
+          ? []
+          : parsed.recommendations.map((recommendation) => ({
+              category: recommendation.category,
+              priority: recommendation.priority,
+              title: recommendation.title,
+              evidence: recommendation.evidence,
+              recommendation: recommendation.recommendation,
+              confidence: recommendation.confidence
+            }))
       },
       dataIssues: {
         create: parsed.dataIssues.map((issue) => ({
@@ -249,7 +282,7 @@ export async function createReportFromParsed(parsed: ParsedReport) {
 }
 
 export async function getReports() {
-  return prisma.report.findMany({
+  const reports = await prisma.report.findMany({
     orderBy: [{ periodEnd: "desc" }, { createdAt: "desc" }],
     include: {
       channelSummaries: true,
@@ -259,10 +292,12 @@ export async function getReports() {
       keywords: true
     }
   });
+
+  return reports.map(normalizeOperationalAnomaly);
 }
 
 export async function getReport(id: string) {
-  return prisma.report.findUnique({
+  const report = await prisma.report.findUnique({
     where: { id },
     include: {
       channelSummaries: true,
@@ -272,4 +307,6 @@ export async function getReport(id: string) {
       keywords: true
     }
   });
+
+  return report ? normalizeOperationalAnomaly(report) : null;
 }

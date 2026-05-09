@@ -17,6 +17,7 @@ const links = [
   ["/audit", "Auditoria"],
   ["/signals", "Sinais"],
   ["/data", "Dados"],
+  ["/weekly", "Central Semanal"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

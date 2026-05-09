@@ -12,6 +12,7 @@ const links = [
   ["/reports", "Relatórios"],
   ["/reports/new", "Importar"],
   ["/insights", "Insights"],
+  ["/content", "Content Studio"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

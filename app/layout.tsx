@@ -16,6 +16,7 @@ const links = [
   ["/calendar", "Calendário"],
   ["/audit", "Auditoria"],
   ["/signals", "Sinais"],
+  ["/data", "Dados"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

@@ -13,6 +13,7 @@ const links = [
   ["/reports/new", "Importar"],
   ["/insights", "Insights"],
   ["/content", "Content Studio"],
+  ["/calendar", "Calendário"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

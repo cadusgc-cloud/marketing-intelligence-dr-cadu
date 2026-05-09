@@ -26,7 +26,7 @@ const priorities: ContentPriority[] = ["low", "medium", "high"];
 
 const priorityLabels: Record<ContentPriority, string> = {
   low: "Baixa",
-  medium: "Media",
+  medium: "Média",
   high: "Alta"
 };
 
@@ -160,8 +160,8 @@ export default function ContentStudioPage({ searchParams }: { searchParams: Cont
         <div className="panel lg:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className="text-lg font-semibold">Ideias reaproveitaveis</h3>
-              <p className="text-sm text-slate-500">{filteredIdeas.length} conteudo(s) encontrados.</p>
+              <h3 className="text-lg font-semibold">Ideias reaproveitáveis</h3>
+              <p className="text-sm text-slate-500">{filteredIdeas.length} conteúdo(s) encontrados.</p>
             </div>
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -187,7 +187,7 @@ export default function ContentStudioPage({ searchParams }: { searchParams: Cont
         </div>
 
         <aside className="panel">
-          <h3 className="text-lg font-semibold">Detalhe do conteudo</h3>
+          <h3 className="text-lg font-semibold">Detalhe do conteúdo</h3>
           {selectedIdea ? (
             <div className="mt-4 space-y-5">
               <div>

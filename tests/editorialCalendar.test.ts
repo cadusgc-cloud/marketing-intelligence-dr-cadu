@@ -13,11 +13,11 @@ describe("Editorial Calendar", () => {
     expect(EDITORIAL_CALENDAR_ITEMS.length).toBeGreaterThanOrEqual(7);
     expect(EDITORIAL_CALENDAR_ITEMS.map((item) => item.weekLabel)).toEqual([
       "Segunda-feira",
-      "Terca-feira",
+      "Terça-feira",
       "Quarta-feira",
       "Quinta-feira",
       "Sexta-feira",
-      "Sabado",
+      "Sábado",
       "Domingo"
     ]);
   });
@@ -36,7 +36,7 @@ describe("Editorial Calendar", () => {
     expect(indicators.funnelBalance).toBe("TOFU 3 / MOFU 2 / BOFU 2");
   });
 
-  it("inclui conteudos para Stories, Reels/Shorts e TikTok", () => {
+  it("inclui conteúdos para Stories, Reels/Shorts e TikTok", () => {
     const formats = new Set(EDITORIAL_CALENDAR_ITEMS.flatMap((item) => expandedFormats(item.format)));
 
     expect(formats.has("stories")).toBe(true);
@@ -47,22 +47,22 @@ describe("Editorial Calendar", () => {
 
   it("filtra por status, pilar, formato, prioridade e fase do funil", () => {
     expect(filterEditorialCalendarItems(EDITORIAL_CALENDAR_ITEMS, { productionStatus: "scheduled" }).map((item) => item.title)).toEqual([
-      "Resultado com 3 meses: o que ja da para avaliar"
+      "Resultado com 3 meses: o que já dá para avaliar"
     ]);
 
-    expect(filterEditorialCalendarItems(EDITORIAL_CALENDAR_ITEMS, { pillar: "Naturalidade e seguranca" })).toHaveLength(2);
+    expect(filterEditorialCalendarItems(EDITORIAL_CALENDAR_ITEMS, { pillar: "Naturalidade e segurança" })).toHaveLength(2);
     expect(filterEditorialCalendarItems(EDITORIAL_CALENDAR_ITEMS, { format: "tiktok" })).toHaveLength(6);
     expect(filterEditorialCalendarItems(EDITORIAL_CALENDAR_ITEMS, { priority: "high" })).toHaveLength(5);
     expect(filterEditorialCalendarItems(EDITORIAL_CALENDAR_ITEMS, { funnelStage: "BOFU" }).map((item) => item.title)).toEqual([
-      "Mamoplastia redutora nao e so diminuir a mama",
-      "Resultado com 3 meses: o que ja da para avaliar"
+      "Mamoplastia redutora não é só diminuir a mama",
+      "Resultado com 3 meses: o que já dá para avaliar"
     ]);
   });
 
   it("mantem regras fixas do plano da semana", () => {
-    expect(WEEKLY_CONTENT_RULES).toContain("Minimo 6 stories por dia.");
+    expect(WEEKLY_CONTENT_RULES).toContain("Mínimo de 6 Stories por dia.");
     expect(WEEKLY_CONTENT_RULES).toContain("3 reels/shorts por semana.");
-    expect(WEEKLY_CONTENT_RULES).toContain("CTA diario para WhatsApp.");
+    expect(WEEKLY_CONTENT_RULES).toContain("CTA diário para WhatsApp.");
     expect(WEEKLY_CONTENT_RULES.join(" ")).toContain("Stories + Reels/Shorts + TikTok");
   });
 
@@ -70,7 +70,7 @@ describe("Editorial Calendar", () => {
     const bottlenecks = getEditorialBottlenecks(EDITORIAL_CALENDAR_ITEMS);
 
     expect(bottlenecks).toContain("Falta gravar parte da semana.");
-    expect(bottlenecks).toContain("Falta editar conteudos ja gravados.");
-    expect(bottlenecks).toContain("Falta agendar conteudos editados.");
+    expect(bottlenecks).toContain("Falta editar conteúdos já gravados.");
+    expect(bottlenecks).toContain("Falta agendar conteúdos editados.");
   });
 });

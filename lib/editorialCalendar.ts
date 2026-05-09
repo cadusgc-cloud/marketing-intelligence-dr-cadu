@@ -53,14 +53,14 @@ export type EditorialCalendarIndicators = {
 };
 
 export const WEEKLY_CONTENT_RULES = [
-  "Minimo 6 stories por dia.",
+  "Mínimo de 6 Stories por dia.",
   "3 reels/shorts por semana.",
-  "1 conteudo de autoridade.",
-  "1 conteudo de prova/resultado.",
-  "1 conteudo de maternidade/naturalidade.",
-  "CTA diario para WhatsApp.",
-  "Cada ideia relevante deve ser reaproveitada em Stories + Reels/Shorts + TikTok quando possivel.",
-  "Priorizar mamas/silicone, lipo/contorno, maternidade/naturalidade e autoridade medica."
+  "1 conteúdo de autoridade.",
+  "1 conteúdo de prova/resultado.",
+  "1 conteúdo de maternidade/naturalidade.",
+  "CTA diário para WhatsApp.",
+  "Cada ideia relevante deve ser reaproveitada em Stories + Reels/Shorts + TikTok sempre que possível.",
+  "Priorizar mamas/silicone, lipo/contorno, maternidade/naturalidade e autoridade médica."
 ];
 
 const baseDate = new Date("2026-05-09T12:00:00.000Z");
@@ -117,13 +117,13 @@ export const EDITORIAL_CALENDAR_ITEMS: EditorialCalendarItem[] = [
     "high",
     "MOFU",
     "Gravar roteiro principal e separar stories de apoio com enquete sobre ml.",
-    "Meta Ads - Mamas e protese"
+    "Meta Ads - Mamas e prótese"
   ),
   calendarItem(
     "terca-lipo-contorno",
     "lipo-nao-e-emagrecimento",
     "2026-05-12",
-    "Terca-feira",
+    "Terça-feira",
     "all",
     "planned",
     "high",
@@ -140,7 +140,7 @@ export const EDITORIAL_CALENDAR_ITEMS: EditorialCalendarItem[] = [
     "recorded",
     "high",
     "BOFU",
-    "Usar stories para perguntas e reel para explicar proporcao, conforto e seguranca.",
+    "Usar Stories para perguntas e Reels para explicar proporção, conforto e segurança.",
     "Meta Ads - Mamoplastia"
   ),
   calendarItem(
@@ -152,7 +152,7 @@ export const EDITORIAL_CALENDAR_ITEMS: EditorialCalendarItem[] = [
     "edited",
     "high",
     "TOFU",
-    "Tom acolhedor; conectar maternidade, naturalidade e avaliacao responsavel.",
+    "Tom acolhedor; conectar maternidade, naturalidade e avaliação responsável.",
     null
   ),
   calendarItem(
@@ -165,13 +165,13 @@ export const EDITORIAL_CALENDAR_ITEMS: EditorialCalendarItem[] = [
     "high",
     "BOFU",
     "Transformar prova de resultado em educacao sobre tempo de maturacao.",
-    "Meta Ads - Resultado 3 meses pos"
+    "Meta Ads - Resultado 3 meses pós"
   ),
   calendarItem(
     "sabado-naturalidade",
     "nem-toda-mulher-exagero",
     "2026-05-16",
-    "Sabado",
+    "Sábado",
     "all",
     "scripted",
     "medium",
@@ -182,7 +182,7 @@ export const EDITORIAL_CALENDAR_ITEMS: EditorialCalendarItem[] = [
   {
     id: "domingo-bastidores-autoridade",
     contentId: "bastidores-autoridade-medica",
-    title: "Bastidores e autoridade medica",
+    title: "Bastidores e autoridade médica",
     pillar: "Bastidores e rotina",
     funnelStage: "TOFU",
     scheduledDate: "2026-05-17",
@@ -190,10 +190,10 @@ export const EDITORIAL_CALENDAR_ITEMS: EditorialCalendarItem[] = [
     format: "stories",
     productionStatus: "planned",
     priority: "medium",
-    objective: "Humanizar a rotina e reforcar autoridade sem promessa de resultado.",
-    hook: "O que acontece antes de um conteudo medico chegar ate voce?",
-    cta: "Acompanhe os stories da semana e envie duvidas gerais sobre planejamento cirurgico.",
-    notes: "Sequencia simples de bastidores, agenda, estudo e preparacao da semana.",
+    objective: "Humanizar a rotina e reforçar autoridade sem promessa de resultado.",
+    hook: "O que acontece antes de um conteúdo médico chegar até você?",
+    cta: "Acompanhe os Stories da semana e envie dúvidas gerais sobre planejamento cirúrgico.",
+    notes: "Sequência simples de bastidores, agenda, estudo e preparação da semana.",
     relatedCampaign: null,
     createdAt: baseDate,
     updatedAt: baseDate
@@ -262,17 +262,17 @@ export function getEditorialBottlenecks(items: EditorialCalendarItem[]): string[
   if (items.some((item) => item.productionStatus === "planned" || item.productionStatus === "scripted")) {
     bottlenecks.add("Falta gravar parte da semana.");
   }
-  if (items.some((item) => item.productionStatus === "recorded")) bottlenecks.add("Falta editar conteudos ja gravados.");
-  if (items.some((item) => item.productionStatus === "edited")) bottlenecks.add("Falta agendar conteudos editados.");
-  if (items.some((item) => !item.cta.trim())) bottlenecks.add("Ha conteudo sem CTA definido.");
+  if (items.some((item) => item.productionStatus === "recorded")) bottlenecks.add("Falta editar conteúdos já gravados.");
+  if (items.some((item) => item.productionStatus === "edited")) bottlenecks.add("Falta agendar conteúdos editados.");
+  if (items.some((item) => !item.cta.trim())) bottlenecks.add("Há conteúdo sem CTA definido.");
   if (indicators.byFunnelStage.TOFU > indicators.byFunnelStage.BOFU + 2) bottlenecks.add("Excesso de TOFU em relacao a BOFU.");
-  if (indicators.byFunnelStage.BOFU < 2) bottlenecks.add("Pouco BOFU para sustentar captacao.");
-  if (!items.some((item) => item.pillar === "Autoridade medica" || item.pillar === "Bastidores e rotina")) {
+  if (indicators.byFunnelStage.BOFU < 2) bottlenecks.add("Pouco BOFU para sustentar captação.");
+  if (!items.some((item) => item.pillar === "Autoridade médica" || item.pillar === "Bastidores e rotina")) {
     bottlenecks.add("Pouca prova de autoridade na semana.");
   }
-  if (indicators.byFormat.stories < 7) bottlenecks.add("Poucos conteudos com apoio em stories.");
-  if (indicators.byFormat.all < 4) bottlenecks.add("Poucos conteudos reaproveitaveis em multiplas plataformas.");
-  if (!items.some((item) => item.relatedCampaign)) bottlenecks.add("Ausencia de conteudo conectado a campanhas pagas.");
+  if (indicators.byFormat.stories < 7) bottlenecks.add("Poucos conteúdos com apoio em Stories.");
+  if (indicators.byFormat.all < 4) bottlenecks.add("Poucos conteúdos reaproveitáveis em múltiplas plataformas.");
+  if (!items.some((item) => item.relatedCampaign)) bottlenecks.add("Ausência de conteúdo conectado a campanhas pagas.");
 
   return Array.from(bottlenecks);
 }
@@ -300,7 +300,7 @@ export function productionStatusLabel(value: ProductionStatus): string {
 }
 
 export function priorityLabel(value: ContentPriority): string {
-  return { low: "Baixa", medium: "Media", high: "Alta" }[value];
+  return { low: "Baixa", medium: "Média", high: "Alta" }[value];
 }
 
 export { funnelStageLabel };

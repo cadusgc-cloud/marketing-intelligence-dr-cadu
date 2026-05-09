@@ -96,13 +96,13 @@ export default function EditorialCalendarPage({ searchParams }: { searchParams: 
   return (
     <div className="space-y-6">
       <section className="panel">
-        <p className="text-sm font-medium text-ocean">Calendario Editorial</p>
-        <h2 className="mt-1 text-2xl font-semibold">Calendario Editorial</h2>
-        <p className="mt-2 text-sm text-slate-500">Planejamento semanal de conteudos para Stories, Reels, Shorts e TikTok.</p>
+        <p className="text-sm font-medium text-ocean">Calendário editorial</p>
+        <h2 className="mt-1 text-2xl font-semibold">Calendário editorial</h2>
+        <p className="mt-2 text-sm text-slate-500">Planejamento semanal de conteúdos para Stories, Reels, Shorts e TikTok.</p>
       </section>
 
       <section className="grid gap-3 md:grid-cols-5">
-        <IndicatorCard label="Conteudos planejados" value={indicators.total} />
+        <IndicatorCard label="Conteúdos planejados" value={indicators.total} />
         <IndicatorCard label="Roteirizados" value={indicators.scripted} />
         <IndicatorCard label="Gravados" value={indicators.recorded} />
         <IndicatorCard label="Editados" value={indicators.edited} />
@@ -113,7 +113,7 @@ export default function EditorialCalendarPage({ searchParams }: { searchParams: 
         <div className="panel lg:col-span-2">
           <h3 className="text-lg font-semibold">Resumo executivo da semana</h3>
           <p className="mt-2 text-sm text-slate-600">
-            Semana com {indicators.total} conteudos planejados, {indicators.highPriority} de alta prioridade e equilibrio {indicators.funnelBalance}. A rotina prioriza
+            Semana com {indicators.total} conteúdos planejados, {indicators.highPriority} de alta prioridade e equilíbrio {indicators.funnelBalance}. A rotina prioriza
             reaproveitamento de ideias em Stories, Reels/Shorts e TikTok, com Meta Ads como principal canal de escala.
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -129,7 +129,7 @@ export default function EditorialCalendarPage({ searchParams }: { searchParams: 
             </div>
             <div className="rounded-md bg-slate-50 p-3">
               <p className="text-sm font-semibold">Prioridade</p>
-              <p className="mt-1 text-sm text-slate-600">{indicators.highPriority} conteudos high priority</p>
+              <p className="mt-1 text-sm text-slate-600">{indicators.highPriority} conteúdos de alta prioridade</p>
             </div>
           </div>
         </div>
@@ -201,9 +201,9 @@ export default function EditorialCalendarPage({ searchParams }: { searchParams: 
       <section className="panel">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
           <div>
-            <h3 className="text-lg font-semibold">Visao semanal</h3>
+            <h3 className="text-lg font-semibold">Visão semanal</h3>
             <p className="text-sm text-slate-500">
-              {filteredItems.length} item(ns) exibidos. Filtro atual: {filteredIndicators.funnelBalance}.
+              {filteredItems.length} item(ns) exibido(s). Filtro atual: {filteredIndicators.funnelBalance}.
             </p>
           </div>
         </div>

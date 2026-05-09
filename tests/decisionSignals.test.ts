@@ -51,7 +51,7 @@ describe("Decision Signals", () => {
     expect(result.decisionType).toBe("investigate");
   });
 
-  it("aciona nao escalar Google quando conversoes estao zeradas", () => {
+  it("aciona não escalar Google Ads quando conversões estão zeradas", () => {
     const results = evaluateDecisionSignals(
       [{ ...baseInput, id: "google-zero", channel: "google", metric: "google_conversions", value: 0, unit: "conversions" }],
       DECISION_RULES
@@ -106,7 +106,7 @@ describe("Decision Signals", () => {
     expect(signal.recommendation).toContain("controle de consultas");
   });
 
-  it("filtra sinais por canal, severidade e tipo de decisao", () => {
+  it("filtra sinais por canal, severidade e tipo de decisão", () => {
     const triggered = getTriggeredSignals(evaluateDecisionSignals(DECISION_SIGNAL_INPUTS, DECISION_RULES));
 
     expect(filterSignalsByChannel(triggered, "google").length).toBeGreaterThan(0);
@@ -119,7 +119,7 @@ describe("Decision Signals", () => {
     const triggered = getTriggeredSignals(results);
     const byDecisionType = getSignalsByDecisionType(results);
 
-    expect(summarizeDecisionSignals(results)).toContain("Meta segue como canal principal de escala");
+    expect(summarizeDecisionSignals(results)).toContain("Meta Ads segue como canal principal de escala");
     expect(getCriticalSignals(results).length).toBeGreaterThanOrEqual(1);
     expect(triggered.some((signal) => signal.severity === "high")).toBe(true);
     expect(byDecisionType.scale).toBeGreaterThanOrEqual(1);

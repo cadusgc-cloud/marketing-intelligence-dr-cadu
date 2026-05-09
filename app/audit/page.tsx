@@ -106,23 +106,23 @@ export default function WeeklyAuditPage({ searchParams }: { searchParams: AuditP
   return (
     <div className="space-y-6">
       <section className="panel">
-        <p className="text-sm font-medium text-ocean">Auditoria Semanal</p>
-        <h2 className="mt-1 text-2xl font-semibold">Auditoria Semanal</h2>
-        <p className="mt-2 text-sm text-slate-500">Analise interna dos movimentos da equipe de marketing do Dr. Cadu.</p>
+        <p className="text-sm font-medium text-ocean">Auditoria semanal</p>
+        <h2 className="mt-1 text-2xl font-semibold">Auditoria semanal</h2>
+        <p className="mt-2 text-sm text-slate-500">Análise interna dos movimentos da equipe de marketing do Dr. Cadu.</p>
       </section>
 
       <section className="grid gap-3 md:grid-cols-6">
-        <MetricCard label="Decisoes auditadas" value={WEEKLY_AUDIT_DECISIONS.length} />
+        <MetricCard label="Decisões auditadas" value={WEEKLY_AUDIT_DECISIONS.length} />
         <MetricCard label="Acertos claros" value={byClassification.clear_win} />
         <MetricCard label="Acertos parciais" value={byClassification.partial_win} />
         <MetricCard label="Riscos silenciosos" value={byClassification.silent_risk} />
         <MetricCard label="Oportunidades perdidas" value={byClassification.missed_opportunity} />
-        <MetricCard label="Precisa dados" value={byClassification.needs_more_data} />
+        <MetricCard label="Precisa de dados" value={byClassification.needs_more_data} />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
         <div className="panel lg:col-span-2">
-          <h3 className="text-lg font-semibold">Diagnostico executivo da semana</h3>
+          <h3 className="text-lg font-semibold">Diagnóstico executivo da semana</h3>
           <p className="mt-2 text-sm text-slate-600">{generateWeeklyAuditExecutiveSummary()}</p>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <div className="rounded-md bg-slate-50 p-3">
@@ -136,7 +136,7 @@ export default function WeeklyAuditPage({ searchParams }: { searchParams: AuditP
           </div>
         </div>
         <aside className="panel">
-          <h3 className="text-lg font-semibold">Plano 24-72h</h3>
+          <h3 className="text-lg font-semibold">Plano para as próximas 24–72h</h3>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             {WEEKLY_AUDIT_SUMMARY.next72hPlan.map((item) => (
               <li key={item}>- {item}</li>
@@ -173,7 +173,7 @@ export default function WeeklyAuditPage({ searchParams }: { searchParams: AuditP
               </FilterLink>
             ))}
           </FilterGroup>
-          <FilterGroup label="Classificacao">
+          <FilterGroup label="Classificação">
             <FilterLink href={optionLink(searchParams, "classification")} active={!searchParams.classification}>Todas</FilterLink>
             {classifications.map((classification) => (
               <FilterLink key={classification} href={optionLink(searchParams, "classification", classification)} active={searchParams.classification === classification}>
@@ -203,8 +203,8 @@ export default function WeeklyAuditPage({ searchParams }: { searchParams: AuditP
       <section className="panel">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
           <div>
-            <h3 className="text-lg font-semibold">Decisoes e achados</h3>
-            <p className="text-sm text-slate-500">{decisions.length} item(ns) exibidos.</p>
+            <h3 className="text-lg font-semibold">Decisões e achados</h3>
+            <p className="text-sm text-slate-500">{decisions.length} item(ns) exibido(s).</p>
           </div>
         </div>
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -214,17 +214,17 @@ export default function WeeklyAuditPage({ searchParams }: { searchParams: AuditP
                 <span className="badge bg-slate-100 text-slate-700">{channelLabel(decision.channel)}</span>
                 <span className={`badge ${classificationClasses[decision.classification]}`}>{classificationLabel(decision.classification)}</span>
                 <span className={`badge ${impactClasses[decision.impact]}`}>Impacto {impactLabel(decision.impact)}</span>
-                <span className="badge bg-slate-100 text-slate-700">Confianca {confidenceLabel(decision.confidence)}</span>
+                <span className="badge bg-slate-100 text-slate-700">Confiança {confidenceLabel(decision.confidence)}</span>
                 <span className="badge bg-slate-100 text-slate-700">{statusLabel(decision.status)}</span>
               </div>
               <h4 className="mt-3 font-semibold">{decision.title}</h4>
               <p className="mt-2 text-sm text-slate-600">{decision.description}</p>
               <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
-                <p><span className="font-semibold">Evidencia:</span> {decision.evidence}</p>
-                <p className="mt-2"><span className="font-semibold">Recomendacao:</span> {decision.recommendation}</p>
-                <p className="mt-2"><span className="font-semibold">Proxima acao:</span> {decision.nextAction}</p>
-                <p className="mt-2"><span className="font-semibold">Responsavel:</span> {ownerLabel(decision.owner)}</p>
-                <p className="mt-2"><span className="font-semibold">Metrica:</span> {decision.relatedMetric}</p>
+                <p><span className="font-semibold">Evidência:</span> {decision.evidence}</p>
+                <p className="mt-2"><span className="font-semibold">Recomendação:</span> {decision.recommendation}</p>
+                <p className="mt-2"><span className="font-semibold">Próxima ação:</span> {decision.nextAction}</p>
+                <p className="mt-2"><span className="font-semibold">Responsável:</span> {ownerLabel(decision.owner)}</p>
+                <p className="mt-2"><span className="font-semibold">Métrica:</span> {decision.relatedMetric}</p>
               </div>
             </article>
           ))}
@@ -267,7 +267,7 @@ export default function WeeklyAuditPage({ searchParams }: { searchParams: AuditP
       </section>
 
       <section className="panel">
-        <h3 className="text-lg font-semibold">Decisoes por canal</h3>
+        <h3 className="text-lg font-semibold">Decisões por canal</h3>
         <div className="mt-3 grid gap-2 text-sm text-slate-600 md:grid-cols-3">
           {channels.map((channel) => (
             <div key={channel} className="flex items-center justify-between rounded-md bg-slate-50 px-3 py-2">

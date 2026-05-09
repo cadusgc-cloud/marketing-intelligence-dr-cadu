@@ -22,7 +22,7 @@ describe("Weekly Data Input", () => {
     expect(calculateMetaCostPerProfileVisit(700, 5000)).toBe(0.14);
   });
 
-  it("calcula CPC e taxa de conversao do Google corretamente", () => {
+  it("calcula CPC e taxa de conversão do Google corretamente", () => {
     expect(calculateGoogleCostPerClick(240, 48)).toBe(5);
     expect(calculateGoogleConversionRate(6, 48)).toBe(0.125);
   });
@@ -39,14 +39,14 @@ describe("Weekly Data Input", () => {
     expect(validation.missingFields).toContain("consultationsScheduled");
     expect(validation.missingFields).toContain("consultationsAttended");
     expect(validation.missingFields).toContain("surgeriesClosed");
-    expect(validation.warnings).toContain("Google Ads esta com conversoes zeradas e deve permanecer diagnostico.");
+    expect(validation.warnings).toContain("Google Ads está com conversões zeradas e deve permanecer em diagnóstico.");
   });
 
   it("gera resumo semanal", () => {
     const summary = summarizeWeeklyMarketingData(WEEKLY_MARKETING_DATA_MOCK);
 
-    expect(summary).toContain("Meta gerou 118 conversas");
-    expect(summary).toContain("Google registrou 0 conversoes");
+    expect(summary).toContain("Meta Ads gerou 118 conversas");
+    expect(summary).toContain("Google Ads registrou 0 conversões");
     expect(summary).toContain("ainda precisa de dados de consultas");
   });
 
@@ -59,7 +59,7 @@ describe("Weekly Data Input", () => {
     expect(inputs.every((input) => input.periodLabel === WEEKLY_MARKETING_DATA_MOCK.weekLabel)).toBe(true);
   });
 
-  it("preserva Google com conversoes zeradas como sinal diagnostico", () => {
+  it("preserva Google Ads com conversões zeradas como sinal diagnóstico", () => {
     const googleInput = convertWeeklyDataToDecisionInputs(WEEKLY_MARKETING_DATA_MOCK).find((input) => input.metric === "google_conversions");
 
     expect(googleInput?.channel).toBe("google");

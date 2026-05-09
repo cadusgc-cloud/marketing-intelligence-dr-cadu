@@ -56,25 +56,25 @@ export type WeeklyAuditFilters = {
 const baseDate = new Date("2026-05-09T12:00:00.000Z");
 
 export const WEEKLY_AUDIT_SUMMARY: WeeklyAuditSummary = {
-  weekLabel: "Auditoria interna ate 31/07/2026",
+  weekLabel: "Auditoria interna até 31/07/2026",
   startDate: "2026-05-04",
   endDate: "2026-05-10",
   executiveDiagnosis:
-    "Meta Ads deve continuar como canal principal de escala, enquanto Google Ads permanece diagnostico ate a conversao ficar confiavel. A rotina de conteudo precisa sustentar o funil com Stories e reaproveitamento semanal.",
+    "Meta Ads deve continuar como canal principal de escala, enquanto Google Ads permanece em diagnóstico até a conversão ficar confiável. A rotina de conteúdo precisa sustentar o funil com Stories e reaproveitamento semanal.",
   metaDecision: "Escalar com prioridade os aprendizados de BOFU WhatsApp Escala.",
-  googleDecision: "Nao escalar Google Ads enquanto conversoes estiverem zeradas ou inconsistentes.",
-  organicDecision: "Instagram organico precisa sustentar as visitas geradas pelo trafego pago.",
+  googleDecision: "Não escalar Google Ads enquanto as conversões estiverem zeradas ou inconsistentes.",
+  organicDecision: "Instagram orgânico precisa sustentar as visitas geradas pelo tráfego pago.",
   contentDecision: "Cada ideia relevante deve virar Stories, Reels/Shorts e TikTok quando fizer sentido.",
   funnelDiagnosis: "Topo e meio precisam alimentar o BOFU sem dispersar verba em testes fracos.",
-  budgetDiagnosis: "Orcamento deve proteger campanhas confiaveis e limitar termos genericos.",
+  budgetDiagnosis: "Orçamento deve proteger campanhas confiáveis e limitar termos genéricos.",
   mainRisk: "Risco silencioso de aumentar investimento antes de corrigir rastreamento e sustentacao organica.",
-  mainOpportunity: "Transformar criativos vencedores em rotina semanal de conteudo e prova de autoridade.",
+  mainOpportunity: "Transformar criativos vencedores em rotina semanal de conteúdo e prova de autoridade.",
   next72hPlan: [
     "Manter Meta Ads como canal principal de escala.",
     "Pausar ou reduzir prioridade de BOFU Teste ABO.",
-    "Validar rastreamento de conversoes do Google Ads antes de ampliar verba.",
-    "Separar Uba em campanha propria ou negativar quando atrapalhar leitura.",
-    "Garantir Stories diarios como parte do funil."
+    "Validar rastreamento de conversões do Google Ads antes de ampliar verba.",
+    "Separar Ubá em campanha própria ou negativar quando atrapalhar a leitura.",
+    "Garantir Stories diários como parte do funil."
   ]
 };
 
@@ -84,16 +84,16 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     date: "2026-05-04",
     channel: "meta",
     title: "Meta Ads deve seguir como canal principal de escala",
-    description: "Meta concentra os sinais mais confiaveis de aprendizagem, volume e criativos acionaveis.",
+    description: "Meta Ads concentra os sinais mais confiáveis de aprendizado, volume e criativos acionáveis.",
     classification: "clear_win",
     impact: "high",
     confidence: "high",
     evidence: "Criativos BOFU com CPL baixo e volume util de conversas.",
-    recommendation: "Proteger verba de Meta Ads antes de ampliar canais menos rastreaveis.",
+    recommendation: "Proteger verba de Meta Ads antes de ampliar canais menos rastreáveis.",
     nextAction: "Priorizar escala controlada em campanhas e criativos vencedores.",
     owner: "agency",
     status: "monitoring",
-    relatedMetric: "CPL Meta e conversas WhatsApp",
+    relatedMetric: "CPL Meta e conversas no WhatsApp",
     createdAt: baseDate,
     updatedAt: baseDate
   },
@@ -106,8 +106,8 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     classification: "clear_win",
     impact: "high",
     confidence: "high",
-    evidence: "Volume de conversas e criativos vencedores abaixo de CPL alvo.",
-    recommendation: "Escalar com cautela e criar variacoes dos criativos vencedores.",
+    evidence: "Volume de conversas e criativos vencedores abaixo do CPL alvo.",
+    recommendation: "Escalar com cautela e criar variações dos criativos vencedores.",
     nextAction: "Produzir novas variacoes de prova, naturalidade e pesquisa ativa.",
     owner: "agency",
     status: "monitoring",
@@ -120,7 +120,7 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     date: "2026-05-05",
     channel: "meta",
     title: "BOFU Teste ABO deve ser pausado ou perder prioridade",
-    description: "O teste nao deve disputar verba com campanhas mais confiaveis enquanto nao mostrar ganho claro.",
+    description: "O teste não deve disputar verba com campanhas mais confiáveis enquanto não mostrar ganho claro.",
     classification: "operational_error",
     impact: "medium",
     confidence: "medium",
@@ -155,17 +155,17 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     id: "google-nao-escalar-sem-conversao",
     date: "2026-05-06",
     channel: "google",
-    title: "Google Ads nao deve escalar enquanto conversoes estiverem zeradas",
-    description: "Sem conversao confiavel, Google deve ficar em diagnostico e nao em escala.",
+    title: "Google Ads não deve escalar enquanto conversões estiverem zeradas",
+    description: "Sem conversão confiável, Google Ads deve permanecer em diagnóstico, não em escala.",
     classification: "silent_risk",
     impact: "high",
     confidence: "high",
-    evidence: "Conversoes zeradas ou inconsistentes impedem leitura de CPA real.",
+    evidence: "Conversões zeradas ou inconsistentes impedem a leitura do CPA real.",
     recommendation: "Corrigir rastreamento antes de aumentar verba.",
-    nextAction: "Auditar tag, evento e importacao de conversoes.",
+    nextAction: "Auditar tag, evento e importacao de conversões.",
     owner: "agency",
     status: "open",
-    relatedMetric: "Conversoes Google",
+    relatedMetric: "Conversões Google",
     createdAt: baseDate,
     updatedAt: baseDate
   },
@@ -173,17 +173,17 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     id: "google-intencao-melhorou",
     date: "2026-05-06",
     channel: "google",
-    title: "Google melhorou intencao em abril/maio, mas precisa rastrear conversoes",
-    description: "Termos mais proximos da intencao cirurgica apareceram, mas sem conversao confiavel o canal segue diagnostico.",
+    title: "Google melhorou intencao em abril/maio, mas precisa rastrear conversões",
+    description: "Termos mais próximos da intenção cirúrgica apareceram, mas sem conversão confiável o canal segue em diagnóstico.",
     classification: "partial_win",
     impact: "medium",
     confidence: "medium",
-    evidence: "Keywords de cirurgia plastica ganharam relevancia, mas conversao ainda precisa validacao.",
-    recommendation: "Manter leitura qualitativa e nao escalar ainda.",
+    evidence: "Keywords de cirurgia plástica ganharam relevância, mas a conversão ainda precisa de validação.",
+    recommendation: "Manter leitura qualitativa e não escalar ainda.",
     nextAction: "Separar termos de intencao real de consultas genericas.",
     owner: "agency",
     status: "monitoring",
-    relatedMetric: "Cliques e conversoes Google",
+    relatedMetric: "Cliques e conversões Google",
     createdAt: baseDate,
     updatedAt: baseDate
   },
@@ -192,7 +192,7 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     date: "2026-05-07",
     channel: "google",
     title: "Cirurgia estetica deve ser limitada ou pausada",
-    description: "Termo generico demais pode consumir verba sem traduzir intencao de procedimento.",
+    description: "Termo genérico demais pode consumir verba sem representar intenção clara de procedimento.",
     classification: "missed_opportunity",
     impact: "medium",
     confidence: "high",
@@ -209,8 +209,8 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     id: "uba-separar-negativar",
     date: "2026-05-07",
     channel: "budget",
-    title: "Uba deve ser separada em campanha propria ou negativada",
-    description: "Misturar Uba com a leitura geral pode distorcer decisao de orcamento e intencao.",
+    title: "Ubá deve ser separada em campanha própria ou negativada",
+    description: "Misturar Ubá com a leitura geral pode distorcer a decisão de orçamento e intenção.",
     classification: "needs_more_data",
     impact: "medium",
     confidence: "medium",
@@ -227,13 +227,13 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     id: "organico-sustentar-visitas",
     date: "2026-05-08",
     channel: "instagram",
-    title: "Instagram organico precisa sustentar visitas do trafego pago",
-    description: "Visitas ao perfil geradas por trafego pago perdem forca se o perfil nao sustentar autoridade e prova.",
+    title: "Instagram orgânico precisa sustentar visitas do tráfego pago",
+    description: "Visitas ao perfil geradas por tráfego pago perdem força se o perfil não sustentar autoridade e prova.",
     classification: "silent_risk",
     impact: "high",
     confidence: "high",
-    evidence: "Criativos podem gerar visita sem conversa quando o perfil nao fecha a confianca.",
-    recommendation: "Aumentar cadencia de Stories, prova social e conteudos de autoridade.",
+    evidence: "Criativos podem gerar visita sem conversa quando o perfil não fecha a confiança.",
+    recommendation: "Aumentar cadência de Stories, prova social e conteúdos de autoridade.",
     nextAction: "Garantir stories diarios e destaques alinhados aos procedimentos prioritarios.",
     owner: "internal",
     status: "open",
@@ -246,13 +246,13 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     date: "2026-05-08",
     channel: "content",
     title: "Stories devem ser tratados como parte do funil",
-    description: "Stories nao sao enfeite; eles sustentam recorrencia, confianca e resposta ao trafego pago.",
+    description: "Stories não são enfeite: sustentam recorrência, confiança e resposta ao tráfego pago.",
     classification: "missed_opportunity",
     impact: "high",
     confidence: "high",
     evidence: "Queda de cadencia de stories afeta nutricao e reduz contexto para visitantes.",
-    recommendation: "Planejar minimo de 6 stories por dia conectados aos temas pagos.",
-    nextAction: "Criar pauta diaria de stories com CTA para WhatsApp.",
+    recommendation: "Planejar mínimo de 6 Stories por dia conectados aos temas pagos.",
+    nextAction: "Criar pauta diária de Stories com CTA para WhatsApp.",
     owner: "internal",
     status: "open",
     relatedMetric: "Story count e retencao",
@@ -268,12 +268,12 @@ export const WEEKLY_AUDIT_DECISIONS: WeeklyAuditDecision[] = [
     classification: "clear_win",
     impact: "medium",
     confidence: "high",
-    evidence: "Content Studio e Calendario Editorial ja organizam reaproveitamento por formato.",
-    recommendation: "Transformar ideias vencedoras em rotina de producao semanal.",
-    nextAction: "Revisar calendario e garantir roteiro, gravacao, edicao e agendamento.",
+    evidence: "Content Studio e Calendário editorial ja organizam reaproveitamento por formato.",
+    recommendation: "Transformar ideias vencedoras em rotina de produção semanal.",
+    nextAction: "Revisar calendário e garantir roteiro, gravação, edição e agendamento.",
     owner: "internal",
     status: "monitoring",
-    relatedMetric: "Conteudos reaproveitaveis",
+    relatedMetric: "Conteúdos reaproveitaveis",
     createdAt: baseDate,
     updatedAt: baseDate
   }
@@ -338,7 +338,7 @@ export function generateWeeklyAuditExecutiveSummary(
 ): string {
   const risks = getHighImpactRisks(decisions).length;
   const opportunities = getHighImpactOpportunities(decisions).length;
-  return `${summary.weekLabel}: ${summary.metaDecision} Google permanece diagnostico ate corrigir conversoes. Foram identificados ${risks} risco(s) de alto impacto e ${opportunities} oportunidade(s) de alto impacto.`;
+  return `${summary.weekLabel}: ${summary.metaDecision} Google Ads permanece em diagnóstico até corrigir conversões. Foram identificados ${risks} risco(s) de alto impacto e ${opportunities} oportunidade(s) de alto impacto.`;
 }
 
 function countBy<T extends string, K extends keyof WeeklyAuditDecision>(
@@ -358,8 +358,8 @@ export function channelLabel(value: WeeklyAuditChannel): string {
   return {
     meta: "Meta Ads",
     google: "Google Ads",
-    instagram: "Instagram organico",
-    content: "Conteudo/Calendario",
+    instagram: "Instagram orgânico",
+    content: "Conteúdo/Calendario",
     funnel: "Funil",
     budget: "Orcamento"
   }[value];
@@ -377,15 +377,15 @@ export function classificationLabel(value: WeeklyAuditClassification): string {
 }
 
 export function impactLabel(value: WeeklyAuditImpact): string {
-  return { low: "Baixo", medium: "Medio", high: "Alto" }[value];
+  return { low: "Baixo", medium: "Médio", high: "Alto" }[value];
 }
 
 export function confidenceLabel(value: WeeklyAuditConfidence): string {
-  return { low: "Baixa", medium: "Media", high: "Alta" }[value];
+  return { low: "Baixa", medium: "Média", high: "Alta" }[value];
 }
 
 export function ownerLabel(value: WeeklyAuditOwner): string {
-  return { internal: "Equipe interna", agency: "Agencia", cadu: "Dr. Cadu", unknown: "Nao definido" }[value];
+  return { internal: "Equipe interna", agency: "Agência", cadu: "Dr. Cadu", unknown: "Não definido" }[value];
 }
 
 export function statusLabel(value: WeeklyAuditStatus): string {

@@ -80,11 +80,11 @@ export type WeeklyCommandCenter = {
 };
 
 export const WEEKLY_COMMAND_CENTER_LINKS = [
-  { href: "/data", label: "Dados semanais" },
-  { href: "/signals", label: "Sinais de decisão" },
-  { href: "/audit", label: "Auditoria semanal" },
-  { href: "/calendar", label: "Calendário editorial" },
-  { href: "/content", label: "Content Studio" }
+  { href: "/data", label: "Ver dados semanais" },
+  { href: "/signals", label: "Ver sinais de decisão" },
+  { href: "/audit", label: "Ver auditoria semanal" },
+  { href: "/calendar", label: "Ver calendário editorial" },
+  { href: "/content", label: "Ver ideias de conteúdo" }
 ];
 
 export function buildWeeklyCommandCenter(data: WeeklyMarketingData = WEEKLY_MARKETING_DATA_MOCK): WeeklyCommandCenter {

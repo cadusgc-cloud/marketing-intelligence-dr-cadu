@@ -75,8 +75,18 @@ describe("Weekly Command Center", () => {
 
   it("representa os links para os módulos de origem", () => {
     const hrefs = WEEKLY_COMMAND_CENTER_LINKS.map((link) => link.href);
+    const labels = WEEKLY_COMMAND_CENTER_LINKS.map((link) => link.label);
 
     expect(hrefs).toEqual(expect.arrayContaining(["/data", "/signals", "/audit", "/calendar", "/content"]));
+    expect(labels).toEqual(
+      expect.arrayContaining([
+        "Ver dados semanais",
+        "Ver sinais de decisão",
+        "Ver auditoria semanal",
+        "Ver calendário editorial",
+        "Ver ideias de conteúdo"
+      ])
+    );
   });
 
   it("inclui investigação, escala/manutenção para Meta e diagnóstico para Google", () => {

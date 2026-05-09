@@ -14,6 +14,7 @@ const links = [
   ["/insights", "Insights"],
   ["/content", "Content Studio"],
   ["/calendar", "Calendário"],
+  ["/audit", "Auditoria"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

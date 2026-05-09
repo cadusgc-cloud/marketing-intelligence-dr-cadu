@@ -47,11 +47,11 @@ export default function WeeklyDataInputPage() {
   return (
     <div className="space-y-6">
       <section className="panel">
-        <p className="text-sm font-medium text-ocean">Dados Semanais</p>
-        <h2 className="mt-1 text-2xl font-semibold">Dados Semanais</h2>
-        <p className="mt-2 text-sm text-slate-500">Entrada leve de metricas para alimentar a auditoria e os sinais de decisao.</p>
+        <p className="text-sm font-medium text-ocean">Dados semanais</p>
+        <h2 className="mt-1 text-2xl font-semibold">Dados semanais</h2>
+        <p className="mt-2 text-sm text-slate-500">Entrada leve de métricas para alimentar a auditoria e os sinais de decisão.</p>
         <p className="mt-4 rounded-md bg-amber-50 p-3 text-sm font-medium text-amber">
-          Nesta fase, os dados sao mockados; upload de CSV ainda nao foi implementado.
+          Nesta fase, os dados são simulados; o upload de CSV ainda não foi implementado.
         </p>
       </section>
 
@@ -62,9 +62,9 @@ export default function WeeklyDataInputPage() {
       </section>
 
       <section className="grid gap-3 md:grid-cols-4">
-        <MetricCard label="Meta Ads" value={formatCurrency(data.metaSpend)} detail={`${data.metaWhatsappConversations} conversas WhatsApp`} />
-        <MetricCard label="Google Ads" value={formatCurrency(data.googleSpend)} detail={`${data.googleConversions} conversoes`} />
-        <MetricCard label="Stories/dia" value={data.instagramStories} detail="minimo operacional: 6" />
+        <MetricCard label="Meta Ads" value={formatCurrency(data.metaSpend)} detail={`${data.metaWhatsappConversations} conversas no WhatsApp`} />
+        <MetricCard label="Google Ads" value={formatCurrency(data.googleSpend)} detail={`${data.googleConversions} conversões`} />
+        <MetricCard label="Stories por dia" value={data.instagramStories} detail="mínimo operacional: 6" />
         <MetricCard label="Funil" value={validation.valid ? "Completo" : "Incompleto"} detail={`${validation.missingFields.length} campo(s) ausente(s)`} />
       </section>
 
@@ -75,7 +75,7 @@ export default function WeeklyDataInputPage() {
             <MetricCard label="Custo por WhatsApp" value={formatCurrency(metaCostPerWhatsapp)} />
             <MetricCard label="Visitas ao perfil" value={data.metaProfileVisits} />
             <MetricCard label="Custo por visita" value={formatCurrency(metaCostPerProfileVisit)} />
-            <MetricCard label="Canal principal" value={isMetaPerformingBetterThanGoogle(data) ? "Sim" : "Nao"} detail="Meta performa melhor que Google nesta amostra" />
+            <MetricCard label="Canal principal" value={isMetaPerformingBetterThanGoogle(data) ? "Sim" : "Não"} detail="Meta Ads performa melhor que Google Ads nesta amostra" />
           </div>
         </div>
 
@@ -84,13 +84,13 @@ export default function WeeklyDataInputPage() {
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <MetricCard label="Cliques" value={data.googleClicks} />
             <MetricCard label="CPC" value={formatCurrency(googleCpc)} />
-            <MetricCard label="Conversoes" value={data.googleConversions} />
-            <MetricCard label="Taxa de conversao" value={formatPercent(googleConversionRate)} detail="diagnostico ate corrigir conversoes" />
+            <MetricCard label="Conversões" value={data.googleConversions} />
+            <MetricCard label="Taxa de conversão" value={formatPercent(googleConversionRate)} detail="em diagnóstico até corrigir conversões" />
           </div>
         </div>
 
         <div className="panel">
-          <h3 className="text-lg font-semibold">Instagram organico</h3>
+          <h3 className="text-lg font-semibold">Instagram orgânico</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <MetricCard label="Stories" value={data.instagramStories} />
             <MetricCard label="Reels/Shorts" value={data.instagramReels} />
@@ -127,8 +127,8 @@ export default function WeeklyDataInputPage() {
         </div>
 
         <div className="panel">
-          <h3 className="text-lg font-semibold">Previa dos sinais alimentados</h3>
-          <p className="mt-2 text-sm text-slate-500">Estas metricas seriam convertidas em inputs para o modulo Sinais de Decisao.</p>
+          <h3 className="text-lg font-semibold">Prévia dos sinais de decisão</h3>
+          <p className="mt-2 text-sm text-slate-500">Estas métricas seriam convertidas em entradas para o módulo Sinais de decisão.</p>
           <div className="mt-4 space-y-2">
             {decisionInputs.map((input) => (
               <div key={input.id} className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">

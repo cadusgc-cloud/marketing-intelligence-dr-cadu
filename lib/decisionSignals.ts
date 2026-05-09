@@ -84,20 +84,20 @@ export const DECISION_RULES: DecisionRule[] = [
     decisionType: "maintain",
     recommendation: "Manter campanha e acompanhar variacao diaria antes de escalar.",
     nextAction: "Comparar criativos e segurar aumento de verba ate estabilizar.",
-    rationale: "A faixa ainda pode ser saudavel, mas nao justifica escala agressiva.",
+    rationale: "A faixa ainda pode ser saudável, mas não justifica escala agressiva.",
     relatedAuditClassification: "partial_win"
   },
   {
     id: "meta-bofu-whatsapp-review",
     channel: "meta",
     title: "BOFU WhatsApp acima do limite",
-    conditionDescription: "Se custo por WhatsApp BOFU passar de R$ 8,00, nao escalar; revisar criativo.",
+    conditionDescription: "Se custo por conversa no WhatsApp BOFU passar de R$ 8,00, não escalar; revisar criativo.",
     metric: "meta_bofu_whatsapp_cost",
     operator: "gt",
     threshold: 8,
     severity: "high",
     decisionType: "investigate",
-    recommendation: "Nao escalar BOFU; revisar criativo, publico e oferta.",
+    recommendation: "Não escalar BOFU; revisar criativo, público e oferta.",
     nextAction: "Comparar contra BOFU WhatsApp Escala e pausar conjuntos fracos.",
     rationale: "Custo acima do limite reduz previsibilidade de captacao.",
     relatedAuditClassification: "operational_error"
@@ -114,7 +114,7 @@ export const DECISION_RULES: DecisionRule[] = [
     decisionType: "scale",
     recommendation: "Escalar TOFU com criativos que geram visita qualificada.",
     nextAction: "Aumentar verba com limite e sustentar perfil com stories diarios.",
-    rationale: "Visita barata so vale se o organico sustentar confianca depois do clique.",
+    rationale: "Visita barata só vale se o orgânico sustentar confiança depois do clique.",
     relatedAuditClassification: "partial_win"
   },
   {
@@ -150,16 +150,16 @@ export const DECISION_RULES: DecisionRule[] = [
   {
     id: "google-zero-conversions",
     channel: "google",
-    title: "Google com conversoes zeradas",
-    conditionDescription: "Se conversoes estiverem zeradas, nao escalar Google.",
+    title: "Google com conversões zeradas",
+    conditionDescription: "Se conversões estiverem zeradas, não escalar Google Ads.",
     metric: "google_conversions",
     operator: "eq",
     threshold: 0,
     severity: "critical",
     decisionType: "pause",
-    recommendation: "Nao escalar Google Ads enquanto conversoes estiverem zeradas.",
-    nextAction: "Auditar tag, evento e importacao de conversoes antes de ampliar verba.",
-    rationale: "Google permanece diagnostico ate corrigir rastreamento de conversoes.",
+    recommendation: "Não escalar Google Ads enquanto conversões estiverem zeradas.",
+    nextAction: "Auditar tag, evento e importacao de conversões antes de ampliar verba.",
+    rationale: "Google Ads permanece em diagnóstico até corrigir rastreamento de conversões.",
     relatedAuditClassification: "silent_risk"
   },
   {
@@ -188,7 +188,7 @@ export const DECISION_RULES: DecisionRule[] = [
     severity: "high",
     decisionType: "pause",
     recommendation: "Limitar ou pausar o termo cirurgia estetica.",
-    nextAction: "Mover para experimento de baixa verba ou negativar se nao converter.",
+    nextAction: "Mover para experimento de baixa verba ou negativar se não converter.",
     rationale: "Termo amplo demais pode consumir verba sem intencao cirurgica especifica.",
     relatedAuditClassification: "missed_opportunity"
   },
@@ -204,7 +204,7 @@ export const DECISION_RULES: DecisionRule[] = [
     decisionType: "restructure",
     recommendation: "Separar Uba em campanha propria ou negativar.",
     nextAction: "Avaliar volume, custo e qualidade por localidade.",
-    rationale: "Localidade com comportamento proprio pode distorcer decisao de orcamento.",
+    rationale: "Localidade com comportamento próprio pode distorcer a decisóo de orçamento.",
     relatedAuditClassification: "needs_more_data"
   },
   {
@@ -218,37 +218,37 @@ export const DECISION_RULES: DecisionRule[] = [
     severity: "medium",
     decisionType: "maintain",
     recommendation: "Manter campanha de mamas e expandir com cautela.",
-    nextAction: "Validar conversoes antes de liberar escala real.",
-    rationale: "CTR forte indica intencao, mas Google ainda depende de conversao confiavel.",
+    nextAction: "Validar conversões antes de liberar escala real.",
+    rationale: "CTR forte indica intenção, mas Google Ads ainda depende de conversóo confiável.",
     relatedAuditClassification: "partial_win"
   },
   {
     id: "google-high-cpc-no-conversion",
     channel: "google",
-    title: "CPC alto sem conversao rastreada",
-    conditionDescription: "Se Google tiver CPC alto sem conversao rastreada, manter em diagnostico.",
+    title: "CPC alto sem conversóo rastreada",
+    conditionDescription: "Se Google Ads tiver CPC alto sem conversão rastreada, manter em diagnóstico.",
     metric: "google_cpc_without_tracked_conversion",
     operator: "gt",
     threshold: 8,
     severity: "high",
     decisionType: "investigate",
-    recommendation: "Manter Google em diagnostico ate corrigir conversao.",
+    recommendation: "Manter Google Ads em diagnóstico até corrigir conversóo.",
     nextAction: "Revisar termos, tracking e landing/WhatsApp.",
-    rationale: "CPC alto sem conversao confiavel aumenta risco de alocacao ruim.",
+    rationale: "CPC alto sem conversóo confiável aumenta risco de alocação ruim.",
     relatedAuditClassification: "silent_risk"
   },
   {
     id: "instagram-reach-cadence-drop",
     channel: "instagram",
     title: "Alcance caiu junto com cadencia",
-    conditionDescription: "Se alcance cair junto com queda de cadencia, nao concluir queda de qualidade sem olhar media por conteudo.",
+    conditionDescription: "Se alcance cair junto com queda de cadência, não concluir queda de qualidade sem olhar média por conteúdo.",
     metric: "instagram_reach_with_cadence_drop",
     operator: "gt",
     threshold: 0,
     severity: "medium",
     decisionType: "investigate",
     recommendation: "Separar queda de cadencia de queda de qualidade.",
-    nextAction: "Comparar media por conteudo antes de julgar pauta ou formato.",
+    nextAction: "Comparar média por conteúdo antes de julgar pauta ou formato.",
     rationale: "Menos publicacoes podem derrubar alcance agregado sem piorar qualidade individual.",
     relatedAuditClassification: "needs_more_data"
   },
@@ -262,22 +262,22 @@ export const DECISION_RULES: DecisionRule[] = [
     threshold: 6,
     severity: "high",
     decisionType: "maintain",
-    recommendation: "Tratar stories como parte do funil, nao como enfeite.",
-    nextAction: "Publicar minimo de 6 stories por dia com CTA para WhatsApp.",
+    recommendation: "Tratar Stories como parte do funil, não como enfeite.",
+    nextAction: "Publicar mínimo de 6 Stories por dia com CTA para WhatsApp.",
     rationale: "Stories sustentam confianca e nutricao dos visitantes do trafego pago.",
     relatedAuditClassification: "missed_opportunity"
   },
   {
     id: "instagram-missing-whatsapp-cta",
     channel: "instagram",
-    title: "Sem CTA diario para WhatsApp",
-    conditionDescription: "Se nao houver CTA diario para WhatsApp, alerta de fundo de funil.",
+    title: "Sem CTA diário para WhatsApp",
+    conditionDescription: "Se não houver CTA diário para WhatsApp, alerta de fundo de funil.",
     metric: "instagram_daily_whatsapp_cta",
     operator: "eq",
     threshold: 0,
     severity: "high",
     decisionType: "investigate",
-    recommendation: "Inserir CTA diario para WhatsApp no organico.",
+    recommendation: "Inserir CTA diário para WhatsApp no orgânico.",
     nextAction: "Planejar stories com chamada clara para conversa qualificada.",
     rationale: "Sem CTA, o perfil pode receber visita mas perder demanda.",
     relatedAuditClassification: "silent_risk"
@@ -285,30 +285,30 @@ export const DECISION_RULES: DecisionRule[] = [
   {
     id: "instagram-no-authority",
     channel: "instagram",
-    title: "Sem conteudo de autoridade",
-    conditionDescription: "Se nao houver conteudo de autoridade na semana, risco de perda de confianca.",
+    title: "Sem conteúdo de autoridade",
+    conditionDescription: "Se não houver conteúdo de autoridade na semana, risco de perda de confiança.",
     metric: "weekly_authority_content_count",
     operator: "eq",
     threshold: 0,
     severity: "medium",
     decisionType: "test",
-    recommendation: "Incluir conteudo de autoridade medica na semana.",
-    nextAction: "Gravar bastidor tecnico, explicacao de seguranca ou criterio medico.",
-    rationale: "Autoridade sustenta decisao em procedimentos de alto valor.",
+    recommendation: "Incluir conteúdo de autoridade médica na semana.",
+    nextAction: "Gravar bastidor técnico, explicação de segurança ou critério médico.",
+    rationale: "Autoridade sustenta decisóo em procedimentos de alto valor.",
     relatedAuditClassification: "silent_risk"
   },
   {
     id: "instagram-no-proof",
     channel: "instagram",
-    title: "Sem conteudo de prova/resultado",
-    conditionDescription: "Se nao houver conteudo de prova/resultado, oportunidade perdida.",
+    title: "Sem conteúdo de prova/resultado",
+    conditionDescription: "Se não houver conteúdo de prova/resultado, oportunidade perdida.",
     metric: "weekly_proof_content_count",
     operator: "eq",
     threshold: 0,
     severity: "medium",
     decisionType: "test",
-    recommendation: "Adicionar conteudo de prova com explicacao responsavel.",
-    nextAction: "Transformar resultado em educacao sobre maturacao e seguranca.",
+    recommendation: "Adicionar conteúdo de prova com explicação responsóvel.",
+    nextAction: "Transformar resultado em educação sobre maturação e segurança.",
     rationale: "Prova/resultado ajuda BOFU sem prometer resultado individual.",
     relatedAuditClassification: "missed_opportunity"
   },
@@ -337,16 +337,16 @@ export const DECISION_RULES: DecisionRule[] = [
     threshold: 2,
     severity: "medium",
     decisionType: "test",
-    recommendation: "Adicionar conteudos BOFU de prova, seguranca e intencao comercial.",
-    nextAction: "Reaproveitar criativos vencedores como roteiro organico.",
-    rationale: "Topo sem BOFU pode gerar alcance sem conversao.",
+    recommendation: "Adicionar conteúdos BOFU de prova, segurança e intenção comercial.",
+    nextAction: "Reaproveitar criativos vencedores como roteiro orgânico.",
+    rationale: "Topo sem BOFU pode gerar alcance sem conversóo.",
     relatedAuditClassification: "silent_risk"
   },
   {
     id: "content-not-reused",
     channel: "content",
     title: "Ideias sem reaproveitamento",
-    conditionDescription: "Se ideias nao forem reaproveitadas em Stories + Reels/Shorts + TikTok, oportunidade perdida.",
+    conditionDescription: "Se ideias não forem reaproveitadas em Stories + Reels/Shorts + TikTok, oportunidade perdida.",
     metric: "weekly_reused_ideas_count",
     operator: "lt",
     threshold: 4,
@@ -360,15 +360,15 @@ export const DECISION_RULES: DecisionRule[] = [
   {
     id: "content-production-bottleneck",
     channel: "content",
-    title: "Gargalo de producao",
-    conditionDescription: "Se calendario tiver muitos conteudos planejados e poucos gravados/editados, gargalo de producao.",
+    title: "Gargalo de produção",
+    conditionDescription: "Se o calendário tiver muitos conteúdos planejados e poucos gravados/editados, gargalo de produção.",
     metric: "planned_to_recorded_ratio",
     operator: "gt",
     threshold: 2,
     severity: "high",
     decisionType: "restructure",
-    recommendation: "Organizar producao antes de adicionar novas ideias.",
-    nextAction: "Priorizar gravacao, edicao e agendamento dos roteiros ja planejados.",
+    recommendation: "Organizar produção antes de adicionar novas ideias.",
+    nextAction: "Priorizar gravação, edição e agendamento dos roteiros já planejados.",
     rationale: "Planejamento sem execucao cria atraso operacional.",
     relatedAuditClassification: "operational_error"
   },
@@ -383,8 +383,8 @@ export const DECISION_RULES: DecisionRule[] = [
     severity: "high",
     decisionType: "investigate",
     recommendation: "Auditar atendimento e qualificacao dos leads.",
-    nextAction: "Medir motivo de nao agendamento e tempo de resposta.",
-    rationale: "BOFU bom perde valor se atendimento nao converte conversa em consulta.",
+    nextAction: "Medir motivo de não agendamento e tempo de resposta.",
+    rationale: "BOFU bom perde valor se atendimento não converte conversa em consulta.",
     relatedAuditClassification: "silent_risk"
   },
   {
@@ -413,15 +413,15 @@ export const DECISION_RULES: DecisionRule[] = [
     severity: "medium",
     decisionType: "investigate",
     recommendation: "Mapear objecoes e proposta de valor no pos-consulta.",
-    nextAction: "Registrar motivos de nao fechamento por procedimento.",
-    rationale: "Fechamento baixo pode indicar gargalo comercial, nao de marketing.",
+    nextAction: "Registrar motivos de não fechamento por procedimento.",
+    rationale: "Fechamento baixo pode indicar gargalo comercial, não de marketing.",
     relatedAuditClassification: "needs_more_data"
   },
   {
     id: "funnel-missing-consult-data",
     channel: "funnel",
     title: "Sem dados de consulta marcada",
-    conditionDescription: "Se nao ha dados de consulta marcada, precisa de mais dados.",
+    conditionDescription: "Se não há dados de consulta marcada, precisa de mais dados.",
     metric: "scheduled_consults",
     operator: "missing",
     threshold: null,
@@ -429,7 +429,7 @@ export const DECISION_RULES: DecisionRule[] = [
     decisionType: "investigate",
     recommendation: "Criar controle de consultas marcadas por origem.",
     nextAction: "Registrar origem, data, comparecimento e fechamento.",
-    rationale: "Sem consulta marcada, nao da para auditar o funil completo.",
+    rationale: "Sem consulta marcada, não dá para auditar o funil completo.",
     relatedAuditClassification: "needs_more_data"
   },
   {
@@ -442,8 +442,8 @@ export const DECISION_RULES: DecisionRule[] = [
     threshold: 1,
     severity: "high",
     decisionType: "reduce",
-    recommendation: "Nao mover verba nova para Google enquanto conversao estiver incerta.",
-    nextAction: "Proteger Meta e manter Google em diagnostico.",
+    recommendation: "Não mover verba nova para Google Ads enquanto a conversóo estiver incerta.",
+    nextAction: "Proteger Meta Ads e manter Google Ads em diagnóstico.",
     rationale: "Meta e o canal principal de escala no momento.",
     relatedAuditClassification: "silent_risk"
   },
@@ -465,8 +465,8 @@ export const DECISION_RULES: DecisionRule[] = [
   {
     id: "budget-bad-campaign-keeps-budget",
     channel: "budget",
-    title: "Campanha ruim mantendo orcamento",
-    conditionDescription: "Se campanha ruim continua recebendo orcamento, erro operacional.",
+    title: "Campanha ruim mantendo orçamento",
+    conditionDescription: "Se campanha ruim continua recebendo orçamento, erro operacional.",
     metric: "bad_campaign_budget_active",
     operator: "eq",
     threshold: 1,
@@ -485,28 +485,28 @@ export const DECISION_SIGNAL_INPUTS: DecisionSignalInput[] = [
   signalInput("input-meta-tofu-cheap", "meta", "meta_tofu_profile_visit_cost", 0.12, "BRL", "TOFU Teste CBO com visita barata.", "Auditoria v0.7"),
   signalInput("input-meta-tofu-old", "meta", "meta_tofu_profile_visit_cost", 0.24, "BRL", "TOFU Escala antigo com visita mais cara.", "Auditoria v0.7"),
   signalInput("input-meta-frequency", "meta", "meta_frequency_without_result", 3.1, "ratio", "Frequencia subiu sem melhora de resultado.", "Auditoria v0.7"),
-  signalInput("input-google-zero", "google", "google_conversions", 0, "conversions", "Google com conversoes zeradas.", "Auditoria v0.7"),
+  signalInput("input-google-zero", "google", "google_conversions", 0, "conversions", "Google com conversões zeradas.", "Auditoria v0.7"),
   signalInput("input-google-generic-spend", "google", "google_generic_term_spend", 120, "BRL", "Termo generico consumindo verba.", "Auditoria v0.7"),
   signalInput("input-google-cirurgia", "google", "google_search_term", "cirurgia estetica", "text", "Cirurgia estetica consumindo verba.", "Auditoria v0.7"),
   signalInput("input-google-uba", "google", "google_location_term", "uba", "text", "Uba aparecendo muito nos termos.", "Auditoria v0.7"),
   signalInput("input-google-mamas-ctr", "google", "google_mamas_ctr", 8.4, "%", "Campanha de mamas com CTR forte.", "Auditoria v0.7"),
-  signalInput("input-google-cpc", "google", "google_cpc_without_tracked_conversion", 9.2, "BRL", "CPC alto sem conversao rastreada.", "Auditoria v0.7"),
-  signalInput("input-instagram-cadence", "instagram", "instagram_reach_with_cadence_drop", 1, "flag", "Alcance caiu junto com queda de cadencia.", "Calendario editorial"),
-  signalInput("input-instagram-stories", "instagram", "instagram_daily_stories", 3, "stories", "Necessidade de stories diarios.", "Calendario editorial"),
-  signalInput("input-instagram-cta", "instagram", "instagram_daily_whatsapp_cta", 0, "cta", "Sem CTA diario para WhatsApp.", "Calendario editorial"),
-  signalInput("input-instagram-authority", "instagram", "weekly_authority_content_count", 0, "items", "Sem conteudo de autoridade na semana.", "Calendario editorial"),
-  signalInput("input-instagram-proof", "instagram", "weekly_proof_content_count", 0, "items", "Sem conteudo de prova/resultado.", "Calendario editorial"),
-  signalInput("input-content-shorts", "content", "weekly_reels_shorts_count", 2, "items", "Semana com menos de 3 reels/shorts.", "Calendario editorial"),
-  signalInput("input-content-bofu", "content", "weekly_bofu_content_count", 1, "items", "Pouco BOFU no calendario.", "Calendario editorial"),
-  signalInput("input-content-reuse", "content", "weekly_reused_ideas_count", 3, "ideas", "Conteudos ainda pouco reaproveitados.", "Content Studio"),
-  signalInput("input-content-bottleneck", "content", "planned_to_recorded_ratio", 3, "ratio", "Muitos planejados e poucos gravados/editados.", "Calendario editorial"),
+  signalInput("input-google-cpc", "google", "google_cpc_without_tracked_conversion", 9.2, "BRL", "CPC alto sem conversóo rastreada.", "Auditoria v0.7"),
+  signalInput("input-instagram-cadence", "instagram", "instagram_reach_with_cadence_drop", 1, "flag", "Alcance caiu junto com queda de cadencia.", "Calendário editorial"),
+  signalInput("input-instagram-stories", "instagram", "instagram_daily_stories", 3, "stories", "Necessidade de stories diarios.", "Calendário editorial"),
+  signalInput("input-instagram-cta", "instagram", "instagram_daily_whatsapp_cta", 0, "cta", "Sem CTA diário para WhatsApp.", "Calendário editorial"),
+  signalInput("input-instagram-authority", "instagram", "weekly_authority_content_count", 0, "items", "Sem conteúdo de autoridade na semana.", "Calendário editorial"),
+  signalInput("input-instagram-proof", "instagram", "weekly_proof_content_count", 0, "items", "Sem conteúdo de prova/resultado.", "Calendário editorial"),
+  signalInput("input-content-shorts", "content", "weekly_reels_shorts_count", 2, "items", "Semana com menos de 3 reels/shorts.", "Calendário editorial"),
+  signalInput("input-content-bofu", "content", "weekly_bofu_content_count", 1, "items", "Pouco BOFU no calendario.", "Calendário editorial"),
+  signalInput("input-content-reuse", "content", "weekly_reused_ideas_count", 3, "ideas", "Conteúdos ainda pouco reaproveitados.", "Content Studio"),
+  signalInput("input-content-bottleneck", "content", "planned_to_recorded_ratio", 3, "ratio", "Muitos planejados e poucos gravados/editados.", "Calendário editorial"),
   signalInput("input-funnel-whatsapp-consult", "funnel", "whatsapp_to_consult_rate", 0.12, "rate", "Muitos WhatsApps e poucas consultas marcadas.", "Auditoria interna"),
   signalInput("input-funnel-show", "funnel", "consult_show_rate", 0.52, "rate", "Muitas consultas marcadas e poucas comparecidas.", "Auditoria interna"),
   signalInput("input-funnel-close", "funnel", "consult_close_rate", 0.14, "rate", "Consultas com poucos fechamentos.", "Auditoria interna"),
   signalInput("input-funnel-missing", "funnel", "scheduled_consults", null, "count", "Sem dados suficientes de consultas marcadas.", "Auditoria interna"),
   signalInput("input-budget-google", "budget", "new_budget_to_google_when_meta_better", 1, "flag", "Meta melhor que Google, mas verba nova indo para Google.", "Auditoria v0.7"),
   signalInput("input-budget-bofu", "budget", "efficient_bofu_budget_share", 0.2, "share", "BOFU eficiente com pouca verba.", "Auditoria v0.7"),
-  signalInput("input-budget-bad", "budget", "bad_campaign_budget_active", 1, "flag", "Campanha ruim continua recebendo orcamento.", "Auditoria v0.7")
+  signalInput("input-budget-bad", "budget", "bad_campaign_budget_active", 1, "flag", "Campanha ruim continua recebendo orçamento.", "Auditoria v0.7")
 ];
 
 function signalInput(
@@ -520,7 +520,7 @@ function signalInput(
 ): DecisionSignalInput {
   return {
     id,
-    periodLabel: "Auditoria interna ate 31/07/2026",
+    periodLabel: "Auditoria interna até 31/07/2026",
     channel,
     metric,
     value,
@@ -614,7 +614,7 @@ export function summarizeDecisionSignals(results: DecisionSignalResult[]): strin
   const critical = getCriticalSignals(results).length;
   const byType = getSignalsByDecisionType(results);
 
-  return `${triggered.length} sinal(is) acionado(s), ${critical} critico(s), ${byType.scale} decisao(oes) de escala e ${byType.pause + byType.reduce} decisao(oes) de pausa/reducao. Meta segue como canal principal de escala; Google permanece diagnostico ate corrigir conversoes.`;
+  return `${triggered.length} sinal(is) acionado(s), ${critical} critico(s), ${byType.scale} decisão(ões) de escala e ${byType.pause + byType.reduce} decisão(ões) de pausa/reducao. Meta Ads segue como canal principal de escala; Google permanece em diagnóstico até corrigir conversões.`;
 }
 
 function evaluateOperator(value: DecisionSignalInput["value"], operator: DecisionOperator, threshold: DecisionRule["threshold"]): boolean {
@@ -662,15 +662,15 @@ export function channelLabel(value: DecisionSignalChannel): string {
   return {
     meta: "Meta Ads",
     google: "Google Ads",
-    instagram: "Instagram organico",
-    content: "Conteudo/Calendario",
+    instagram: "Instagram orgânico",
+    content: "Conteúdo/Calendario",
     funnel: "Funil",
     budget: "Orcamento"
   }[value];
 }
 
 export function severityLabel(value: DecisionSeverity): string {
-  return { low: "Baixa", medium: "Media", high: "Alta", critical: "Critica" }[value];
+  return { low: "Baixa", medium: "Média", high: "Alta", critical: "Critica" }[value];
 }
 
 export function decisionTypeLabel(value: DecisionType): string {

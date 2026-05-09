@@ -32,12 +32,12 @@ export type ContentStudioFilters = {
 };
 
 export const CONTENT_PILLARS = [
-  "Mamas e protese de silicone",
+  "Mamas e prótese de silicone",
   "Mamoplastia redutora",
-  "Lipoaspiracao e contorno corporal",
-  "Maternidade e pos-gestacao",
-  "Naturalidade e seguranca",
-  "Autoridade medica",
+  "Lipoaspiração e contorno corporal",
+  "Maternidade e pós-gestação",
+  "Naturalidade e segurança",
+  "Autoridade médica",
   "Bastidores e rotina",
   "Quebra de mitos"
 ];
@@ -47,25 +47,25 @@ const baseDate = new Date("2026-05-09T12:00:00.000Z");
 export const CONTENT_IDEAS: ReusableContentIdea[] = [
   {
     id: "silicone-nao-e-so-ml",
-    title: "Protese de silicone nao se escolhe so por ml",
-    pillar: "Mamas e protese de silicone",
+    title: "Prótese de silicone não se escolhe só por ml",
+    pillar: "Mamas e prótese de silicone",
     funnelStage: "MOFU",
-    mainObjective: "Educar sobre escolha individualizada de implante e reduzir comparacoes simplistas.",
-    hook: "O numero de ml nao conta a historia inteira da protese.",
+    mainObjective: "Educar sobre escolha individualizada de implante e reduzir comparações simplistas.",
+    hook: "O número de ml não conta a história inteira da prótese.",
     storiesScript: [
-      "Story 1: enquete - voce acha que protese se escolhe por ml?",
-      "Story 2: explicar que largura do torax, pele, glandula e objetivo mudam a decisao.",
+      "Story 1: enquete - você acha que prótese se escolhe por ml?",
+      "Story 2: explicar que largura do tórax, pele, glândula e objetivo mudam a decisão.",
       "Story 3: exemplo simples de duas pacientes com mesmo ml e resultados diferentes.",
-      "Story 4: CTA para salvar e levar duvidas para consulta."
+      "Story 4: CTA para salvar e levar dúvidas para consulta."
     ],
     shortScript:
-      "Muita gente pergunta quantos ml colocar, mas essa nao e a primeira pergunta. A escolha passa por anatomia, largura do torax, pele, volume atual e naturalidade desejada. O mesmo volume pode ficar discreto em uma paciente e exagerado em outra. Por isso, protese boa e protese planejada para o corpo real.",
+      "Muita gente pergunta quantos ml colocar, mas essa não é a primeira pergunta. A escolha passa por anatomia, largura do tórax, pele, volume atual e naturalidade desejada. O mesmo volume pode ficar discreto em uma paciente e exagerado em outra. Por isso, prótese boa é prótese planejada para o corpo real.",
     tiktokScript:
-      "Se alguem te falou 'coloca tantos ml que fica perfeito', cuidado. Protese nao e receita pronta. O que funciona para uma amiga pode ficar pesado, artificial ou inseguro para voce. O planejamento precisa olhar corpo, pele e objetivo.",
-    caption: "A escolha da protese e tecnica, individual e precisa respeitar o corpo real.",
+      "Se alguém te falou 'coloca tantos ml que fica perfeito', cuidado. Prótese não é receita pronta. O que funciona para uma amiga pode ficar pesado, artificial ou inseguro para você. O planejamento precisa olhar corpo, pele e objetivo.",
+    caption: "A escolha da prótese é técnica, individual e precisa respeitar o corpo real.",
     cta: "Salve para lembrar quais fatores discutir na consulta.",
-    abVariation: "A: comece com mito dos ml. B: comece com comparacao entre amigas.",
-    strategicReason: "Atrai pacientes em pesquisa ativa e posiciona criterio medico antes de promessa estetica.",
+    abVariation: "A: comece com mito dos ml. B: comece com comparação entre amigas.",
+    strategicReason: "Atrai pacientes em pesquisa ativa e posiciona critério médico antes de promessa estética.",
     status: "scripted",
     priority: "high",
     suggestedPlatform: "all",
@@ -74,25 +74,25 @@ export const CONTENT_IDEAS: ReusableContentIdea[] = [
   },
   {
     id: "redutora-nao-e-so-diminuir",
-    title: "Mamoplastia redutora nao e so diminuir a mama",
+    title: "Mamoplastia redutora não é só diminuir a mama",
     pillar: "Mamoplastia redutora",
     funnelStage: "MOFU",
-    mainObjective: "Mostrar que reducao envolve forma, proporcao, alivio e seguranca.",
-    hook: "Reduzir mama nao e simplesmente tirar volume.",
+    mainObjective: "Mostrar que redução envolve forma, proporção, alívio e segurança.",
+    hook: "Reduzir mama não é simplesmente tirar volume.",
     storiesScript: [
-      "Story 1: pergunta - o que mais incomoda, peso, formato ou proporcao?",
-      "Story 2: explicar que a cirurgia reposiciona, remodela e busca equilibrio.",
-      "Story 3: reforcar que indicacao depende de sintomas, pele e expectativa.",
-      "Story 4: CTA para enviar duvidas gerais sobre mamoplastia redutora."
+      "Story 1: pergunta - o que mais incomoda, peso, formato ou proporção?",
+      "Story 2: explicar que a cirurgia reposiciona, remodela e busca equilíbrio.",
+      "Story 3: reforçar que indicação depende de sintomas, pele e expectativa.",
+      "Story 4: CTA para enviar dúvidas gerais sobre mamoplastia redutora."
     ],
     shortScript:
-      "Na mamoplastia redutora, o objetivo nao e apenas diminuir. O planejamento considera peso, formato, posicao da areola, proporcao corporal e seguranca. Muitas pacientes buscam alivio fisico, mas tambem querem uma mama mais harmonica. E essa conversa precisa ser individual.",
+      "Na mamoplastia redutora, o objetivo não é apenas diminuir. O planejamento considera peso, formato, posição da aréola, proporção corporal e segurança. Muitas pacientes buscam alívio físico, mas também querem uma mama mais harmônica. E essa conversa precisa ser individual.",
     tiktokScript:
-      "Voce acha que mamoplastia redutora e so 'tirar mama'? Nao. Se tirar volume sem planejar forma, proporcao e sustentacao, a cirurgia perde qualidade. Redutora bem indicada tambem e sobre conforto e identidade.",
-    caption: "Mamoplastia redutora e sobre proporcao, conforto e planejamento individual.",
-    cta: "Compartilhe com alguem que pesquisa sobre reducao mamaria.",
-    abVariation: "A: foco em alivio fisico. B: foco em proporcao e autoestima.",
-    strategicReason: "Forte potencial educativo para pacientes com dor, desconforto e duvidas sobre indicacao.",
+      "Você acha que mamoplastia redutora é só 'tirar mama'? Não. Se tirar volume sem planejar forma, proporção e sustentação, a cirurgia perde qualidade. Redutora bem indicada também é sobre conforto e identidade.",
+    caption: "Mamoplastia redutora é sobre proporção, conforto e planejamento individual.",
+    cta: "Compartilhe com alguém que pesquisa sobre redução mamária.",
+    abVariation: "A: foco em alívio físico. B: foco em proporção e autoestima.",
+    strategicReason: "Forte potencial educativo para pacientes com dor, desconforto e dúvidas sobre indicação.",
     status: "idea",
     priority: "high",
     suggestedPlatform: "reels",
@@ -101,25 +101,25 @@ export const CONTENT_IDEAS: ReusableContentIdea[] = [
   },
   {
     id: "lipo-nao-e-emagrecimento",
-    title: "Lipoaspiracao nao e emagrecimento",
-    pillar: "Lipoaspiracao e contorno corporal",
+    title: "Lipoaspiração não é emagrecimento",
+    pillar: "Lipoaspiração e contorno corporal",
     funnelStage: "TOFU",
     mainObjective: "Quebrar mito comum e qualificar expectativas antes da consulta.",
-    hook: "Lipoaspiracao muda contorno. Ela nao substitui emagrecimento.",
+    hook: "Lipoaspiração muda contorno. Ela não substitui emagrecimento.",
     storiesScript: [
       "Story 1: mito ou verdade - lipo emagrece?",
-      "Story 2: explicar diferenca entre gordura localizada e perda de peso.",
-      "Story 3: mostrar que indicacao depende de estabilidade, pele e objetivos.",
-      "Story 4: CTA para salvar antes de pesquisar preco."
+      "Story 2: explicar diferença entre gordura localizada e perda de peso.",
+      "Story 3: mostrar que indicação depende de estabilidade, pele e objetivos.",
+      "Story 4: CTA para salvar antes de pesquisar preço."
     ],
     shortScript:
-      "Lipoaspiracao nao e tratamento para emagrecer. Ela e uma cirurgia de contorno corporal, indicada para gordura localizada em pacientes bem selecionadas. Peso, pele, rotina e expectativa importam muito. Quando a indicacao e errada, a frustracao aparece depois.",
+      "Lipoaspiração não é tratamento para emagrecer. Ela é uma cirurgia de contorno corporal, indicada para gordura localizada em pacientes bem selecionadas. Peso, pele, rotina e expectativa importam muito. Quando a indicação é errada, a frustração aparece depois.",
     tiktokScript:
-      "Se voce quer fazer lipo para emagrecer, pare um segundo. A lipo nao resolve o que dieta, treino e acompanhamento clinico precisam resolver. Ela pode melhorar contorno, mas precisa de indicacao correta.",
-    caption: "Lipoaspiracao e contorno, nao atalho para emagrecimento.",
-    cta: "Salve este video antes de comparar promessas na internet.",
+      "Se você quer fazer lipo para emagrecer, pare um segundo. A lipo não resolve o que dieta, treino e acompanhamento clínico precisam resolver. Ela pode melhorar contorno, mas precisa de indicação correta.",
+    caption: "Lipoaspiração é contorno, não atalho para emagrecimento.",
+    cta: "Salve este vídeo antes de comparar promessas na internet.",
     abVariation: "A: abrir com mito direto. B: abrir com 'pare um segundo'.",
-    strategicReason: "Filtra expectativa inadequada e fortalece autoridade em seguranca.",
+    strategicReason: "Filtra expectativa inadequada e fortalece autoridade em segurança.",
     status: "scripted",
     priority: "medium",
     suggestedPlatform: "tiktok",
@@ -129,24 +129,24 @@ export const CONTENT_IDEAS: ReusableContentIdea[] = [
   {
     id: "maternidade-reconhecer",
     title: "Depois da maternidade, muitas mulheres querem se reconhecer",
-    pillar: "Maternidade e pos-gestacao",
+    pillar: "Maternidade e pós-gestação",
     funnelStage: "TOFU",
     mainObjective: "Acolher dores emocionais sem promessa de resultado.",
-    hook: "Nao e sobre apagar a maternidade. E sobre se reconhecer de novo.",
+    hook: "Não é sobre apagar a maternidade. É sobre se reconhecer de novo.",
     storiesScript: [
-      "Story 1: frase de acolhimento sobre mudancas no corpo pos-gestacao.",
-      "Story 2: citar mamas, abdomen e contorno como queixas frequentes.",
-      "Story 3: explicar que nem toda mudanca pede cirurgia e avaliacao e essencial.",
-      "Story 4: CTA para acompanhar conteudos educativos sobre pos-gestacao."
+      "Story 1: frase de acolhimento sobre mudanças no corpo pós-gestação.",
+      "Story 2: citar mamas, abdômen e contorno como queixas frequentes.",
+      "Story 3: explicar que nem toda mudança pede cirurgia e avaliação é essencial.",
+      "Story 4: CTA para acompanhar conteúdos educativos sobre pós-gestação."
     ],
     shortScript:
-      "Depois da maternidade, muitas mulheres sentem que o corpo mudou de um jeito dificil de nomear. A conversa nao precisa ser sobre voltar ao passado. Pode ser sobre entender o que incomoda, o que e esperado, o que pode melhorar com rotina e o que eventualmente pode ser avaliado em cirurgia.",
+      "Depois da maternidade, muitas mulheres sentem que o corpo mudou de um jeito difícil de nomear. A conversa não precisa ser sobre voltar ao passado. Pode ser sobre entender o que incomoda, o que é esperado, o que pode melhorar com rotina e o que eventualmente pode ser avaliado em cirurgia.",
     tiktokScript:
-      "Seu corpo mudou depois da maternidade e voce nao sabe se e vaidade falar disso? Nao e. Mas tambem nao precisa correr para cirurgia. Primeiro vem avaliacao, contexto, seguranca e uma conversa honesta.",
-    caption: "Pos-gestacao pede acolhimento, informacao e indicacao responsavel.",
-    cta: "Envie para uma mae que precisa ouvir isso com calma.",
-    abVariation: "A: tom emocional. B: tom educativo sobre avaliacao.",
-    strategicReason: "Conteudo de conexao para topo de funil e construcao de confianca.",
+      "Seu corpo mudou depois da maternidade e você não sabe se é vaidade falar disso? Não é. Mas também não precisa correr para cirurgia. Primeiro vem avaliação, contexto, segurança e uma conversa honesta.",
+    caption: "Pós-gestação pede acolhimento, informação e indicação responsável.",
+    cta: "Envie para uma mãe que precisa ouvir isso com calma.",
+    abVariation: "A: tom emocional. B: tom educativo sobre avaliação.",
+    strategicReason: "Conteúdo de conexão para topo de funil e construção de confiança.",
     status: "idea",
     priority: "medium",
     suggestedPlatform: "stories",
@@ -155,25 +155,25 @@ export const CONTENT_IDEAS: ReusableContentIdea[] = [
   },
   {
     id: "resultado-tres-meses",
-    title: "Resultado com 3 meses: o que ja da para avaliar",
-    pillar: "Naturalidade e seguranca",
+    title: "Resultado com 3 meses: o que já dá para avaliar",
+    pillar: "Naturalidade e segurança",
     funnelStage: "BOFU",
-    mainObjective: "Explicar maturacao de resultado e reduzir ansiedade no pos-operatorio.",
-    hook: "Tres meses nao e o fim do resultado, mas ja conta muita coisa.",
+    mainObjective: "Explicar maturação de resultado e reduzir ansiedade no pós-operatório.",
+    hook: "Três meses não é o fim do resultado, mas já conta muita coisa.",
     storiesScript: [
-      "Story 1: explicar que edema e cicatriz ainda estao evoluindo.",
-      "Story 2: listar o que costuma poder ser avaliado com seguranca.",
-      "Story 3: reforcar acompanhamento e comparacao com planejamento inicial.",
-      "Story 4: CTA para nao comparar tempos de recuperacao entre pacientes."
+      "Story 1: explicar que edema e cicatriz ainda estão evoluindo.",
+      "Story 2: listar o que costuma poder ser avaliado com segurança.",
+      "Story 3: reforçar acompanhamento e comparação com planejamento inicial.",
+      "Story 4: CTA para não comparar tempos de recuperação entre pacientes."
     ],
     shortScript:
-      "Com 3 meses, muita coisa ja mudou, mas o resultado ainda esta amadurecendo. Edema, cicatriz e acomodacao dos tecidos seguem evoluindo. O que da para avaliar melhor e a direcao do resultado, a seguranca da recuperacao e se o pos-operatorio esta caminhando como esperado.",
+      "Com 3 meses, muita coisa já mudou, mas o resultado ainda está amadurecendo. Edema, cicatriz e acomodação dos tecidos seguem evoluindo. O que dá para avaliar melhor é a direção do resultado, a segurança da recuperação e se o pós-operatório está caminhando como esperado.",
     tiktokScript:
-      "Voce viu resultado de 3 meses e achou que ja era definitivo? Calma. Em cirurgia plastica, o corpo ainda esta trabalhando. Tres meses mostram evolucao, nao ponto final.",
-    caption: "Resultado cirurgico amadurece. Comparar tempos pode gerar ansiedade desnecessaria.",
-    cta: "Salve para rever antes de comparar fotos de pos-operatorio.",
-    abVariation: "A: foco em ansiedade. B: foco em educacao sobre cicatriz e edema.",
-    strategicReason: "Aproveita criativo historicamente vencedor e transforma prova em educacao responsavel.",
+      "Você viu resultado de 3 meses e achou que já era definitivo? Calma. Em cirurgia plástica, o corpo ainda está trabalhando. Três meses mostram evolução, não ponto final.",
+    caption: "Resultado cirúrgico amadurece. Comparar tempos pode gerar ansiedade desnecessária.",
+    cta: "Salve para rever antes de comparar fotos de pós-operatório.",
+    abVariation: "A: foco em ansiedade. B: foco em educação sobre cicatriz e edema.",
+    strategicReason: "Aproveita criativo historicamente vencedor e transforma prova em educação responsável.",
     status: "scripted",
     priority: "high",
     suggestedPlatform: "all",
@@ -183,24 +183,24 @@ export const CONTENT_IDEAS: ReusableContentIdea[] = [
   {
     id: "nem-toda-mulher-exagero",
     title: "Nem toda mulher quer exagero",
-    pillar: "Naturalidade e seguranca",
+    pillar: "Naturalidade e segurança",
     funnelStage: "BOFU",
-    mainObjective: "Reforcar posicionamento de naturalidade e atrair pacientes alinhadas.",
-    hook: "Nem toda mulher quer chamar atencao. Algumas querem naturalidade.",
+    mainObjective: "Reforçar posicionamento de naturalidade e atrair pacientes alinhadas.",
+    hook: "Nem toda mulher quer chamar atenção. Algumas querem naturalidade.",
     storiesScript: [
       "Story 1: frase forte sobre naturalidade como escolha legitima.",
-      "Story 2: explicar que planejamento respeita proporcao e identidade.",
+      "Story 2: explicar que planejamento respeita proporção e identidade.",
       "Story 3: diferenciar naturalidade de resultado sem impacto.",
       "Story 4: CTA para salvar se esse for o tipo de resultado buscado."
     ],
     shortScript:
-      "Existe uma ideia de que cirurgia plastica precisa ser evidente. Nem sempre. Muitas mulheres procuram um resultado que combine com a propria identidade, com proporcao e naturalidade. O planejamento precisa ouvir esse desejo e transformar em escolha tecnica segura.",
+      "Existe uma ideia de que cirurgia plastica precisa ser evidente. Nem sempre. Muitas mulheres procuram um resultado que combine com a propria identidade, com proporção e naturalidade. O planejamento precisa ouvir esse desejo e transformar em escolha tecnica segura.",
     tiktokScript:
-      "Se voce tem medo de ficar artificial, esse video e para voce. Cirurgia plastica nao precisa gritar. Para muita gente, o melhor resultado e aquele que respeita identidade, proporcao e naturalidade.",
-    caption: "Naturalidade tambem e posicionamento. O planejamento precisa respeitar isso.",
-    cta: "Salve se naturalidade e parte do resultado que voce procura.",
+      "Se você tem medo de ficar artificial, este vídeo é para você. Cirurgia plástica não precisa gritar. Para muita gente, o melhor resultado é aquele que respeita identidade, proporção e naturalidade.",
+    caption: "Naturalidade também é posicionamento. O planejamento precisa respeitar isso.",
+    cta: "Salve se naturalidade e parte do resultado que você procura.",
     abVariation: "A: abrir com medo de artificial. B: abrir com naturalidade como escolha.",
-    strategicReason: "Aproveita mensagem BoFu vencedora e qualifica pacientes com preferencia por resultado discreto.",
+    strategicReason: "Aproveita mensagem BoFu vencedora e qualifica pacientes com preferência por resultado discreto.",
     status: "scripted",
     priority: "high",
     suggestedPlatform: "all",

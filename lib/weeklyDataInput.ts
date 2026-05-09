@@ -62,7 +62,7 @@ export const WEEKLY_MARKETING_DATA_MOCK: WeeklyMarketingData = {
   consultationsAttended: null,
   surgeriesClosed: null,
   notes:
-    "Meta segue mais acionavel que Google. Google esta com conversoes zeradas. Stories abaixo do ideal e funil comercial incompleto por falta de consultas marcadas.",
+    "Meta Ads segue mais acionável que Google Ads. Google Ads está com conversões zeradas. Stories estão abaixo do ideal e o funil comercial está incompleto por falta de dados de consultas marcadas.",
   createdAt: baseDate,
   updatedAt: baseDate
 };
@@ -104,9 +104,9 @@ export function validateWeeklyMarketingData(data: WeeklyMarketingData): WeeklyMa
   if (data.consultationsScheduled === null) missingFields.push("consultationsScheduled");
   if (data.consultationsAttended === null) missingFields.push("consultationsAttended");
   if (data.surgeriesClosed === null) missingFields.push("surgeriesClosed");
-  if (data.googleConversions === 0) warnings.push("Google Ads esta com conversoes zeradas e deve permanecer diagnostico.");
-  if (data.instagramStories < 6) warnings.push("Stories abaixo do minimo operacional de 6 por dia.");
-  if (data.instagramReels < 3) warnings.push("Reels/Shorts abaixo do minimo semanal de 3.");
+  if (data.googleConversions === 0) warnings.push("Google Ads está com conversões zeradas e deve permanecer em diagnóstico.");
+  if (data.instagramStories < 6) warnings.push("Stories abaixo do mínimo operacional de 6 por dia.");
+  if (data.instagramReels < 3) warnings.push("Reels/Shorts abaixo do mínimo semanal de 3.");
   if (data.consultationsScheduled === null) warnings.push("Funil incompleto: faltam dados de consultas marcadas.");
 
   return {
@@ -121,20 +121,20 @@ export function summarizeWeeklyMarketingData(data: WeeklyMarketingData): string 
   const googleRate = data.googleConversionRate ?? calculateGoogleConversionRate(data.googleConversions, data.googleClicks);
   const showRate = calculateConsultationShowRate(data.consultationsAttended, data.consultationsScheduled);
 
-  return `${data.weekLabel}: Meta gerou ${data.metaWhatsappConversations} conversas WhatsApp com custo aproximado de ${formatCurrency(metaCpw)}. Google registrou ${data.googleConversions} conversoes (${formatPercent(googleRate)}). Stories ficaram em ${data.instagramStories}/dia e o funil comercial ${showRate === null ? "ainda precisa de dados de consultas" : `teve comparecimento de ${formatPercent(showRate)}`}.`;
+  return `${data.weekLabel}: Meta Ads gerou ${data.metaWhatsappConversations} conversas no WhatsApp com custo aproximado de ${formatCurrency(metaCpw)}. Google Ads registrou ${data.googleConversions} conversões (${formatPercent(googleRate)}). Stories ficaram em ${data.instagramStories}/dia e o funil comercial ${showRate === null ? "ainda precisa de dados de consultas" : `teve comparecimento de ${formatPercent(showRate)}`}.`;
 }
 
 export function convertWeeklyDataToDecisionInputs(data: WeeklyMarketingData): DecisionSignalInput[] {
   return [
-    decisionInput(data, "meta-bofu-cost", "meta", "meta_bofu_whatsapp_cost", data.metaCostPerWhatsapp ?? calculateMetaCostPerWhatsapp(data.metaSpend, data.metaWhatsappConversations), "BRL", "Custo por WhatsApp BOFU calculado a partir dos dados semanais."),
+    decisionInput(data, "meta-bofu-cost", "meta", "meta_bofu_whatsapp_cost", data.metaCostPerWhatsapp ?? calculateMetaCostPerWhatsapp(data.metaSpend, data.metaWhatsappConversations), "BRL", "Custo por conversa no WhatsApp BOFU calculado a partir dos dados semanais."),
     decisionInput(data, "meta-tofu-profile-visit", "meta", "meta_tofu_profile_visit_cost", data.metaCostPerProfileVisit ?? calculateMetaCostPerProfileVisit(data.metaSpend, data.metaProfileVisits), "BRL", "Custo por visita ao perfil no topo do funil."),
-    decisionInput(data, "google-zero-conversions", "google", "google_conversions", data.googleConversions, "conversions", "Conversoes Google da semana."),
-    decisionInput(data, "google-cpc", "google", "google_cpc_without_tracked_conversion", data.googleCostPerClick ?? calculateGoogleCostPerClick(data.googleSpend, data.googleClicks), "BRL", "CPC Google sem conversao rastreada confiavel."),
-    decisionInput(data, "instagram-stories", "instagram", "instagram_daily_stories", data.instagramStories, "stories", "Volume diario de stories informado."),
+    decisionInput(data, "google-zero-conversions", "google", "google_conversions", data.googleConversions, "conversions", "Conversões do Google Ads na semana."),
+    decisionInput(data, "google-cpc", "google", "google_cpc_without_tracked_conversion", data.googleCostPerClick ?? calculateGoogleCostPerClick(data.googleSpend, data.googleClicks), "BRL", "CPC do Google Ads sem conversão rastreada de forma confiável."),
+    decisionInput(data, "instagram-stories", "instagram", "instagram_daily_stories", data.instagramStories, "stories", "Volume diário de Stories informado."),
     decisionInput(data, "content-reels-shorts", "content", "weekly_reels_shorts_count", data.instagramReels, "items", "Quantidade semanal de Reels/Shorts."),
     decisionInput(data, "funnel-scheduled-consults", "funnel", "scheduled_consults", data.consultationsScheduled, "count", "Consultas marcadas vindas do funil comercial."),
     decisionInput(data, "funnel-whatsapp-consult-rate", "funnel", "whatsapp_to_consult_rate", data.consultationsScheduled === null ? null : calculateConsultRate(data.consultationsScheduled, data.whatsappTotal), "rate", "Taxa de WhatsApp para consulta marcada."),
-    decisionInput(data, "budget-meta-vs-google", "budget", "new_budget_to_google_when_meta_better", isMetaPerformingBetterThanGoogle(data) ? 0 : 1, "flag", "Comparacao operacional entre Meta e Google.")
+    decisionInput(data, "budget-meta-vs-google", "budget", "new_budget_to_google_when_meta_better", isMetaPerformingBetterThanGoogle(data) ? 0 : 1, "flag", "Comparação operacional entre Meta Ads e Google Ads.")
   ];
 }
 

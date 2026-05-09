@@ -11,11 +11,11 @@ import {
 } from "@/lib/weeklyAudit";
 
 describe("Weekly Audit", () => {
-  it("possui pelo menos dez decisoes e achados mockados", () => {
+  it("possui pelo menos dez decisões e achados simulados", () => {
     expect(WEEKLY_AUDIT_DECISIONS.length).toBeGreaterThanOrEqual(10);
   });
 
-  it("inclui decisoes para todos os canais principais", () => {
+  it("inclui decisões para todos os canais principais", () => {
     const channels = new Set(WEEKLY_AUDIT_DECISIONS.map((decision) => decision.channel));
 
     expect(channels).toEqual(new Set(["meta", "google", "instagram", "content", "funnel", "budget"]));
@@ -78,7 +78,7 @@ describe("Weekly Audit", () => {
 
   it("gera resumo executivo simples da semana", () => {
     expect(WEEKLY_AUDIT_SUMMARY.executiveDiagnosis).toContain("Meta Ads");
-    expect(generateWeeklyAuditExecutiveSummary()).toContain("Google permanece diagnostico");
+    expect(generateWeeklyAuditExecutiveSummary()).toContain("Google Ads permanece em diagnóstico");
     expect(generateWeeklyAuditExecutiveSummary()).toContain("risco(s) de alto impacto");
   });
 });

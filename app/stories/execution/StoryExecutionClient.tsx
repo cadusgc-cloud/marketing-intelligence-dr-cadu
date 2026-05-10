@@ -130,12 +130,16 @@ export default function StoryExecutionClient() {
             <p><span className="font-semibold">Próxima ação:</span> {board.nextAction}</p>
             <p className="mt-1"><span className="font-semibold">Atenção:</span> {board.mainWarning}</p>
           </div>
+          <Link href="/stories/results" className="mt-4 inline-flex w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+            Registrar desempenho
+          </Link>
         </div>
 
         <aside className="panel">
           <h3 className="text-lg font-semibold">Links contextuais</h3>
           <div className="mt-3 grid gap-2 text-sm">
             <Link href="/stories/export" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Exportação da semana</Link>
+            <Link href="/stories/results" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Registrar resultados</Link>
             <Link href="/stories" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Planejador de Stories</Link>
             <Link href="/publishing" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Central de Publicação</Link>
             <Link href="/weekly" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Central Semanal</Link>
@@ -255,6 +259,7 @@ export default function StoryExecutionClient() {
             {nextActions.map((action) => (
               <li key={action}>- {action}</li>
             ))}
+            <li>- Registrar desempenho e aprendizados em /stories/results.</li>
           </ul>
           <h4 className="mt-5 font-semibold">Avisos</h4>
           <ul className="mt-2 space-y-2 text-sm text-slate-600">

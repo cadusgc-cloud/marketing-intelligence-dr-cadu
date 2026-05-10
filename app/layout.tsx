@@ -18,6 +18,7 @@ const links = [
   ["/signals", "Sinais"],
   ["/data", "Dados"],
   ["/weekly", "Central Semanal"],
+  ["/publishing", "Publicação"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

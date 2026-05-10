@@ -21,6 +21,7 @@ const links = [
   ["/publishing", "Publicação"],
   ["/integrations", "Integrações"],
   ["/media", "Mídias"],
+  ["/stories", "Stories"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

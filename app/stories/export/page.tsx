@@ -98,12 +98,16 @@ export default function StoryWeekExportPage() {
           <Link href="/stories/execution" className="mt-4 inline-flex w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
             Ir para execução diária
           </Link>
+          <Link href="/stories/results" className="ml-2 mt-4 inline-flex w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            Registrar resultados
+          </Link>
         </div>
 
         <aside className="panel">
           <h3 className="text-lg font-semibold">Links contextuais</h3>
           <div className="mt-3 grid gap-2 text-sm">
             <Link href="/stories/execution" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Executar stories do dia</Link>
+            <Link href="/stories/results" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Registrar desempenho</Link>
             <Link href="/stories" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Voltar ao planejador</Link>
             <Link href="/media/import" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Catalogar acervo</Link>
             <Link href="/media" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Biblioteca de mídias</Link>
@@ -228,6 +232,7 @@ export default function StoryWeekExportPage() {
             <li>- Copiar sequência do dia.</li>
             <li>- Publicar manualmente na ordem correta.</li>
             <li>- Registrar resultado.</li>
+            <li>- Registrar desempenho em /stories/results.</li>
             <li>- Alimentar /data depois da execução.</li>
           </ul>
         </div>

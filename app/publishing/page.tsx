@@ -146,12 +146,17 @@ export default function PublishingHubPage() {
             <p className="text-sm font-medium text-ocean">Stories e distribuição futura</p>
             <h3 className="mt-1 text-lg font-semibold">Planos de stories podem alimentar a Central de Publicação</h3>
             <p className="mt-2 text-sm text-slate-600">
-              A sequência semanal ainda é manual e simulada, mas já organiza textos, stickers, CTAs e revisões que podem virar pacotes de publicação em fases futuras.
+              A sequência semanal ainda é manual e simulada, mas já organiza textos, stickers, CTAs, revisões e pacote copy-ready para publicação manual.
             </p>
           </div>
-          <Link href="/stories" className="w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
-            Ver Planejador de Stories
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/stories" className="w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              Ver Planejador de Stories
+            </Link>
+            <Link href="/stories/export" className="w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+              Exportar semana
+            </Link>
+          </div>
         </div>
       </section>
 

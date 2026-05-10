@@ -19,6 +19,7 @@ const links = [
   ["/data", "Dados"],
   ["/weekly", "Central Semanal"],
   ["/publishing", "Publicação"],
+  ["/integrations", "Integrações"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

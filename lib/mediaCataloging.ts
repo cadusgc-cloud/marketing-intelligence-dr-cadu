@@ -76,6 +76,19 @@ export type MediaImportDraft = {
   createdAt: Date;
 };
 
+export type MediaCatalogingResult = {
+  manifestText: string;
+  normalizedText: string;
+  lineCount: number;
+  previewLines: string[];
+  items: MediaManifestItem[];
+  suggestions: MediaCatalogingSuggestion[];
+  summary: MediaCatalogingSummary;
+  drafts: MediaImportDraft[];
+  duplicateCandidates: Array<{ baseName: string; filenames: string[] }>;
+  warnings: string[];
+};
+
 const baseDate = new Date("2026-05-10T12:00:00.000Z");
 
 export const SIMULATED_MEDIA_MANIFEST = [
@@ -110,6 +123,80 @@ export const SIMULATED_MEDIA_MANIFEST = [
   "consulta-online-duvida-01.jpg",
   "agenda-semana-clinica-01.jpg"
 ];
+
+export function getDefaultMediaManifestText(): string {
+  return SIMULATED_MEDIA_MANIFEST.join("\n");
+}
+
+export function normalizeManifestInput(input: string): string {
+  return removeEmptyManifestLines(input)
+    .map((line) => line.trim())
+    .join("\n");
+}
+
+export function removeEmptyManifestLines(input: string): string[] {
+  return input
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+export function limitManifestPreview(input: string, limit = 8): string[] {
+  return removeEmptyManifestLines(input).slice(0, limit);
+}
+
+export function getManifestInputWarnings(input: string): string[] {
+  const lines = removeEmptyManifestLines(input);
+  const warnings: string[] = [];
+
+  if (lines.length === 0) warnings.push("Cole uma lista de nomes de arquivos para gerar a catalogacao assistida.");
+  if (lines.length > 100) warnings.push("Lista grande detectada; o processamento e possivel, mas a revisao manual deve ser feita por blocos.");
+  if (lines.some((line) => inferAssetTypeFromFilename(line) === "unknown")) warnings.push("Ha extensoes desconhecidas; esses itens devem ficar em revisao manual.");
+  if (lines.some((line) => inferPrivacyRiskFromFilename(line) === "high")) warnings.push("Ha arquivos com paciente, resultado, depoimento ou antes/depois; revisao etica obrigatoria.");
+
+  return warnings;
+}
+
+export function buildCatalogingResultFromManifestText(input: string, source: MediaManifestSource = "pasted_list"): MediaCatalogingResult {
+  const normalizedText = normalizeManifestInput(input);
+  const previewLines = limitManifestPreview(input);
+  const inputWarnings = getManifestInputWarnings(input);
+
+  if (!normalizedText) {
+    return {
+      manifestText: input,
+      normalizedText,
+      lineCount: 0,
+      previewLines,
+      items: [],
+      suggestions: [],
+      summary: emptyCatalogingSummary(),
+      drafts: [],
+      duplicateCandidates: [],
+      warnings: [...inputWarnings, ...getCatalogingWarnings()]
+    };
+  }
+
+  const lines = removeEmptyManifestLines(normalizedText);
+  const items = parseMediaManifestLines(lines, source);
+  const suggestions = generateMediaCatalogingSuggestions(items);
+  const summary = summarizeMediaCataloging(suggestions);
+  const drafts = createMediaImportDrafts(suggestions);
+  const duplicateCandidates = detectDuplicateFilenameCandidates(items);
+
+  return {
+    manifestText: input,
+    normalizedText,
+    lineCount: lines.length,
+    previewLines,
+    items,
+    suggestions,
+    summary,
+    drafts,
+    duplicateCandidates,
+    warnings: [...inputWarnings, ...getCatalogingWarnings()]
+  };
+}
 
 export function parseMediaManifestText(text: string, source: MediaManifestSource = "pasted_list"): MediaManifestItem[] {
   return parseMediaManifestLines(text.split(/\r?\n/), source);
@@ -472,6 +559,24 @@ function countBy(values: string[]): Record<string, number> {
     acc[value] = (acc[value] ?? 0) + 1;
     return acc;
   }, {});
+}
+
+function emptyCatalogingSummary(): MediaCatalogingSummary {
+  return {
+    totalItems: 0,
+    imageItems: 0,
+    videoItems: 0,
+    unknownItems: 0,
+    highConfidence: 0,
+    mediumConfidence: 0,
+    lowConfidence: 0,
+    needsReview: 0,
+    readyToImport: 0,
+    blocked: 0,
+    privacyRiskItems: 0,
+    duplicateCandidates: 0,
+    suggestedPillars: {}
+  };
 }
 
 const keywordDictionary = [

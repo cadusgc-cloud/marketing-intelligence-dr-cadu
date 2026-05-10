@@ -133,7 +133,7 @@ export default function MediaLibraryPage() {
             <p className="text-sm font-medium text-ocean">Catalogação assistida do acervo</p>
             <h3 className="mt-1 text-lg font-semibold">Transformar listas de arquivos em rascunhos de mídia</h3>
             <p className="mt-2 text-sm text-slate-600">
-              Use uma lista textual simulada para sugerir tipo, pilar, funil, uso, risco de privacidade e perguntas de revisão manual.
+              Cole uma lista de nomes de arquivos para gerar uma catalogação assistida com tipo, pilar, funil, uso, risco de privacidade e perguntas de revisão.
             </p>
           </div>
           <Link href="/media/import" className="w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">

@@ -103,11 +103,15 @@ export default function StoryLearningPage() {
               <li key={learning}>- {learning}</li>
             ))}
           </ul>
+          <Link href="/stories/next-week" className="mt-4 inline-flex w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+            Gerar próxima semana
+          </Link>
         </div>
 
         <aside className="panel">
           <h3 className="text-lg font-semibold">Links contextuais</h3>
           <div className="mt-3 grid gap-2 text-sm">
+            <Link href="/stories/next-week" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Planejar próxima semana</Link>
             <Link href="/stories/results" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Resultados dos Stories</Link>
             <Link href="/stories/execution" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Execucao diaria</Link>
             <Link href="/stories/export" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Exportacao da semana</Link>

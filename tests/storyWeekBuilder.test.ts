@@ -10,7 +10,17 @@ import {
   generateStoryWeekExportDraft,
   getDaysBelowStoryTarget,
   getHighRiskStorySlots,
+  getStoryWeekCtaSummary,
+  getStoryWeekDayStatus,
+  getStoryWeekEthicalReviewSummary,
+  getStoryWeekExportSummary,
   getStoryWeekFunnelBalance,
+  getStoryWeekMainAttention,
+  getStoryWeekNextRecommendedAction,
+  getStoryWeekOperationalChecklist,
+  getStoryWeekOperationalStatus,
+  getStoryWeekReadyDays,
+  getStoryWeekReviewQueue,
   validateStoryWeekPlan
 } from "@/lib/storyWeekBuilder";
 
@@ -137,5 +147,78 @@ describe("Story Week Builder", () => {
 
     expect(markdown).toContain("# Segunda-feira");
     expect(markdown).toContain("## Story 1");
+  });
+
+  it("getStoryWeekOperationalStatus retorna attention quando ha itens de revisao etica", () => {
+    const plan = buildStoryWeekPlanFromCatalog();
+
+    expect(getStoryWeekOperationalStatus(plan)).toBe("attention");
+  });
+
+  it("getStoryWeekMainAttention destaca revisao etica quando ha paciente, resultado ou depoimento", () => {
+    const plan = buildStoryWeekPlanFromCatalog();
+
+    expect(getStoryWeekMainAttention(plan)).toContain("Revisar midias");
+  });
+
+  it("getStoryWeekNextRecommendedAction retorna acao pratica", () => {
+    const plan = buildStoryWeekPlanFromCatalog();
+
+    expect(getStoryWeekNextRecommendedAction(plan)).toContain("Aprovar ou ajustar");
+  });
+
+  it("getStoryWeekReviewQueue lista itens com risco", () => {
+    const queue = getStoryWeekReviewQueue(buildStoryWeekPlanFromCatalog());
+
+    expect(queue.length).toBeGreaterThan(0);
+    expect(queue.some((slot) => slot.privacyRisk === "high")).toBe(true);
+  });
+
+  it("getStoryWeekReadyDays retorna dias prontos ou quase prontos", () => {
+    const readyDays = getStoryWeekReadyDays(buildStoryWeekPlanFromCatalog());
+
+    expect(readyDays.length).toBeGreaterThan(0);
+    expect(readyDays.every((day) => day.totalStories === 10)).toBe(true);
+  });
+
+  it("getStoryWeekDayStatus marca dias com risco como needs_review", () => {
+    const plan = buildStoryWeekPlanFromCatalog();
+    const dayWithRisk = plan.days.find((day) => day.slots.some((slot) => slot.privacyRisk === "high"));
+
+    expect(dayWithRisk).toBeTruthy();
+    expect(getStoryWeekDayStatus(dayWithRisk!)).toBe("needs_review");
+  });
+
+  it("getStoryWeekCtaSummary conta CTAs leves e diretos", () => {
+    const summary = getStoryWeekCtaSummary(buildStoryWeekPlanFromCatalog());
+
+    expect(summary.totalCtas).toBe(14);
+    expect(summary.totalDirectCtas).toBe(7);
+    expect(summary.daysWithDirectCta).toHaveLength(7);
+  });
+
+  it("getStoryWeekEthicalReviewSummary identifica midias de risco", () => {
+    const summary = getStoryWeekEthicalReviewSummary(buildStoryWeekPlanFromCatalog());
+
+    expect(summary.totalItems).toBeGreaterThan(0);
+    expect(summary.highRiskItems).toBeGreaterThan(0);
+    expect(summary.warning).toContain("Nenhum item de risco");
+  });
+
+  it("getStoryWeekExportSummary identifica dias com rascunho de exportacao", () => {
+    const summary = getStoryWeekExportSummary(buildStoryWeekPlanFromCatalog());
+
+    expect(summary.totalDays).toBe(7);
+    expect(summary.daysWithCopyReady).toBe(7);
+    expect(summary.drafts).toHaveLength(7);
+  });
+
+  it("getStoryWeekOperationalChecklist contem revisao, aprovacao, exportacao e publicacao manual", () => {
+    const checklist = getStoryWeekOperationalChecklist(buildStoryWeekPlanFromCatalog()).join(" ");
+
+    expect(checklist).toContain("Revisar");
+    expect(checklist).toContain("Aprovar");
+    expect(checklist).toContain("Exportar");
+    expect(checklist).toContain("Publicar manualmente");
   });
 });

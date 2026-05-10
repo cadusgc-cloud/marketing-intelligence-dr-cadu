@@ -8,6 +8,7 @@ import {
 import type { PatientPrivacyRisk, StorySlotType } from "@/lib/mediaLibrary";
 
 export type StoryWeekBuilderStatus = "draft" | "needs_review" | "approved" | "ready_to_export" | "exported" | "blocked";
+export type StoryWeekOperationalStatus = "healthy" | "attention" | "critical";
 export type StoryWeekDayTheme =
   | "mamas_protese"
   | "lipo_contorno"
@@ -105,6 +106,33 @@ export type StoryWeekExportDraft = {
   warnings: string[];
   status: StoryWeekBuilderStatus;
   createdAt: Date;
+};
+
+export type StoryWeekCtaSummary = {
+  totalCtas: number;
+  totalDirectCtas: number;
+  daysWithDirectCta: string[];
+};
+
+export type StoryWeekEthicalReviewSummary = {
+  totalItems: number;
+  highRiskItems: number;
+  patientMentions: number;
+  resultMentions: number;
+  beforeAfterMentions: number;
+  testimonialMentions: number;
+  warning: string;
+  recommendedAction: string;
+};
+
+export type StoryWeekExportSummary = {
+  totalDays: number;
+  daysWithCopyReady: number;
+  daysNeedingReview: number;
+  readyDays: string[];
+  warningCount: number;
+  nextStep: string;
+  drafts: StoryWeekExportDraft[];
 };
 
 const baseDate = new Date("2026-05-10T12:00:00.000Z");
@@ -561,6 +589,100 @@ export function getStoryWeekNextActions(plan: StoryWeekPlan): string[] {
   if (plan.daysBelowTarget.length > 0) actions.unshift("Completar dias abaixo da meta de 10 stories.");
   if (plan.reusedMediaWarnings.length > 0) actions.unshift("Substituir midias repetidas quando houver alternativa no acervo.");
   return unique(actions);
+}
+
+export function getStoryWeekOperationalStatus(plan: StoryWeekPlan): StoryWeekOperationalStatus {
+  const reviewQueue = getStoryWeekReviewQueue(plan);
+  const blockedSlots = plan.days.flatMap((day) => day.slots).filter((slot) => slot.status === "blocked");
+
+  if (blockedSlots.length > 0) return "critical";
+  if (reviewQueue.length > 0 || plan.warnings.length > 0 || plan.reusedMediaWarnings.length > 0) return "attention";
+  return "healthy";
+}
+
+export function getStoryWeekMainAttention(plan: StoryWeekPlan): string {
+  const ethicalSummary = getStoryWeekEthicalReviewSummary(plan);
+
+  if (ethicalSummary.totalItems > 0) return "Revisar midias com paciente, resultado, depoimento ou antes/depois antes de qualquer uso.";
+  if (plan.daysBelowTarget.length > 0) return "Completar dias abaixo da meta de 10 stories antes de exportar.";
+  if (plan.reusedMediaWarnings.length > 0) return "Revisar midias repetidas e substituir quando houver alternativa no acervo.";
+  return "Conferir texto, sticker e CTA de cada story antes da publicacao manual.";
+}
+
+export function getStoryWeekNextRecommendedAction(plan: StoryWeekPlan): string {
+  if (getStoryWeekReviewQueue(plan).length > 0) return "Aprovar ou ajustar os slots em revisao.";
+  if (plan.daysBelowTarget.length > 0) return "Completar os dias abaixo da meta de 10 stories.";
+  return "Exportar a sequencia e publicar manualmente apos aprovacao.";
+}
+
+export function getStoryWeekReviewQueue(plan: StoryWeekPlan): StoryWeekSlot[] {
+  return plan.days
+    .flatMap((day) => day.slots)
+    .filter((slot) => slot.status === "needs_review" || slot.status === "blocked" || slot.privacyRisk === "high" || slot.ethicalWarnings.length > 0);
+}
+
+export function getStoryWeekReadyDays(plan: StoryWeekPlan): StoryWeekDay[] {
+  return plan.days.filter((day) => day.totalStories >= targetStoriesPerDay && !day.slots.some((slot) => slot.status === "blocked"));
+}
+
+export function getStoryWeekDayStatus(day: StoryWeekDay): StoryWeekBuilderStatus {
+  if (day.slots.some((slot) => slot.status === "blocked")) return "blocked";
+  if (day.slots.some((slot) => slot.status === "needs_review" || slot.privacyRisk === "high" || slot.ethicalWarnings.length > 0)) return "needs_review";
+  if (day.totalStories >= targetStoriesPerDay) return "ready_to_export";
+  return "draft";
+}
+
+export function getStoryWeekCtaSummary(plan: StoryWeekPlan): StoryWeekCtaSummary {
+  const daysWithDirectCta = plan.days.filter((day) => day.slots.some((slot) => slot.slotType === "cta_direto")).map((day) => day.dayLabel);
+  return {
+    totalCtas: plan.days.flatMap((day) => day.slots).filter((slot) => slot.slotType === "cta_leve" || slot.slotType === "cta_direto").length,
+    totalDirectCtas: plan.days.flatMap((day) => day.slots).filter((slot) => slot.slotType === "cta_direto").length,
+    daysWithDirectCta
+  };
+}
+
+export function getStoryWeekEthicalReviewSummary(plan: StoryWeekPlan): StoryWeekEthicalReviewSummary {
+  const queue = getStoryWeekReviewQueue(plan);
+  const filenames = queue.map((slot) => slot.suggestedFilename.toLowerCase());
+  const countKeyword = (keyword: string) => filenames.filter((filename) => filename.includes(keyword)).length;
+
+  return {
+    totalItems: queue.length,
+    highRiskItems: queue.filter((slot) => slot.privacyRisk === "high").length,
+    patientMentions: countKeyword("paciente"),
+    resultMentions: countKeyword("resultado"),
+    beforeAfterMentions: countKeyword("antes-depois"),
+    testimonialMentions: countKeyword("depoimento"),
+    warning: queue.length > 0 ? "Nenhum item de risco deve ser usado sem aprovacao manual." : "Sem itens criticos identificados no plano simulado.",
+    recommendedAction: queue.length > 0 ? "Revisar arquivo, contexto, consentimento e checklist etico antes de publicar." : "Manter conferencia manual antes da publicacao."
+  };
+}
+
+export function getStoryWeekExportSummary(plan: StoryWeekPlan): StoryWeekExportSummary {
+  const drafts = plan.days.map((day) => generateStoryWeekExportDraft(plan, day.dayLabel));
+  return {
+    totalDays: plan.days.length,
+    daysWithCopyReady: drafts.filter((draft) => draft.copyReadyText.length > 0 && draft.markdownBrief.length > 0).length,
+    daysNeedingReview: drafts.filter((draft) => draft.status === "needs_review").length,
+    readyDays: getStoryWeekReadyDays(plan).map((day) => day.dayLabel),
+    warningCount: drafts.reduce((total, draft) => total + draft.warnings.length, 0),
+    nextStep: "Revisar avisos, aprovar manualmente e exportar apenas depois da validacao.",
+    drafts
+  };
+}
+
+export function getStoryWeekOperationalChecklist(plan: StoryWeekPlan): string[] {
+  const checklist = [
+    "Revisar itens de risco.",
+    "Aprovar plano de segunda-feira.",
+    "Aprovar plano da semana.",
+    "Exportar sequencia copy-ready.",
+    "Publicar manualmente apos aprovacao.",
+    "Registrar resultado.",
+    "Alimentar dados semanais depois."
+  ];
+  if (getStoryWeekReviewQueue(plan).length > 0) checklist.unshift("Resolver slots em revisao antes de publicar.");
+  return unique(checklist);
 }
 
 export function storyWeekThemeLabel(theme: StoryWeekDayTheme): string {

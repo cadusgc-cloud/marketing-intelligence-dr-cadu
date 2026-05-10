@@ -135,6 +135,9 @@ export default function StoriesPage() {
             <Link href="/stories/learning" className="inline-flex w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               Aprendizado da semana
             </Link>
+            <Link href="/stories/next-week" className="inline-flex w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              Próxima semana
+            </Link>
           </div>
         </div>
 
@@ -145,6 +148,7 @@ export default function StoriesPage() {
             <Link href="/stories/export" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Exportar semana</Link>
             <Link href="/stories/results" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Registrar resultados dos stories</Link>
             <Link href="/stories/learning" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Aprendizado da semana</Link>
+            <Link href="/stories/next-week" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Planejar próxima semana</Link>
             <Link href="/media/import" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Catalogar acervo</Link>
             <Link href="/media" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Ver biblioteca de mídias</Link>
             <Link href="/publishing" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Central de Publicação</Link>

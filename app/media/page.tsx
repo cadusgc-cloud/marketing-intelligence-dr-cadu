@@ -128,17 +128,23 @@ export default function MediaLibraryPage() {
       </section>
 
       <section className="panel">
-        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-          <div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div className="rounded-lg border border-slate-200 p-4">
             <p className="text-sm font-medium text-ocean">Catalogação assistida do acervo</p>
             <h3 className="mt-1 text-lg font-semibold">Transformar listas de arquivos em rascunhos de mídia</h3>
-            <p className="mt-2 text-sm text-slate-600">
-              Cole uma lista de nomes de arquivos para gerar uma catalogação assistida com tipo, pilar, funil, uso, risco de privacidade e perguntas de revisão.
-            </p>
+            <p className="mt-2 text-sm text-slate-600">Cole uma lista de nomes de arquivos para gerar uma catalogação assistida com tipo, pilar, funil, uso, risco de privacidade e perguntas de revisão.</p>
+            <Link href="/media/import" className="mt-4 inline-flex w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+              Catalogar acervo
+            </Link>
           </div>
-          <Link href="/media/import" className="w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
-            Catalogar acervo
-          </Link>
+          <div className="rounded-lg border border-slate-200 p-4">
+            <p className="text-sm font-medium text-ocean">Do acervo para 10 stories/dia</p>
+            <h3 className="mt-1 text-lg font-semibold">Gerar plano de stories a partir da lista</h3>
+            <p className="mt-2 text-sm text-slate-600">Cole uma lista de arquivos, revise a catalogação e gere um plano diário de 10 stories com lacunas, riscos e CTAs sinalizados.</p>
+            <Link href="/media/import" className="mt-4 inline-flex w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              Planejar stories
+            </Link>
+          </div>
         </div>
       </section>
 

@@ -128,7 +128,7 @@ export default function MediaLibraryPage() {
       </section>
 
       <section className="panel">
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-3">
           <div className="rounded-lg border border-slate-200 p-4">
             <p className="text-sm font-medium text-ocean">Catalogação assistida do acervo</p>
             <h3 className="mt-1 text-lg font-semibold">Transformar listas de arquivos em rascunhos de mídia</h3>
@@ -143,6 +143,14 @@ export default function MediaLibraryPage() {
             <p className="mt-2 text-sm text-slate-600">Cole uma lista de arquivos, revise a catalogação e gere um plano diário de 10 stories com lacunas, riscos e CTAs sinalizados.</p>
             <Link href="/media/import" className="mt-4 inline-flex w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               Planejar stories
+            </Link>
+          </div>
+          <div className="rounded-lg border border-slate-200 p-4">
+            <p className="text-sm font-medium text-ocean">Planejar semana de stories</p>
+            <h3 className="mt-1 text-lg font-semibold">Montar 70 stories para a semana</h3>
+            <p className="mt-2 text-sm text-slate-600">Use o acervo catalogado para montar uma semana com 10 stories por dia, revisão ética, CTAs, stickers e rascunho de exportação.</p>
+            <Link href="/stories" className="mt-4 inline-flex w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              Planejar semana
             </Link>
           </div>
         </div>

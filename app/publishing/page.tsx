@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   PUBLISHING_ITEMS,
   approvalStatusLabel,
@@ -137,6 +138,21 @@ export default function PublishingHubPage() {
             <li>7. Registrar resultado</li>
           </ol>
         </aside>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Stories e distribuição futura</p>
+            <h3 className="mt-1 text-lg font-semibold">Planos de stories podem alimentar a Central de Publicação</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              A sequência semanal ainda é manual e simulada, mas já organiza textos, stickers, CTAs e revisões que podem virar pacotes de publicação em fases futuras.
+            </p>
+          </div>
+          <Link href="/stories" className="w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+            Ver Planejador de Stories
+          </Link>
+        </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">

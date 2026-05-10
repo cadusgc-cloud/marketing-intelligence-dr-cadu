@@ -15,6 +15,15 @@ import {
   type PublishingChannel,
   type PublishingStatus
 } from "@/lib/publishingHub";
+import {
+  generatePublishingExportBundle,
+  getBlockedExportPackages,
+  getExportInstructionsByChannel,
+  getPackagesNeedingReview,
+  getReadyExportPackages,
+  summarizePublishingExports,
+  type PublishingExportStatus
+} from "@/lib/publishingExport";
 
 const channelGroups: { title: string; channels: PublishingChannel[] }[] = [
   { title: "Instagram/Reels/Stories", channels: ["meta_instagram_feed", "meta_instagram_reels", "meta_instagram_stories"] },
@@ -42,6 +51,18 @@ const approvalClasses: Record<ApprovalStatus, string> = {
   blocked_by_ethics: "bg-red-50 text-red-700"
 };
 
+const exportStatusClasses: Record<PublishingExportStatus, string> = {
+  ready: "bg-green-50 text-leaf",
+  needs_review: "bg-amber-50 text-amber",
+  blocked: "bg-red-50 text-red-700"
+};
+
+const exportStatusLabels: Record<PublishingExportStatus, string> = {
+  ready: "Pronto",
+  needs_review: "Precisa revisão",
+  blocked: "Bloqueado"
+};
+
 function MetricCard({ label, value }: { label: string; value: string | number }) {
   return (
     <div className="metric-card">
@@ -59,6 +80,11 @@ export default function PublishingHubPage() {
   const blockedItems = getBlockedItems(items);
   const nextQueue = getNextPublishingQueue(items);
   const warnings = getPublishingWarnings();
+  const exportPackages = generatePublishingExportBundle(items);
+  const exportSummary = summarizePublishingExports(exportPackages);
+  const readyExports = getReadyExportPackages(exportPackages);
+  const reviewExports = getPackagesNeedingReview(exportPackages);
+  const blockedExports = getBlockedExportPackages(exportPackages);
 
   return (
     <div className="space-y-6">
@@ -138,6 +164,100 @@ export default function PublishingHubPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <p className="text-sm font-medium text-ocean">Pacote de exportação</p>
+        <h3 className="mt-1 text-lg font-semibold">Pacote de exportação</h3>
+        <p className="mt-2 text-sm text-slate-500">Textos e payloads simulados para copiar e usar manualmente nas plataformas.</p>
+        <p className="mt-4 rounded-md bg-amber-50 p-3 text-sm font-medium text-amber">
+          Nenhum conteúdo é publicado automaticamente nesta fase. Esta tela apenas organiza textos, payloads e briefings para revisão e uso manual.
+        </p>
+
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          <MetricCard label="Pacotes gerados" value={exportSummary.totalPackages} />
+          <MetricCard label="Prontos" value={exportSummary.readyPackages} />
+          <MetricCard label="Precisam revisão" value={exportSummary.packagesNeedingReview} />
+          <MetricCard label="Bloqueados" value={exportSummary.blockedPackages} />
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-5">
+          {["Instagram Reels", "Instagram Stories", "Facebook", "YouTube Shorts", "TikTok", "Artigo do site", "Página do site"].map((platform) => (
+            <div key={platform} className="rounded-md bg-slate-50 p-3">
+              <p className="text-sm font-semibold">{platform}</p>
+              <p className="mt-1 text-sm text-slate-600">{exportSummary.packagesByChannel[platform] ?? 0} pacote(s)</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 p-4">
+            <h4 className="font-semibold">Pacotes prontos</h4>
+            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+              {readyExports.slice(0, 5).map((pkg) => (
+                <li key={pkg.id}>- {pkg.title} ({pkg.platformName})</li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-lg border border-slate-200 p-4">
+            <h4 className="font-semibold">Precisam revisão</h4>
+            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+              {reviewExports.slice(0, 5).map((pkg) => (
+                <li key={pkg.id}>- {pkg.title} ({pkg.platformName})</li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-lg border border-slate-200 p-4">
+            <h4 className="font-semibold">Bloqueados</h4>
+            <ul className="mt-3 space-y-2 text-sm text-slate-600">
+              {blockedExports.slice(0, 5).map((pkg) => (
+                <li key={pkg.id}>- {pkg.title} ({pkg.platformName})</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          {exportPackages.slice(0, 6).map((pkg) => (
+            <article key={pkg.id} className="rounded-lg border border-slate-200 p-4">
+              <div className="flex flex-wrap gap-2">
+                <span className="badge bg-slate-100 text-slate-700">{pkg.platformName}</span>
+                <span className={`badge ${exportStatusClasses[pkg.status]}`}>{exportStatusLabels[pkg.status]}</span>
+              </div>
+              <h4 className="mt-3 font-semibold">{pkg.title}</h4>
+              <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+                <p className="font-semibold text-ink">Texto pronto para copiar</p>
+                <pre className="mt-2 whitespace-pre-wrap font-sans text-sm">{pkg.copyReadyText}</pre>
+              </div>
+              <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+                <p className="font-semibold text-ink">Payload JSON simulado</p>
+                <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap text-xs">{JSON.stringify(pkg.jsonPayload, null, 2)}</pre>
+              </div>
+              <div className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+                <p className="font-semibold text-ink">Briefing Markdown</p>
+                <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap font-sans text-sm">{pkg.markdownBrief}</pre>
+              </div>
+              <div className="mt-3 grid gap-3 md:grid-cols-2">
+                <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+                  <p className="font-semibold text-ink">Alertas</p>
+                  <ul className="mt-2 space-y-1">
+                    {[...pkg.ethicalWarnings, ...pkg.platformWarnings].slice(0, 5).map((warning) => (
+                      <li key={warning}>- {warning}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+                  <p className="font-semibold text-ink">Instruções manuais</p>
+                  <ul className="mt-2 space-y-1">
+                    {getExportInstructionsByChannel(pkg.channel).map((instruction) => (
+                      <li key={instruction}>- {instruction}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
 

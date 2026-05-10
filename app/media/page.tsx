@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   MEDIA_ASSETS,
   approvalStatusLabel,
@@ -124,6 +125,21 @@ export default function MediaLibraryPage() {
             <li>- Exportar sequências para a Central de Publicação.</li>
           </ul>
         </aside>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Catalogação assistida do acervo</p>
+            <h3 className="mt-1 text-lg font-semibold">Transformar listas de arquivos em rascunhos de mídia</h3>
+            <p className="mt-2 text-sm text-slate-600">
+              Use uma lista textual simulada para sugerir tipo, pilar, funil, uso, risco de privacidade e perguntas de revisão manual.
+            </p>
+          </div>
+          <Link href="/media/import" className="w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+            Catalogar acervo
+          </Link>
+        </div>
       </section>
 
       <section className="panel">

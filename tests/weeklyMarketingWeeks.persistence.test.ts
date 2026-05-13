@@ -9,6 +9,8 @@ const describePersistence = TEST_DATABASE_URL ? describe : describe.skip;
 let prisma: typeof import("@/lib/db").prisma;
 let upsertWeeklyMarketingData: typeof import("@/lib/weeklyMarketingWeeks").upsertWeeklyMarketingData;
 let getLatestWeeklyMarketingData: typeof import("@/lib/weeklyMarketingWeeks").getLatestWeeklyMarketingData;
+let getWeeklyMarketingDataById: typeof import("@/lib/weeklyMarketingWeeks").getWeeklyMarketingDataById;
+let getWeeklyMarketingWeekSummaries: typeof import("@/lib/weeklyMarketingWeeks").getWeeklyMarketingWeekSummaries;
 
 const baseInput: WeeklyMarketingWeekInput = {
   weekLabel: "Semana persistida",
@@ -55,6 +57,8 @@ beforeAll(async () => {
   prisma = dbModule.prisma;
   upsertWeeklyMarketingData = weeklyModule.upsertWeeklyMarketingData;
   getLatestWeeklyMarketingData = weeklyModule.getLatestWeeklyMarketingData;
+  getWeeklyMarketingDataById = weeklyModule.getWeeklyMarketingDataById;
+  getWeeklyMarketingWeekSummaries = weeklyModule.getWeeklyMarketingWeekSummaries;
 });
 
 beforeEach(async () => {
@@ -92,5 +96,17 @@ describePersistence("WeeklyMarketingWeek persistence", () => {
 
     expect(latest?.weekLabel).toBe("Semana nova");
     expect(latest?.endDate).toBe("2026-05-24");
+  });
+
+  it("carrega semana por id e lista resumos em ordem decrescente", async () => {
+    const oldWeek = await upsertWeeklyMarketingData({ ...baseInput, weekLabel: "Semana antiga", startDate: "2026-05-04", endDate: "2026-05-10" });
+    await upsertWeeklyMarketingData({ ...baseInput, weekLabel: "Semana nova", startDate: "2026-05-18", endDate: "2026-05-24" });
+
+    const loaded = await getWeeklyMarketingDataById(oldWeek.id);
+    const summaries = await getWeeklyMarketingWeekSummaries();
+
+    expect(loaded?.weekLabel).toBe("Semana antiga");
+    expect(summaries.map((week) => week.weekLabel)).toEqual(["Semana nova", "Semana antiga"]);
+    expect(summaries[0].operationalSnapshot).toContain("conversas Meta");
   });
 });

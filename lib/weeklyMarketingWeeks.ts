@@ -25,6 +25,15 @@ export type WeeklyMarketingWeekInput = Pick<
   | "notes"
 >;
 
+export type WeeklyMarketingWeekSummary = {
+  id: string;
+  weekLabel: string;
+  startDate: string;
+  endDate: string;
+  operationalSnapshot: string;
+  updatedAt: Date;
+};
+
 const moneyFields = ["metaSpend", "googleSpend"] as const;
 const countFields = [
   "metaWhatsappConversations",
@@ -77,6 +86,25 @@ export async function getLatestWeeklyMarketingData(): Promise<WeeklyMarketingDat
   return record ? mapWeeklyMarketingWeekToData(record) : null;
 }
 
+export async function getWeeklyMarketingDataById(id: string): Promise<WeeklyMarketingData | null> {
+  if (!id.trim()) return null;
+  const record = await prisma.weeklyMarketingWeek.findUnique({
+    where: { id }
+  });
+
+  return record ? mapWeeklyMarketingWeekToData(record) : null;
+}
+
+export async function getWeeklyMarketingWeekSummaries(limit = 12): Promise<WeeklyMarketingWeekSummary[]> {
+  const safeLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 52) : 12;
+  const records = await prisma.weeklyMarketingWeek.findMany({
+    orderBy: [{ endDate: "desc" }, { updatedAt: "desc" }],
+    take: safeLimit
+  });
+
+  return records.map(mapWeeklyMarketingWeekToSummary);
+}
+
 export async function upsertWeeklyMarketingData(input: WeeklyMarketingWeekInput): Promise<WeeklyMarketingData> {
   const normalized = normalizeWeeklyMarketingWeekInput(input);
   const errors = validateWeeklyMarketingWeekInput(normalized);
@@ -94,6 +122,17 @@ export async function upsertWeeklyMarketingData(input: WeeklyMarketingWeekInput)
   });
 
   return mapWeeklyMarketingWeekToData(record);
+}
+
+export function mapWeeklyMarketingWeekToSummary(record: WeeklyMarketingWeek): WeeklyMarketingWeekSummary {
+  return {
+    id: record.id,
+    weekLabel: record.weekLabel,
+    startDate: record.startDate,
+    endDate: record.endDate,
+    operationalSnapshot: summarizeWeeklyMarketingWeekRecord(record),
+    updatedAt: record.updatedAt
+  };
 }
 
 export function mapWeeklyMarketingWeekToData(record: WeeklyMarketingWeek): WeeklyMarketingData {
@@ -125,6 +164,15 @@ export function mapWeeklyMarketingWeekToData(record: WeeklyMarketingWeek): Weekl
     createdAt: record.createdAt,
     updatedAt: record.updatedAt
   });
+}
+
+function summarizeWeeklyMarketingWeekRecord(record: WeeklyMarketingWeek): string {
+  const funnelStatus =
+    record.consultationsScheduled === null || record.consultationsAttended === null || record.surgeriesClosed === null
+      ? "funil incompleto"
+      : `${record.consultationsScheduled} consultas marcadas`;
+
+  return `${record.metaWhatsappConversations} conversas Meta, ${record.googleConversions} conversoes Google, ${record.instagramStories} Stories, ${funnelStatus}.`;
 }
 
 export function normalizeWeeklyMarketingWeekInput(input: WeeklyMarketingWeekInput): WeeklyMarketingWeekInput {

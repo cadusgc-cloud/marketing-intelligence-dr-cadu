@@ -9,7 +9,7 @@ import {
 } from "@/lib/weeklyCommandCenter";
 import { channelLabel, decisionTypeLabel, severityLabel } from "@/lib/decisionSignals";
 import { classificationLabel, impactLabel } from "@/lib/weeklyAudit";
-import { getLatestWeeklyMarketingData } from "@/lib/weeklyMarketingWeeks";
+import { getLatestWeeklyMarketingData, getWeeklyMarketingDataById, getWeeklyMarketingWeekSummaries, type WeeklyMarketingWeekSummary } from "@/lib/weeklyMarketingWeeks";
 
 export const dynamic = "force-dynamic";
 
@@ -67,10 +67,22 @@ function ActionList({ title, items }: { title: string; items: WeeklyActionItem[]
   );
 }
 
-export default async function WeeklyCommandCenterPage() {
-  const latestWeek = await getLatestWeeklyMarketingData();
+type WeeklyCommandCenterPageProps = {
+  searchParams?: {
+    week?: string;
+  };
+};
 
-  if (!latestWeek) {
+export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCommandCenterPageProps) {
+  const selectedWeekId = searchParams?.week ?? "";
+  const [selectedWeek, latestWeek, weekSummaries] = await Promise.all([
+    selectedWeekId ? getWeeklyMarketingDataById(selectedWeekId) : Promise.resolve(null),
+    getLatestWeeklyMarketingData(),
+    getWeeklyMarketingWeekSummaries()
+  ]);
+  const activeWeek = selectedWeek ?? latestWeek;
+
+  if (!activeWeek) {
     return (
       <EmptyState
         title="Nenhuma semana salva ainda."
@@ -81,7 +93,7 @@ export default async function WeeklyCommandCenterPage() {
     );
   }
 
-  const center = buildWeeklyCommandCenter(latestWeek);
+  const center = buildWeeklyCommandCenter(activeWeek);
   const criticalSignals = center.triggeredSignals.filter((signal) => signal.severity === "critical");
   const scaleSignals = center.triggeredSignals.filter((signal) => signal.decisionType === "scale");
   const googleSignals = center.triggeredSignals.filter((signal) => signal.channel === "google");
@@ -148,6 +160,8 @@ export default async function WeeklyCommandCenterPage() {
           </div>
         </div>
       </section>
+
+      <WeekHistorySelector weeks={weekSummaries} activeWeekId={activeWeek.id} requestedWeekMissing={Boolean(selectedWeekId && !selectedWeek)} />
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <MetricCard label="Sinais acionados" value={center.triggeredSignals.length} />
@@ -268,6 +282,51 @@ export default async function WeeklyCommandCenterPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function WeekHistorySelector({
+  weeks,
+  activeWeekId,
+  requestedWeekMissing
+}: {
+  weeks: WeeklyMarketingWeekSummary[];
+  activeWeekId: string;
+  requestedWeekMissing: boolean;
+}) {
+  if (!weeks.length) return null;
+
+  return (
+    <section className="panel">
+      <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+        <SectionTitle eyebrow="Historico" title="Semanas salvas" description="Abra uma semana anterior sem alterar os dados usados no historico." />
+        <Link href="/data" className="w-fit rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+          Atualizar dados semanais
+        </Link>
+      </div>
+      {requestedWeekMissing ? (
+        <p className="mt-4 rounded-md bg-amber-50 p-3 text-sm font-medium text-amber">
+          A semana solicitada nao foi encontrada. A Central abriu a semana mais recente salva.
+        </p>
+      ) : null}
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {weeks.map((week) => {
+          const active = week.id === activeWeekId;
+          return (
+            <Link
+              key={week.id}
+              href={`/weekly?week=${week.id}`}
+              className={`rounded-lg border p-4 text-sm transition ${active ? "border-ocean bg-cyan-50 text-ocean" : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"}`}
+            >
+              <span className={`badge ${active ? "bg-white text-ocean" : "bg-slate-100 text-slate-700"}`}>{active ? "Semana aberta" : "Abrir semana"}</span>
+              <p className="mt-3 font-semibold">{week.weekLabel}</p>
+              <p className="mt-1 text-xs opacity-80">{week.startDate} a {week.endDate}</p>
+              <p className="mt-2 leading-5">{week.operationalSnapshot}</p>
+            </Link>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 

@@ -2,6 +2,7 @@ import type { WeeklyMarketingWeek } from "@prisma/client";
 import { describe, expect, it } from "vitest";
 import {
   mapWeeklyMarketingWeekToData,
+  mapWeeklyMarketingWeekToSummary,
   validateWeeklyMarketingWeekInput,
   type WeeklyMarketingWeekInput
 } from "@/lib/weeklyMarketingWeeks";
@@ -29,9 +30,10 @@ const validInput: WeeklyMarketingWeekInput = {
 };
 
 describe("Weekly Marketing Weeks", () => {
+  const createdAt = new Date("2026-05-17T12:00:00.000Z");
+  const updatedAt = new Date("2026-05-18T12:00:00.000Z");
+
   it("mapeia registro persistido para WeeklyMarketingData e recalcula metricas derivadas", () => {
-    const createdAt = new Date("2026-05-17T12:00:00.000Z");
-    const updatedAt = new Date("2026-05-18T12:00:00.000Z");
     const record: WeeklyMarketingWeek = {
       id: "weekly-db-id",
       createdAt,
@@ -51,6 +53,26 @@ describe("Weekly Marketing Weeks", () => {
     expect(data.googleConversionRate).toBe(0.1);
     expect(data.consultationsScheduled).toBeNull();
     expect(data.updatedAt).toBe(updatedAt);
+  });
+
+  it("mapeia resumo para seletor de historico semanal", () => {
+    const summary = mapWeeklyMarketingWeekToSummary({
+      id: "weekly-summary-id",
+      createdAt,
+      updatedAt,
+      ...validInput
+    });
+
+    expect(summary).toEqual(
+      expect.objectContaining({
+        id: "weekly-summary-id",
+        weekLabel: "Semana salva",
+        startDate: "2026-05-11",
+        endDate: "2026-05-17",
+        operationalSnapshot: "100 conversas Meta, 5 conversoes Google, 42 Stories, 12 consultas marcadas.",
+        updatedAt
+      })
+    );
   });
 
   it("valida datas, numeros negativos e campos inteiros", () => {

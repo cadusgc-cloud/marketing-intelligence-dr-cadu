@@ -13,7 +13,7 @@ import {
   summarizeChannelStatus
 } from "@/lib/weeklyCommandCenter";
 import { evaluateDecisionSignals, getTriggeredSignals } from "@/lib/decisionSignals";
-import { convertWeeklyDataToDecisionInputs, WEEKLY_MARKETING_DATA_MOCK } from "@/lib/weeklyDataInput";
+import { convertWeeklyDataToDecisionInputs, createWeeklyMarketingDataFromEditableFields, WEEKLY_MARKETING_DATA_MOCK } from "@/lib/weeklyDataInput";
 
 describe("Weekly Command Center", () => {
   it("monta uma central semanal válida", () => {
@@ -71,6 +71,24 @@ describe("Weekly Command Center", () => {
 
     expect(missingData.some((item) => item.includes("consultationsScheduled"))).toBe(true);
     expect(missingData.some((item) => item.toLocaleLowerCase("pt-BR").includes("funil"))).toBe(true);
+  });
+
+  it("monta central para semana salva completa sem status de dados incompletos", () => {
+    const completeWeek = createWeeklyMarketingDataFromEditableFields({
+      ...WEEKLY_MARKETING_DATA_MOCK,
+      id: "saved-week",
+      weekLabel: "Semana salva completa",
+      googleConversions: 4,
+      consultationsScheduled: 12,
+      consultationsAttended: 9,
+      surgeriesClosed: 2
+    });
+    const center = buildWeeklyCommandCenter(completeWeek);
+
+    expect(center.weekLabel).toBe("Semana salva completa");
+    expect(center.operationalStatus).not.toBe("incomplete_data");
+    expect(center.missingData).toEqual([]);
+    expect(center.funnelSummary).toContain("dados suficientes");
   });
 
   it("representa os links para os módulos de origem", () => {

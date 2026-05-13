@@ -1,0 +1,183 @@
+import type { WeeklyMarketingWeek } from "@prisma/client";
+import { prisma } from "@/lib/db";
+import { normalizeWeeklyMarketingData, type WeeklyMarketingData } from "@/lib/weeklyDataInput";
+
+export type WeeklyMarketingWeekInput = Pick<
+  WeeklyMarketingData,
+  | "weekLabel"
+  | "startDate"
+  | "endDate"
+  | "metaSpend"
+  | "metaWhatsappConversations"
+  | "metaProfileVisits"
+  | "googleSpend"
+  | "googleClicks"
+  | "googleConversions"
+  | "instagramStories"
+  | "instagramReels"
+  | "instagramPosts"
+  | "instagramProfileVisits"
+  | "whatsappTotal"
+  | "qualifiedConversations"
+  | "consultationsScheduled"
+  | "consultationsAttended"
+  | "surgeriesClosed"
+  | "notes"
+>;
+
+const moneyFields = ["metaSpend", "googleSpend"] as const;
+const countFields = [
+  "metaWhatsappConversations",
+  "metaProfileVisits",
+  "googleClicks",
+  "googleConversions",
+  "instagramStories",
+  "instagramReels",
+  "instagramPosts",
+  "instagramProfileVisits",
+  "whatsappTotal",
+  "qualifiedConversations"
+] as const;
+const nullableCountFields = ["consultationsScheduled", "consultationsAttended", "surgeriesClosed"] as const;
+
+const fieldLabels: Record<keyof WeeklyMarketingWeekInput, string> = {
+  weekLabel: "rotulo da semana",
+  startDate: "inicio",
+  endDate: "fim",
+  metaSpend: "investimento Meta Ads",
+  metaWhatsappConversations: "conversas no WhatsApp",
+  metaProfileVisits: "visitas ao perfil Meta",
+  googleSpend: "investimento Google Ads",
+  googleClicks: "cliques Google Ads",
+  googleConversions: "conversoes Google Ads",
+  instagramStories: "Stories na semana",
+  instagramReels: "Reels/Shorts na semana",
+  instagramPosts: "posts na semana",
+  instagramProfileVisits: "visitas ao perfil Instagram",
+  whatsappTotal: "WhatsApps totais",
+  qualifiedConversations: "conversas qualificadas",
+  consultationsScheduled: "consultas marcadas",
+  consultationsAttended: "consultas comparecidas",
+  surgeriesClosed: "cirurgias fechadas",
+  notes: "observacoes"
+};
+
+export class WeeklyMarketingWeekValidationError extends Error {
+  constructor(public readonly errors: string[]) {
+    super(errors.join(" "));
+    this.name = "WeeklyMarketingWeekValidationError";
+  }
+}
+
+export async function getLatestWeeklyMarketingData(): Promise<WeeklyMarketingData | null> {
+  const record = await prisma.weeklyMarketingWeek.findFirst({
+    orderBy: [{ endDate: "desc" }, { updatedAt: "desc" }]
+  });
+
+  return record ? mapWeeklyMarketingWeekToData(record) : null;
+}
+
+export async function upsertWeeklyMarketingData(input: WeeklyMarketingWeekInput): Promise<WeeklyMarketingData> {
+  const normalized = normalizeWeeklyMarketingWeekInput(input);
+  const errors = validateWeeklyMarketingWeekInput(normalized);
+  if (errors.length > 0) throw new WeeklyMarketingWeekValidationError(errors);
+
+  const record = await prisma.weeklyMarketingWeek.upsert({
+    where: {
+      startDate_endDate: {
+        startDate: normalized.startDate,
+        endDate: normalized.endDate
+      }
+    },
+    update: normalized,
+    create: normalized
+  });
+
+  return mapWeeklyMarketingWeekToData(record);
+}
+
+export function mapWeeklyMarketingWeekToData(record: WeeklyMarketingWeek): WeeklyMarketingData {
+  return normalizeWeeklyMarketingData({
+    id: record.id,
+    weekLabel: record.weekLabel,
+    startDate: record.startDate,
+    endDate: record.endDate,
+    metaSpend: record.metaSpend,
+    metaWhatsappConversations: record.metaWhatsappConversations,
+    metaCostPerWhatsapp: null,
+    metaProfileVisits: record.metaProfileVisits,
+    metaCostPerProfileVisit: null,
+    googleSpend: record.googleSpend,
+    googleClicks: record.googleClicks,
+    googleConversions: record.googleConversions,
+    googleCostPerClick: null,
+    googleConversionRate: null,
+    instagramStories: record.instagramStories,
+    instagramReels: record.instagramReels,
+    instagramPosts: record.instagramPosts,
+    instagramProfileVisits: record.instagramProfileVisits,
+    whatsappTotal: record.whatsappTotal,
+    qualifiedConversations: record.qualifiedConversations,
+    consultationsScheduled: record.consultationsScheduled,
+    consultationsAttended: record.consultationsAttended,
+    surgeriesClosed: record.surgeriesClosed,
+    notes: record.notes,
+    createdAt: record.createdAt,
+    updatedAt: record.updatedAt
+  });
+}
+
+export function normalizeWeeklyMarketingWeekInput(input: WeeklyMarketingWeekInput): WeeklyMarketingWeekInput {
+  return {
+    ...input,
+    weekLabel: input.weekLabel.trim(),
+    startDate: input.startDate.trim(),
+    endDate: input.endDate.trim(),
+    notes: input.notes.trim()
+  };
+}
+
+export function validateWeeklyMarketingWeekInput(input: WeeklyMarketingWeekInput): string[] {
+  const errors: string[] = [];
+
+  if (!input.weekLabel.trim()) errors.push("Informe o rotulo da semana.");
+  if (!isValidIsoDate(input.startDate)) errors.push("Informe uma data de inicio valida.");
+  if (!isValidIsoDate(input.endDate)) errors.push("Informe uma data de fim valida.");
+  if (isValidIsoDate(input.startDate) && isValidIsoDate(input.endDate) && input.endDate < input.startDate) {
+    errors.push("A data de fim nao pode ser anterior a data de inicio.");
+  }
+
+  for (const field of moneyFields) validateNumber(input[field], field, errors);
+  for (const field of countFields) validateCount(input[field], field, errors);
+  for (const field of nullableCountFields) {
+    const value = input[field];
+    if (value !== null) validateCount(value, field, errors);
+  }
+
+  return unique(errors);
+}
+
+function validateNumber(value: number, field: keyof WeeklyMarketingWeekInput, errors: string[]) {
+  if (!Number.isFinite(value)) {
+    errors.push(`O campo ${fieldLabels[field]} precisa ser numerico.`);
+    return;
+  }
+  if (value < 0) errors.push(`O campo ${fieldLabels[field]} nao pode ser negativo.`);
+}
+
+function validateCount(value: number, field: keyof WeeklyMarketingWeekInput, errors: string[]) {
+  validateNumber(value, field, errors);
+  if (Number.isFinite(value) && !Number.isInteger(value)) {
+    errors.push(`O campo ${fieldLabels[field]} precisa ser um numero inteiro.`);
+  }
+}
+
+function isValidIsoDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values));
+}

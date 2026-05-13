@@ -144,6 +144,34 @@ model BenchmarkSetting {
   description String?
 }
 
+model WeeklyMarketingWeek {
+  id                         String   @id @default(cuid())
+  weekLabel                  String
+  startDate                  String
+  endDate                    String
+  metaSpend                  Float    @default(0)
+  metaWhatsappConversations  Int      @default(0)
+  metaProfileVisits          Int      @default(0)
+  googleSpend                Float    @default(0)
+  googleClicks               Int      @default(0)
+  googleConversions          Int      @default(0)
+  instagramStories           Int      @default(0)
+  instagramReels             Int      @default(0)
+  instagramPosts             Int      @default(0)
+  instagramProfileVisits     Int      @default(0)
+  whatsappTotal              Int      @default(0)
+  qualifiedConversations     Int      @default(0)
+  consultationsScheduled     Int?
+  consultationsAttended      Int?
+  surgeriesClosed            Int?
+  notes                      String   @default("")
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@index([endDate, updatedAt])
+  @@unique([startDate, endDate])
+}
+
 model AgentRun {
   id            String   @id @default(cuid())
   reportId      String

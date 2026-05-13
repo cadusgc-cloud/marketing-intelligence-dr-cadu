@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { analyzeReport } from "../lib/engine/analyzeReport";
+import { WEEKLY_MARKETING_DATA_MOCK } from "../lib/weeklyDataInput";
 
 const prisma = new PrismaClient();
 
@@ -82,6 +83,7 @@ async function main() {
   await prisma.keywordPerformance.deleteMany();
   await prisma.creativePerformance.deleteMany();
   await prisma.channelSummary.deleteMany();
+  await prisma.weeklyMarketingWeek.deleteMany();
   await prisma.report.deleteMany();
   await prisma.benchmarkSetting.deleteMany();
 
@@ -158,6 +160,55 @@ async function main() {
       }
     });
   }
+
+  await prisma.weeklyMarketingWeek.upsert({
+    where: {
+      startDate_endDate: {
+        startDate: WEEKLY_MARKETING_DATA_MOCK.startDate,
+        endDate: WEEKLY_MARKETING_DATA_MOCK.endDate
+      }
+    },
+    update: {
+      weekLabel: WEEKLY_MARKETING_DATA_MOCK.weekLabel,
+      metaSpend: WEEKLY_MARKETING_DATA_MOCK.metaSpend,
+      metaWhatsappConversations: WEEKLY_MARKETING_DATA_MOCK.metaWhatsappConversations,
+      metaProfileVisits: WEEKLY_MARKETING_DATA_MOCK.metaProfileVisits,
+      googleSpend: WEEKLY_MARKETING_DATA_MOCK.googleSpend,
+      googleClicks: WEEKLY_MARKETING_DATA_MOCK.googleClicks,
+      googleConversions: WEEKLY_MARKETING_DATA_MOCK.googleConversions,
+      instagramStories: WEEKLY_MARKETING_DATA_MOCK.instagramStories,
+      instagramReels: WEEKLY_MARKETING_DATA_MOCK.instagramReels,
+      instagramPosts: WEEKLY_MARKETING_DATA_MOCK.instagramPosts,
+      instagramProfileVisits: WEEKLY_MARKETING_DATA_MOCK.instagramProfileVisits,
+      whatsappTotal: WEEKLY_MARKETING_DATA_MOCK.whatsappTotal,
+      qualifiedConversations: WEEKLY_MARKETING_DATA_MOCK.qualifiedConversations,
+      consultationsScheduled: WEEKLY_MARKETING_DATA_MOCK.consultationsScheduled,
+      consultationsAttended: WEEKLY_MARKETING_DATA_MOCK.consultationsAttended,
+      surgeriesClosed: WEEKLY_MARKETING_DATA_MOCK.surgeriesClosed,
+      notes: WEEKLY_MARKETING_DATA_MOCK.notes
+    },
+    create: {
+      weekLabel: WEEKLY_MARKETING_DATA_MOCK.weekLabel,
+      startDate: WEEKLY_MARKETING_DATA_MOCK.startDate,
+      endDate: WEEKLY_MARKETING_DATA_MOCK.endDate,
+      metaSpend: WEEKLY_MARKETING_DATA_MOCK.metaSpend,
+      metaWhatsappConversations: WEEKLY_MARKETING_DATA_MOCK.metaWhatsappConversations,
+      metaProfileVisits: WEEKLY_MARKETING_DATA_MOCK.metaProfileVisits,
+      googleSpend: WEEKLY_MARKETING_DATA_MOCK.googleSpend,
+      googleClicks: WEEKLY_MARKETING_DATA_MOCK.googleClicks,
+      googleConversions: WEEKLY_MARKETING_DATA_MOCK.googleConversions,
+      instagramStories: WEEKLY_MARKETING_DATA_MOCK.instagramStories,
+      instagramReels: WEEKLY_MARKETING_DATA_MOCK.instagramReels,
+      instagramPosts: WEEKLY_MARKETING_DATA_MOCK.instagramPosts,
+      instagramProfileVisits: WEEKLY_MARKETING_DATA_MOCK.instagramProfileVisits,
+      whatsappTotal: WEEKLY_MARKETING_DATA_MOCK.whatsappTotal,
+      qualifiedConversations: WEEKLY_MARKETING_DATA_MOCK.qualifiedConversations,
+      consultationsScheduled: WEEKLY_MARKETING_DATA_MOCK.consultationsScheduled,
+      consultationsAttended: WEEKLY_MARKETING_DATA_MOCK.consultationsAttended,
+      surgeriesClosed: WEEKLY_MARKETING_DATA_MOCK.surgeriesClosed,
+      notes: WEEKLY_MARKETING_DATA_MOCK.notes
+    }
+  });
 }
 
 main()

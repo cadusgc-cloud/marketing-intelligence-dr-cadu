@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { EmptyState } from "@/components/ui";
 import {
   WEEKLY_COMMAND_CENTER_LINKS,
   buildWeeklyCommandCenter,
@@ -8,6 +9,9 @@ import {
 } from "@/lib/weeklyCommandCenter";
 import { channelLabel, decisionTypeLabel, severityLabel } from "@/lib/decisionSignals";
 import { classificationLabel, impactLabel } from "@/lib/weeklyAudit";
+import { getLatestWeeklyMarketingData } from "@/lib/weeklyMarketingWeeks";
+
+export const dynamic = "force-dynamic";
 
 const statusClasses: Record<WeeklyOperationalStatus, string> = {
   healthy: "bg-green-50 text-leaf",
@@ -63,8 +67,21 @@ function ActionList({ title, items }: { title: string; items: WeeklyActionItem[]
   );
 }
 
-export default function WeeklyCommandCenterPage() {
-  const center = buildWeeklyCommandCenter();
+export default async function WeeklyCommandCenterPage() {
+  const latestWeek = await getLatestWeeklyMarketingData();
+
+  if (!latestWeek) {
+    return (
+      <EmptyState
+        title="Nenhuma semana salva ainda."
+        description="Salve os dados agregados da semana em Dados semanais para alimentar a Central Semanal."
+        href="/data"
+        actionLabel="Preencher dados semanais"
+      />
+    );
+  }
+
+  const center = buildWeeklyCommandCenter(latestWeek);
   const criticalSignals = center.triggeredSignals.filter((signal) => signal.severity === "critical");
   const scaleSignals = center.triggeredSignals.filter((signal) => signal.decisionType === "scale");
   const googleSignals = center.triggeredSignals.filter((signal) => signal.channel === "google");

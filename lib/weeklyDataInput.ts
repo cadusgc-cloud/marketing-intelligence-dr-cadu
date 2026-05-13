@@ -122,8 +122,7 @@ export function normalizeWeeklyMarketingData(data: WeeklyMarketingData): WeeklyM
     metaCostPerWhatsapp: metrics.metaCostPerWhatsapp,
     metaCostPerProfileVisit: metrics.metaCostPerProfileVisit,
     googleCostPerClick: metrics.googleCostPerClick,
-    googleConversionRate: metrics.googleConversionRate,
-    updatedAt: baseDate
+    googleConversionRate: metrics.googleConversionRate
   };
 }
 

@@ -1,9 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useFormState, useFormStatus } from "react-dom";
+import { saveWeeklyMarketingData, type SaveWeeklyMarketingDataState } from "@/app/data/actions";
 import { channelLabel } from "@/lib/decisionSignals";
 import {
   WEEKLY_MARKETING_DATA_MOCK,
+  convertWeeklyDataToDecisionInputs,
   createEmptyWeeklyMarketingData,
   getCalculatedWeeklyMetrics,
   isMetaPerformingBetterThanGoogle,
@@ -11,9 +14,16 @@ import {
   summarizeWeeklyMarketingData,
   updateWeeklyMarketingDataField,
   validateWeeklyMarketingData,
-  convertWeeklyDataToDecisionInputs,
   type WeeklyMarketingData
 } from "@/lib/weeklyDataInput";
+
+type WeeklyDataSource = "saved" | "draft";
+
+const initialSaveWeeklyMarketingDataState: SaveWeeklyMarketingDataState = {
+  status: "idle",
+  message: null,
+  errors: []
+};
 
 type NumberField = {
   key: keyof WeeklyMarketingData;
@@ -33,11 +43,13 @@ function MetricCard({ label, value, detail }: { label: string; value: string | n
 }
 
 function TextInput({
+  name,
   label,
   value,
   onChange,
   type = "text"
 }: {
+  name: keyof WeeklyMarketingData;
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -47,6 +59,7 @@ function TextInput({
     <label className="block">
       <span className="text-sm font-medium text-slate-700">{label}</span>
       <input
+        name={String(name)}
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -62,6 +75,7 @@ function NumberInput({ field, data, onChange }: { field: NumberField; data: Week
     <label className="block">
       <span className="text-sm font-medium text-slate-700">{field.label}</span>
       <input
+        name={String(field.key)}
         type="number"
         min="0"
         step={field.step ?? "1"}
@@ -70,6 +84,16 @@ function NumberInput({ field, data, onChange }: { field: NumberField; data: Week
         className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ocean focus:ring-1 focus:ring-ocean"
       />
     </label>
+  );
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button type="submit" disabled={pending} className="rounded-md bg-ocean px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-70">
+      {pending ? "Salvando..." : "Salvar semana"}
+    </button>
   );
 }
 
@@ -83,44 +107,57 @@ function formatPercent(value: number | null): string {
   return `${(value * 100).toFixed(1).replace(".", ",")}%`;
 }
 
-export function WeeklyDataInputClient({ initialData }: { initialData: WeeklyMarketingData }) {
+export function WeeklyDataInputClient({ initialData, source }: { initialData: WeeklyMarketingData; source: WeeklyDataSource }) {
+  const [saveState, formAction] = useFormState(saveWeeklyMarketingData, initialSaveWeeklyMarketingDataState);
   const [data, setData] = useState(() => normalizeWeeklyMarketingData(initialData));
+  const [dirty, setDirty] = useState(false);
   const metrics = useMemo(() => getCalculatedWeeklyMetrics(data), [data]);
   const validation = useMemo(() => validateWeeklyMarketingData(data), [data]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
 
   function setTextField(field: keyof WeeklyMarketingData, value: string) {
+    setDirty(true);
     setData((current) => updateWeeklyMarketingDataField(current, field, value as never));
   }
 
   function setNumberField(field: NumberField, rawValue: string) {
-    const value = rawValue.trim() === "" && field.nullable ? null : Number(rawValue);
-    setData((current) => updateWeeklyMarketingDataField(current, field.key, (Number.isFinite(value as number) ? value : 0) as never));
+    setDirty(true);
+    const normalizedRawValue = rawValue.trim().replace(",", ".");
+    const value = normalizedRawValue === "" && field.nullable ? null : Number(normalizedRawValue);
+    setData((current) => updateWeeklyMarketingDataField(current, field.key, (Number.isFinite(value as number) || value === null ? value : 0) as never));
   }
 
   function restoreMockData() {
+    setDirty(true);
     setData(normalizeWeeklyMarketingData(WEEKLY_MARKETING_DATA_MOCK));
   }
 
   function clearData() {
+    setDirty(true);
     setData(createEmptyWeeklyMarketingData());
   }
 
   function recalculateData() {
+    setDirty(true);
     setData((current) => normalizeWeeklyMarketingData(current));
   }
 
   return (
-    <div className="space-y-6">
+    <form action={formAction} className="space-y-6">
       <section className="panel">
-        <p className="text-sm font-medium text-ocean">Dados semanais</p>
-        <h2 className="mt-1 text-2xl font-semibold">Dados semanais</h2>
-        <p className="mt-2 text-sm text-slate-500">Entrada leve de métricas para alimentar a auditoria e os sinais de decisão.</p>
-        <p className="mt-4 rounded-md bg-amber-50 p-3 text-sm font-medium text-amber">
-          Nesta fase, os dados são editáveis apenas localmente. Upload de CSV, banco de dados e persistência ainda não foram implementados.
-        </p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p className="text-sm font-medium text-ocean">Dados semanais</p>
+            <h2 className="mt-1 text-2xl font-semibold">Dados semanais</h2>
+            <p className="mt-2 text-sm text-slate-500">Entrada leve de metricas agregadas para alimentar a auditoria, os sinais de decisao e a Central Semanal.</p>
+          </div>
+          <SubmitButton />
+        </div>
+
+        <StatusMessage source={source} dirty={dirty} status={saveState.status} message={saveState.message} errors={saveState.errors} />
+
         <div className="mt-4 flex flex-wrap gap-2">
-          <button type="button" onClick={restoreMockData} className="rounded-md bg-ocean px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+          <button type="button" onClick={restoreMockData} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
             Restaurar dados simulados
           </button>
           <button type="button" onClick={clearData} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
@@ -135,13 +172,14 @@ export function WeeklyDataInputClient({ initialData }: { initialData: WeeklyMark
       <section className="panel">
         <h3 className="text-lg font-semibold">Dados da semana</h3>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <TextInput label="Rótulo da semana" value={data.weekLabel} onChange={(value) => setTextField("weekLabel", value)} />
-          <TextInput label="Início" type="date" value={data.startDate} onChange={(value) => setTextField("startDate", value)} />
-          <TextInput label="Fim" type="date" value={data.endDate} onChange={(value) => setTextField("endDate", value)} />
+          <TextInput name="weekLabel" label="Rotulo da semana" value={data.weekLabel} onChange={(value) => setTextField("weekLabel", value)} />
+          <TextInput name="startDate" label="Inicio" type="date" value={data.startDate} onChange={(value) => setTextField("startDate", value)} />
+          <TextInput name="endDate" label="Fim" type="date" value={data.endDate} onChange={(value) => setTextField("endDate", value)} />
         </div>
         <label className="mt-4 block">
-          <span className="text-sm font-medium text-slate-700">Observações</span>
+          <span className="text-sm font-medium text-slate-700">Observacoes</span>
           <textarea
+            name="notes"
             value={data.notes}
             onChange={(event) => setTextField("notes", event.target.value)}
             rows={3}
@@ -153,7 +191,7 @@ export function WeeklyDataInputClient({ initialData }: { initialData: WeeklyMark
       <section className="grid gap-6 xl:grid-cols-2">
         <InputGroup title="Meta Ads" fields={metaFields} data={data} onChange={setNumberField} />
         <InputGroup title="Google Ads" fields={googleFields} data={data} onChange={setNumberField} />
-        <InputGroup title="Instagram orgânico" fields={instagramFields} data={data} onChange={setNumberField} />
+        <InputGroup title="Instagram organico" fields={instagramFields} data={data} onChange={setNumberField} />
         <InputGroup title="Funil comercial" fields={funnelFields} data={data} onChange={setNumberField} />
       </section>
 
@@ -165,19 +203,19 @@ export function WeeklyDataInputClient({ initialData }: { initialData: WeeklyMark
 
       <section className="grid gap-3 md:grid-cols-4">
         <MetricCard label="Meta Ads" value={formatCurrency(data.metaSpend)} detail={`${data.metaWhatsappConversations} conversas no WhatsApp`} />
-        <MetricCard label="Google Ads" value={formatCurrency(data.googleSpend)} detail={`${data.googleConversions} conversões`} />
-        <MetricCard label="Stories na semana" value={data.instagramStories} detail="mínimo operacional: 42" />
+        <MetricCard label="Google Ads" value={formatCurrency(data.googleSpend)} detail={`${data.googleConversions} conversoes`} />
+        <MetricCard label="Stories na semana" value={data.instagramStories} detail="minimo operacional: 42" />
         <MetricCard label="Funil" value={validation.valid ? "Completo" : "Incompleto"} detail={`${validation.missingFields.length} campo(s) ausente(s)`} />
       </section>
 
       <section className="panel">
         <h3 className="text-lg font-semibold">Indicadores calculados</h3>
-        <p className="mt-1 text-sm text-slate-500">Campos calculados são resultados automáticos. O usuário não precisa digitá-los.</p>
+        <p className="mt-1 text-sm text-slate-500">Campos calculados sao resultados automaticos. O usuario nao precisa digita-los.</p>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <MetricCard label="Custo por WhatsApp" value={formatCurrency(metrics.metaCostPerWhatsapp)} />
           <MetricCard label="Custo por visita ao perfil" value={formatCurrency(metrics.metaCostPerProfileVisit)} />
           <MetricCard label="CPC Google" value={formatCurrency(metrics.googleCostPerClick)} />
-          <MetricCard label="Taxa de conversão Google" value={formatPercent(metrics.googleConversionRate)} detail="Google segue em diagnóstico quando conversões estão zeradas" />
+          <MetricCard label="Taxa de conversao Google" value={formatPercent(metrics.googleConversionRate)} detail="Google segue em diagnostico quando conversoes estao zeradas" />
           <MetricCard label="Taxa de comparecimento" value={formatPercent(metrics.consultationShowRate)} />
           <MetricCard label="Taxa de fechamento" value={formatPercent(metrics.surgeryCloseRate)} />
         </div>
@@ -186,7 +224,7 @@ export function WeeklyDataInputClient({ initialData }: { initialData: WeeklyMark
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="panel">
           <h3 className="text-lg font-semibold">Alertas e dados ausentes</h3>
-          <p className="mt-1 text-sm text-slate-500">Alertas indicam lacunas operacionais, não erro técnico.</p>
+          <p className="mt-1 text-sm text-slate-500">Alertas indicam lacunas operacionais, nao erro tecnico.</p>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             {validation.missingFields.map((field) => (
               <li key={field}>- Campo ausente ou zerado: {field}</li>
@@ -201,8 +239,8 @@ export function WeeklyDataInputClient({ initialData }: { initialData: WeeklyMark
         </div>
 
         <div className="panel">
-          <h3 className="text-lg font-semibold">Prévia dos sinais de decisão</h3>
-          <p className="mt-2 text-sm text-slate-500">Estas métricas seriam convertidas em entradas para o módulo Sinais de decisão.</p>
+          <h3 className="text-lg font-semibold">Previa dos sinais de decisao</h3>
+          <p className="mt-2 text-sm text-slate-500">Estas metricas serao convertidas em entradas para o modulo Sinais de decisao depois que a semana for salva.</p>
           <div className="mt-4 space-y-2">
             {decisionInputs.map((input) => (
               <div key={input.id} className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
@@ -213,11 +251,66 @@ export function WeeklyDataInputClient({ initialData }: { initialData: WeeklyMark
             ))}
           </div>
           <p className="mt-4 text-sm font-medium text-slate-600">
-            Meta como leitura mais confiável: {isMetaPerformingBetterThanGoogle(data) ? "sim" : "não"}
+            Meta como leitura mais confiavel: {isMetaPerformingBetterThanGoogle(data) ? "sim" : "nao"}
           </p>
         </div>
       </section>
-    </div>
+    </form>
+  );
+}
+
+function StatusMessage({
+  source,
+  dirty,
+  status,
+  message,
+  errors
+}: {
+  source: WeeklyDataSource;
+  dirty: boolean;
+  status: "idle" | "success" | "error";
+  message: string | null;
+  errors: string[];
+}) {
+  if (status === "success") {
+    return <p className="mt-4 rounded-md bg-green-50 p-3 text-sm font-medium text-leaf">{message}</p>;
+  }
+
+  if (status === "error") {
+    return (
+      <div className="mt-4 rounded-md bg-red-50 p-3 text-sm text-danger" role="alert">
+        <p className="font-semibold">{message}</p>
+        {errors.length ? (
+          <ul className="mt-2 space-y-1">
+            {errors.map((error) => (
+              <li key={error}>- {error}</li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
+    );
+  }
+
+  if (source === "draft") {
+    return (
+      <p className="mt-4 rounded-md bg-amber-50 p-3 text-sm font-medium text-amber">
+        Estes sao dados simulados de rascunho. A Central Semanal so usa esta semana depois de salvar.
+      </p>
+    );
+  }
+
+  if (dirty) {
+    return (
+      <p className="mt-4 rounded-md bg-cyan-50 p-3 text-sm font-medium text-ocean">
+        Existem alteracoes locais ainda nao salvas. Salve a semana para atualizar a Central Semanal.
+      </p>
+    );
+  }
+
+  return (
+    <p className="mt-4 rounded-md bg-cyan-50 p-3 text-sm font-medium text-ocean">
+      Semana salva carregada do historico. Qualquer edicao precisa ser salva para atualizar a Central Semanal.
+    </p>
   );
 }
 
@@ -253,7 +346,7 @@ const metaFields: NumberField[] = [
 const googleFields: NumberField[] = [
   { key: "googleSpend", label: "Investimento Google Ads", step: "0.01" },
   { key: "googleClicks", label: "Cliques" },
-  { key: "googleConversions", label: "Conversões" }
+  { key: "googleConversions", label: "Conversoes" }
 ];
 
 const instagramFields: NumberField[] = [

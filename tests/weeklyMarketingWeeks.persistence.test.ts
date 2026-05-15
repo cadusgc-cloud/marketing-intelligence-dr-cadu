@@ -10,6 +10,7 @@ let prisma: typeof import("@/lib/db").prisma;
 let upsertWeeklyMarketingData: typeof import("@/lib/weeklyMarketingWeeks").upsertWeeklyMarketingData;
 let getLatestWeeklyMarketingData: typeof import("@/lib/weeklyMarketingWeeks").getLatestWeeklyMarketingData;
 let getWeeklyMarketingDataById: typeof import("@/lib/weeklyMarketingWeeks").getWeeklyMarketingDataById;
+let getPreviousWeeklyMarketingData: typeof import("@/lib/weeklyMarketingWeeks").getPreviousWeeklyMarketingData;
 let getWeeklyMarketingWeekSummaries: typeof import("@/lib/weeklyMarketingWeeks").getWeeklyMarketingWeekSummaries;
 
 const baseInput: WeeklyMarketingWeekInput = {
@@ -58,6 +59,7 @@ beforeAll(async () => {
   upsertWeeklyMarketingData = weeklyModule.upsertWeeklyMarketingData;
   getLatestWeeklyMarketingData = weeklyModule.getLatestWeeklyMarketingData;
   getWeeklyMarketingDataById = weeklyModule.getWeeklyMarketingDataById;
+  getPreviousWeeklyMarketingData = weeklyModule.getPreviousWeeklyMarketingData;
   getWeeklyMarketingWeekSummaries = weeklyModule.getWeeklyMarketingWeekSummaries;
 });
 
@@ -108,5 +110,16 @@ describePersistence("WeeklyMarketingWeek persistence", () => {
     expect(loaded?.weekLabel).toBe("Semana antiga");
     expect(summaries.map((week) => week.weekLabel)).toEqual(["Semana nova", "Semana antiga"]);
     expect(summaries[0].operationalSnapshot).toContain("conversas Meta");
+  });
+
+  it("busca a semana imediatamente anterior a semana selecionada", async () => {
+    await upsertWeeklyMarketingData({ ...baseInput, weekLabel: "Semana antiga", startDate: "2026-05-04", endDate: "2026-05-10" });
+    const current = await upsertWeeklyMarketingData({ ...baseInput, weekLabel: "Semana atual", startDate: "2026-05-11", endDate: "2026-05-17" });
+    await upsertWeeklyMarketingData({ ...baseInput, weekLabel: "Semana futura", startDate: "2026-05-18", endDate: "2026-05-24" });
+
+    const previous = await getPreviousWeeklyMarketingData(current);
+
+    expect(previous?.weekLabel).toBe("Semana antiga");
+    expect(previous?.endDate).toBe("2026-05-10");
   });
 });

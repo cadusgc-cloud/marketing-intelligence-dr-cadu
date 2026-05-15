@@ -9,7 +9,9 @@ import {
 } from "@/lib/weeklyCommandCenter";
 import { channelLabel, decisionTypeLabel, severityLabel } from "@/lib/decisionSignals";
 import { classificationLabel, impactLabel } from "@/lib/weeklyAudit";
-import { getLatestWeeklyMarketingData, getWeeklyMarketingDataById, getWeeklyMarketingWeekSummaries, type WeeklyMarketingWeekSummary } from "@/lib/weeklyMarketingWeeks";
+import { buildWeeklyStrategicDecisionReport } from "@/lib/weeklyStrategicDecision";
+import { getLatestWeeklyMarketingData, getPreviousWeeklyMarketingData, getWeeklyMarketingDataById, getWeeklyMarketingWeekSummaries, type WeeklyMarketingWeekSummary } from "@/lib/weeklyMarketingWeeks";
+import { WeeklyStrategicDecisionPanel } from "@/app/weekly/WeeklyStrategicDecisionPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -94,6 +96,8 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
   }
 
   const center = buildWeeklyCommandCenter(activeWeek);
+  const previousWeek = await getPreviousWeeklyMarketingData(activeWeek);
+  const strategicReport = buildWeeklyStrategicDecisionReport(activeWeek, previousWeek);
   const criticalSignals = center.triggeredSignals.filter((signal) => signal.severity === "critical");
   const scaleSignals = center.triggeredSignals.filter((signal) => signal.decisionType === "scale");
   const googleSignals = center.triggeredSignals.filter((signal) => signal.channel === "google");
@@ -162,6 +166,8 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
       </section>
 
       <WeekHistorySelector weeks={weekSummaries} activeWeekId={activeWeek.id} requestedWeekMissing={Boolean(selectedWeekId && !selectedWeek)} />
+
+      <WeeklyStrategicDecisionPanel report={strategicReport} />
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         <MetricCard label="Sinais acionados" value={center.triggeredSignals.length} />

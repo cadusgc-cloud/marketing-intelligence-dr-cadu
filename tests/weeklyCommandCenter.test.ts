@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   WEEKLY_COMMAND_CENTER_LINKS,
@@ -131,5 +133,20 @@ describe("Weekly Command Center", () => {
 
     expect(selectMainDecision(WEEKLY_MARKETING_DATA_MOCK, center.triggeredSignals)).toContain("Meta Ads");
     expect(selectMainRisk(center)).toContain("Google Ads");
+  });
+
+  it("integra o painel de leitura estrategica na pagina semanal", () => {
+    const page = readFileSync(path.join(process.cwd(), "app", "weekly", "page.tsx"), "utf8");
+    const panel = readFileSync(path.join(process.cwd(), "app", "weekly", "WeeklyStrategicDecisionPanel.tsx"), "utf8");
+    const decisionLayer = readFileSync(path.join(process.cwd(), "lib", "weeklyStrategicDecision.ts"), "utf8");
+
+    expect(page).toContain("getPreviousWeeklyMarketingData");
+    expect(page).toContain("buildWeeklyStrategicDecisionReport");
+    expect(page).toContain("WeeklyStrategicDecisionPanel");
+    expect(panel).toContain("Leitura Estrat");
+    expect(panel).toContain("Principais sinais");
+    expect(panel).toContain("Recomenda");
+    expect(panel).toContain("report.caution");
+    expect(decisionLayer).toContain("revisada por uma pessoa");
   });
 });

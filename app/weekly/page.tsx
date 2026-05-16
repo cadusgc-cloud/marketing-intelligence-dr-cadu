@@ -10,7 +10,9 @@ import { channelLabel, decisionTypeLabel, severityLabel } from "@/lib/decisionSi
 import { classificationLabel, impactLabel } from "@/lib/weeklyAudit";
 import { buildWeeklyStrategicDecisionReport } from "@/lib/weeklyStrategicDecision";
 import { buildWeeklyCommandResult } from "@/lib/weeklyCommandResult";
+import { buildWeeklyExecutionBoard } from "@/lib/weeklyExecutionBoard";
 import { getLatestWeeklyMarketingData, getPreviousValidWeeklyMarketingData, getWeeklyMarketingDataById, getWeeklyMarketingWeekSummaries, type WeeklyMarketingWeekSummary } from "@/lib/weeklyMarketingWeeks";
+import { WeeklyExecutionBoardPanel } from "@/app/weekly/WeeklyExecutionBoardPanel";
 import { WeeklyCommandResultScreen } from "@/app/weekly/WeeklyCommandResultScreen";
 import { WeeklyStrategicDecisionPanel } from "@/app/weekly/WeeklyStrategicDecisionPanel";
 
@@ -94,6 +96,7 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
   const previousWeek = previousValidWeeks[0] ?? null;
   const strategicReport = buildWeeklyStrategicDecisionReport(activeWeek, previousWeek);
   const resultReport = buildWeeklyCommandResult(activeWeek, previousWeek, center, strategicReport, previousValidWeeks);
+  const executionBoard = buildWeeklyExecutionBoard(resultReport);
   const criticalSignals = center.triggeredSignals.filter((signal) => signal.severity === "critical");
   const scaleSignals = center.triggeredSignals.filter((signal) => signal.decisionType === "scale");
   const googleSignals = center.triggeredSignals.filter((signal) => signal.channel === "google");
@@ -140,6 +143,8 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
   return (
     <div className="space-y-6">
       <WeeklyCommandResultScreen report={resultReport} />
+
+      <WeeklyExecutionBoardPanel board={executionBoard} compact />
 
       <WeekHistorySelector weeks={weekSummaries} activeWeekId={activeWeek.id} requestedWeekMissing={Boolean(selectedWeekId && !selectedWeek)} />
 

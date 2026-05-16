@@ -218,7 +218,8 @@ export function buildWeeklyCommandResult(
       { label: "Calendario", href: "/calendar" },
       { label: "Dados semanais", href: "/data" },
       { label: "Stories de hoje", href: "/stories/today" },
-      { label: "Plano da proxima semana", href: "/stories/next-week" }
+      { label: "Plano da proxima semana", href: "/stories/next-week" },
+      { label: "Board de execucao", href: "/weekly/execution" }
     ],
     caution: "Leitura interna e deterministica com metricas agregadas. Nao publica, nao envia mensagens e nao substitui revisao humana antes de decisoes de investimento ou comunicacao medica."
   };

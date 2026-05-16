@@ -45,7 +45,7 @@ describe("Weekly Command Center result screen domain", () => {
     expect(report.statusLabel).toMatch(/Semana/);
     expect(report.diagnosis.improved.length).toBeGreaterThan(0);
     expect(report.finalActions.map((item) => item.href)).toEqual(
-      expect.arrayContaining(["/weekly", "/signals", "/audit", "/calendar", "/content", "/data"])
+      expect.arrayContaining(["/weekly", "/signals", "/audit", "/calendar", "/content", "/data", "/weekly/execution"])
     );
   });
 

@@ -121,6 +121,12 @@ O Weekly Command Center agora ranqueia alavancas internas para a proxima semana.
 
 As prioridades mostram score, area, responsavel sugerido, janela de acao, evidencias e guardrails. Elas nao enviam recomendacoes automaticamente, nao publicam conteudo, nao conectam APIs externas e nao substituem revisao humana.
 
+## v2.3 - Board de execucao semanal
+
+O Weekly Command Center agora inclui um board interno de execucao semanal em `/weekly/execution`. Ele transforma as prioridades ranqueadas em tarefas por faixa de tempo: hoje, esta semana, proxima semana e revisao mensal.
+
+Cada tarefa mostra status, risco, responsavel sugerido, checklist, criterios de aceite, evidencias e guardrail. O board ajuda a preparar execucao manual e revisao humana; ele nao publica, nao envia mensagens, nao altera campanhas, nao conecta APIs externas e nao usa dados pessoais.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

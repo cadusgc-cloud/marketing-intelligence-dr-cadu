@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ChangeEvent } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { saveWeeklyMarketingData, type SaveWeeklyMarketingDataState } from "@/app/data/actions";
 import { channelLabel } from "@/lib/decisionSignals";
@@ -11,6 +11,7 @@ import {
   getWeeklyCollectionTemplateSections,
   type WeeklyCollectionTemplateSection
 } from "@/lib/weeklyCollectionTemplate";
+import { parseWeeklyCsvImport, type WeeklyCsvImportResult } from "@/lib/weeklyCsvImport";
 import {
   WEEKLY_MARKETING_DATA_MOCK,
   convertWeeklyDataToDecisionInputs,
@@ -121,6 +122,9 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const [importText, setImportText] = useState("");
   const [importResult, setImportResult] = useState<WeeklyAssistedImportResult | null>(null);
   const [templateCopied, setTemplateCopied] = useState(false);
+  const [csvText, setCsvText] = useState("");
+  const [csvFileName, setCsvFileName] = useState("");
+  const [csvResult, setCsvResult] = useState<WeeklyCsvImportResult | null>(null);
   const metrics = useMemo(() => getCalculatedWeeklyMetrics(data), [data]);
   const validation = useMemo(() => validateWeeklyMarketingData(data), [data]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
@@ -184,6 +188,33 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
     setImportText(collectionTemplate);
     setImportResult(null);
     setTemplateCopied(false);
+  }
+
+  function previewCsvImport() {
+    setCsvResult(parseWeeklyCsvImport(csvText));
+  }
+
+  function sendCsvToAssistedImport() {
+    if (!csvResult || !csvResult.normalizedText || csvResult.sensitiveWarnings.length > 0) return;
+    setImportText(csvResult.normalizedText);
+    setImportResult(csvResult.assistedResult);
+  }
+
+  function clearCsvImport() {
+    setCsvText("");
+    setCsvFileName("");
+    setCsvResult(null);
+  }
+
+  async function loadCsvFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    const text = await file.text();
+    setCsvFileName(file.name);
+    setCsvText(text);
+    setCsvResult(null);
   }
 
   return (
@@ -256,6 +287,50 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
             </div>
             {templateCopied ? <p className="mt-3 rounded-md bg-green-50 p-3 text-sm font-medium text-leaf">Template copiado para a area de transferencia.</p> : null}
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,1fr)]">
+          <div>
+            <p className="text-sm font-medium text-ocean">v1.4</p>
+            <h3 className="mt-1 text-lg font-semibold">Importacao por CSV/planilha</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Cole uma tabela CSV/TSV ou carregue um arquivo exportado da planilha. A leitura converte a tabela em campos revisaveis antes de enviar para a importacao assistida.
+            </p>
+            <textarea
+              value={csvText}
+              onChange={(event) => setCsvText(event.target.value)}
+              rows={8}
+              placeholder={csvImportPlaceholder}
+              className="mt-4 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-xs outline-none focus:border-ocean focus:ring-1 focus:ring-ocean"
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <label className="cursor-pointer rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+                Carregar CSV
+                <input type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" onChange={loadCsvFile} className="sr-only" />
+              </label>
+              <button type="button" onClick={previewCsvImport} className="rounded-md bg-ocean px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+                Gerar previa CSV
+              </button>
+              <button
+                type="button"
+                onClick={sendCsvToAssistedImport}
+                disabled={!csvResult || !csvResult.normalizedText || csvResult.sensitiveWarnings.length > 0}
+                className="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Enviar para importacao assistida
+              </button>
+              <button type="button" onClick={clearCsvImport} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+                Limpar CSV
+              </button>
+            </div>
+            {csvFileName ? <p className="mt-3 text-sm text-slate-500">Arquivo carregado: {csvFileName}</p> : null}
+            <p className="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber">
+              CSV/TSV aqui e apenas uma etapa assistida. Revise a previa e depois use o fluxo normal antes de salvar a semana.
+            </p>
+          </div>
+          <CsvImportPreview result={csvResult} />
         </div>
       </section>
 
@@ -386,6 +461,65 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
       </section>
     </form>
   );
+}
+
+function CsvImportPreview({ result }: { result: WeeklyCsvImportResult | null }) {
+  if (!result) {
+    return (
+      <div className="rounded-lg border border-dashed border-slate-300 p-4">
+        <h4 className="font-semibold">Previa CSV</h4>
+        <p className="mt-2 text-sm text-slate-500">Cole ou carregue uma tabela e clique em gerar previa para revisar a conversao antes de enviar ao importador.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-slate-200 p-4">
+      <h4 className="font-semibold">Previa CSV</h4>
+      <p className="mt-1 text-sm text-slate-500">
+        {result.rowCount} linha(s), {result.columnCount} coluna(s), delimitador: {csvDelimiterLabel(result.delimiter)}.
+      </p>
+
+      {result.sensitiveWarnings.length ? (
+        <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-danger" role="alert">
+          <p className="font-semibold">Revisao obrigatoria</p>
+          <ul className="mt-2 space-y-1">
+            {result.sensitiveWarnings.map((warning) => (
+              <li key={warning}>- {warning}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {result.normalizedText ? (
+        <div className="mt-4">
+          <p className="text-sm font-semibold text-slate-700">Texto convertido para importacao assistida</p>
+          <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-slate-50 p-3 font-mono text-xs text-slate-600">{result.normalizedText}</pre>
+          <p className="mt-3 text-sm text-slate-500">{result.assistedResult.recognizedFields.length} campo(s) reconhecido(s) pela importacao assistida.</p>
+        </div>
+      ) : (
+        <p className="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber">Nenhum texto importavel foi gerado.</p>
+      )}
+
+      {result.warnings.length ? (
+        <div className="mt-4 rounded-md bg-amber-50 p-3 text-sm text-amber">
+          <p className="font-semibold">Avisos</p>
+          <ul className="mt-2 space-y-1">
+            {result.warnings.map((warning) => (
+              <li key={warning}>- {warning}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function csvDelimiterLabel(delimiter: WeeklyCsvImportResult["delimiter"]): string {
+  if (delimiter === "semicolon") return "ponto e virgula";
+  if (delimiter === "comma") return "virgula";
+  if (delimiter === "tab") return "tabulacao";
+  return "nao identificado";
 }
 
 function CollectionTemplateSectionSummary({ section }: { section: WeeklyCollectionTemplateSection }) {
@@ -587,3 +721,14 @@ Conversas qualificadas: 42
 Consultas marcadas: 12
 Consultas comparecidas: 9
 Cirurgias fechadas: 2`;
+
+const csvImportPlaceholder = `Campo;Valor
+Periodo;11/05/2026 a 17/05/2026
+Rotulo da semana;Semana 11/05 a 17/05/2026
+Investimento Meta Ads;R$ 780,00
+Conversas Meta;118
+Investimento Google Ads;R$ 220,00
+Cliques Google Ads;48
+Conversoes Google Ads;0
+Stories publicados;42
+Consultas marcadas;12`;

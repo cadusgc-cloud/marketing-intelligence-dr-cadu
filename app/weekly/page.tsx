@@ -4,23 +4,17 @@ import {
   WEEKLY_COMMAND_CENTER_LINKS,
   buildWeeklyCommandCenter,
   type WeeklyActionChannel,
-  type WeeklyActionItem,
-  type WeeklyOperationalStatus
+  type WeeklyActionItem
 } from "@/lib/weeklyCommandCenter";
 import { channelLabel, decisionTypeLabel, severityLabel } from "@/lib/decisionSignals";
 import { classificationLabel, impactLabel } from "@/lib/weeklyAudit";
 import { buildWeeklyStrategicDecisionReport } from "@/lib/weeklyStrategicDecision";
+import { buildWeeklyCommandResult } from "@/lib/weeklyCommandResult";
 import { getLatestWeeklyMarketingData, getPreviousWeeklyMarketingData, getWeeklyMarketingDataById, getWeeklyMarketingWeekSummaries, type WeeklyMarketingWeekSummary } from "@/lib/weeklyMarketingWeeks";
+import { WeeklyCommandResultScreen } from "@/app/weekly/WeeklyCommandResultScreen";
 import { WeeklyStrategicDecisionPanel } from "@/app/weekly/WeeklyStrategicDecisionPanel";
 
 export const dynamic = "force-dynamic";
-
-const statusClasses: Record<WeeklyOperationalStatus, string> = {
-  healthy: "bg-green-50 text-leaf",
-  attention: "bg-amber-50 text-amber",
-  critical: "bg-red-50 text-red-700",
-  incomplete_data: "bg-slate-100 text-slate-700"
-};
 
 const actionPriorityClasses: Record<WeeklyActionItem["priority"], string> = {
   low: "bg-slate-100 text-slate-600",
@@ -98,6 +92,7 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
   const center = buildWeeklyCommandCenter(activeWeek);
   const previousWeek = await getPreviousWeeklyMarketingData(activeWeek);
   const strategicReport = buildWeeklyStrategicDecisionReport(activeWeek, previousWeek);
+  const resultReport = buildWeeklyCommandResult(activeWeek, previousWeek, center, strategicReport);
   const criticalSignals = center.triggeredSignals.filter((signal) => signal.severity === "critical");
   const scaleSignals = center.triggeredSignals.filter((signal) => signal.decisionType === "scale");
   const googleSignals = center.triggeredSignals.filter((signal) => signal.channel === "google");
@@ -143,27 +138,7 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
 
   return (
     <div className="space-y-6">
-      <section className="panel">
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.9fr)]">
-          <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="text-sm font-medium text-ocean">Central Semanal</p>
-              <span className={`badge ${statusClasses[center.operationalStatus]}`}>{statusLabel(center.operationalStatus)}</span>
-            </div>
-            <h2 className="mt-2 text-3xl font-semibold tracking-normal text-ink">Central Semanal</h2>
-            <p className="mt-2 max-w-3xl text-sm text-slate-500">Visão integrada dos dados, sinais, auditoria e plano de ação do marketing.</p>
-            <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase text-slate-500">Diagnóstico executivo</p>
-              <p className="mt-2 text-sm leading-6 text-slate-700">{center.executiveSummary}</p>
-            </div>
-          </div>
-          <div className="grid gap-3 text-sm">
-            <DecisionBlock label="Decisão principal" value={center.mainDecision} />
-            <DecisionBlock label="Risco principal" value={center.mainRisk} />
-            <DecisionBlock label="Oportunidade principal" value={center.mainOpportunity} />
-          </div>
-        </div>
-      </section>
+      <WeeklyCommandResultScreen report={resultReport} />
 
       <WeekHistorySelector weeks={weekSummaries} activeWeekId={activeWeek.id} requestedWeekMissing={Boolean(selectedWeekId && !selectedWeek)} />
 
@@ -347,24 +322,6 @@ function SectionTitle({ eyebrow, title, description }: { eyebrow: string; title:
       {description ? <p className="mt-1 text-sm text-slate-500">{description}</p> : null}
     </div>
   );
-}
-
-function DecisionBlock({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <p className="text-xs font-semibold uppercase text-slate-500">{label}</p>
-      <p className="mt-1 text-sm text-slate-700">{value}</p>
-    </div>
-  );
-}
-
-function statusLabel(status: WeeklyOperationalStatus): string {
-  return {
-    healthy: "Saudável",
-    attention: "Atenção",
-    critical: "Crítico",
-    incomplete_data: "Dados incompletos"
-  }[status];
 }
 
 function priorityLabel(priority: WeeklyActionItem["priority"]): string {

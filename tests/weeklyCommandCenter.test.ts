@@ -142,6 +142,8 @@ describe("Weekly Command Center", () => {
 
     expect(page).toContain("getPreviousWeeklyMarketingData");
     expect(page).toContain("buildWeeklyStrategicDecisionReport");
+    expect(page).toContain("buildWeeklyCommandResult");
+    expect(page).toContain("WeeklyCommandResultScreen");
     expect(page).toContain("WeeklyStrategicDecisionPanel");
     expect(panel).toContain("Leitura Estrat");
     expect(panel).toContain("Principais sinais");

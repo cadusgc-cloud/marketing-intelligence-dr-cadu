@@ -103,6 +103,12 @@ A rota `/stories/today` cria um briefing operacional do dia para conectar planej
 
 O painel separa fila de publicacao manual, fila de revisao, prioridades do dia, metricas agregadas a registrar e guardrails de privacidade. Ele nao conecta Instagram, Meta, WhatsApp ou APIs externas, nao publica automaticamente e nao usa dados pessoais ou clinicos.
 
+## v2.0 - Tela de resultado do Weekly Command Center
+
+A rota `/weekly` agora abre com uma tela de resultado operacional chamada Weekly Command Center. Ela resume a semana selecionada, compara com a semana anterior valida, separa cadencia de qualidade, lista sinais, organiza aprendizado por funcao de conteudo, mostra Stories/presenca diaria e monta um plano interno para a proxima semana.
+
+A leitura permanece deterministica, interna e baseada somente em metricas agregadas. Dezembro/2025 continua excluido de comparacoes normais por anomalia operacional, e o sistema nao publica, nao envia mensagens e nao conecta APIs externas.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

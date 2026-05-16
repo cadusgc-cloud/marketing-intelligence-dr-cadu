@@ -1,5 +1,6 @@
 import type { WeeklyMarketingWeek } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { isInsideDecember2025 } from "@/lib/utils/dates";
 import { normalizeWeeklyMarketingData, type WeeklyMarketingData } from "@/lib/weeklyDataInput";
 
 export type WeeklyMarketingWeekInput = Pick<
@@ -99,13 +100,15 @@ export async function getPreviousWeeklyMarketingData(selectedWeek: WeeklyMarketi
   const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
   if (!isValidIsoDate(referenceDate)) return null;
 
-  const record = await prisma.weeklyMarketingWeek.findFirst({
+  const records = await prisma.weeklyMarketingWeek.findMany({
     where: {
       id: { not: selectedWeek.id },
       endDate: { lt: referenceDate }
     },
-    orderBy: [{ endDate: "desc" }, { updatedAt: "desc" }]
+    orderBy: [{ endDate: "desc" }, { updatedAt: "desc" }],
+    take: 12
   });
+  const record = records.find((item) => !isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(item)) ?? null;
 
   return record ? mapWeeklyMarketingWeekToData(record) : null;
 }
@@ -129,9 +132,13 @@ export function selectPreviousWeeklyMarketingWeekRecord(
 
   return (
     records
-      .filter((record) => record.id !== selectedWeek.id && record.endDate < referenceDate)
+      .filter((record) => record.id !== selectedWeek.id && record.endDate < referenceDate && !isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(record))
       .sort((a, b) => b.endDate.localeCompare(a.endDate) || b.updatedAt.getTime() - a.updatedAt.getTime())[0] ?? null
   );
+}
+
+export function isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(record: Pick<WeeklyMarketingWeek, "startDate" | "endDate">): boolean {
+  return isInsideDecember2025(parseIsoDate(record.startDate), parseIsoDate(record.endDate));
 }
 
 export async function upsertWeeklyMarketingData(input: WeeklyMarketingWeekInput): Promise<WeeklyMarketingData> {
@@ -253,6 +260,11 @@ function isValidIsoDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function parseIsoDate(value: string): Date | null {
+  if (!isValidIsoDate(value)) return null;
+  return new Date(`${value}T12:00:00.000Z`);
 }
 
 function unique(values: string[]): string[] {

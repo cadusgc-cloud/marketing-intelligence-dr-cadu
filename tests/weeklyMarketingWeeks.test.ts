@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   mapWeeklyMarketingWeekToData,
   mapWeeklyMarketingWeekToSummary,
+  isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis,
   selectPreviousWeeklyMarketingWeekRecord,
   validateWeeklyMarketingWeekInput,
   type WeeklyMarketingWeekInput
@@ -122,6 +123,23 @@ describe("Weekly Marketing Weeks", () => {
     });
 
     expect(previous?.id).toBe("previous-week");
+  });
+
+  it("exclui dezembro de 2025 da semana anterior usada em comparacao normal", () => {
+    const records = [
+      makeRecord("valid-previous-week", "2025-11-17", "2025-11-23"),
+      makeRecord("december-anomaly-week", "2025-12-08", "2025-12-14"),
+      makeRecord("current-week", "2026-01-05", "2026-01-11")
+    ];
+
+    const previous = selectPreviousWeeklyMarketingWeekRecord(records, {
+      id: "current-week",
+      startDate: "2026-01-05",
+      endDate: "2026-01-11"
+    });
+
+    expect(isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(records[1])).toBe(true);
+    expect(previous?.id).toBe("valid-previous-week");
   });
 });
 

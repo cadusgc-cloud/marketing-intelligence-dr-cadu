@@ -6,6 +6,12 @@ import { saveWeeklyMarketingData, type SaveWeeklyMarketingDataState } from "@/ap
 import { channelLabel } from "@/lib/decisionSignals";
 import { applyWeeklyAssistedImport, parseWeeklyAssistedImport, type WeeklyAssistedImportResult } from "@/lib/weeklyAssistedImport";
 import {
+  buildWeeklyCollectionTemplate,
+  getWeeklyCollectionSafetyChecklist,
+  getWeeklyCollectionTemplateSections,
+  type WeeklyCollectionTemplateSection
+} from "@/lib/weeklyCollectionTemplate";
+import {
   WEEKLY_MARKETING_DATA_MOCK,
   convertWeeklyDataToDecisionInputs,
   createEmptyWeeklyMarketingData,
@@ -114,9 +120,13 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const [dirty, setDirty] = useState(false);
   const [importText, setImportText] = useState("");
   const [importResult, setImportResult] = useState<WeeklyAssistedImportResult | null>(null);
+  const [templateCopied, setTemplateCopied] = useState(false);
   const metrics = useMemo(() => getCalculatedWeeklyMetrics(data), [data]);
   const validation = useMemo(() => validateWeeklyMarketingData(data), [data]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
+  const collectionTemplate = useMemo(() => buildWeeklyCollectionTemplate(), []);
+  const collectionSections = useMemo(() => getWeeklyCollectionTemplateSections(), []);
+  const collectionSafetyChecklist = useMemo(() => getWeeklyCollectionSafetyChecklist(), []);
 
   function setTextField(field: keyof WeeklyMarketingData, value: string) {
     setDirty(true);
@@ -160,6 +170,22 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
     setImportResult(null);
   }
 
+  async function copyCollectionTemplate() {
+    if (!navigator.clipboard) {
+      setTemplateCopied(false);
+      return;
+    }
+
+    await navigator.clipboard.writeText(collectionTemplate);
+    setTemplateCopied(true);
+  }
+
+  function useCollectionTemplateAsDraft() {
+    setImportText(collectionTemplate);
+    setImportResult(null);
+    setTemplateCopied(false);
+  }
+
   return (
     <form action={formAction} className="space-y-6">
       <section className="panel">
@@ -184,6 +210,52 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
           <button type="button" onClick={recalculateData} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
             Recalcular indicadores
           </button>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(320px,1.1fr)]">
+          <div>
+            <p className="text-sm font-medium text-ocean">v1.3</p>
+            <h3 className="mt-1 text-lg font-semibold">Template de coleta semanal</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Use este roteiro para coletar os numeros consolidados da semana antes de colar na importacao assistida. Ele nao busca dados sozinho e nao conecta APIs externas.
+            </p>
+            <div className="mt-4 grid gap-3">
+              {collectionSections.map((section) => (
+                <CollectionTemplateSectionSummary key={section.title} section={section} />
+              ))}
+            </div>
+            <div className="mt-4 rounded-md bg-cyan-50 p-3 text-sm text-ocean">
+              <p className="font-semibold">Checklist de seguranca</p>
+              <ul className="mt-2 space-y-1">
+                {collectionSafetyChecklist.map((item) => (
+                  <li key={item}>- {item}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div>
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">Template copiavel</span>
+              <textarea
+                readOnly
+                value={collectionTemplate}
+                rows={16}
+                className="mt-1 w-full rounded-md border border-slate-300 bg-slate-50 px-3 py-2 font-mono text-xs text-slate-700 outline-none"
+              />
+            </label>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" onClick={copyCollectionTemplate} className="rounded-md bg-ocean px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+                Copiar template
+              </button>
+              <button type="button" onClick={useCollectionTemplateAsDraft} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+                Usar como rascunho da importacao
+              </button>
+            </div>
+            {templateCopied ? <p className="mt-3 rounded-md bg-green-50 p-3 text-sm font-medium text-leaf">Template copiado para a area de transferencia.</p> : null}
+          </div>
         </div>
       </section>
 
@@ -313,6 +385,18 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         </div>
       </section>
     </form>
+  );
+}
+
+function CollectionTemplateSectionSummary({ section }: { section: WeeklyCollectionTemplateSection }) {
+  return (
+    <div className="rounded-md border border-slate-200 p-3">
+      <p className="text-sm font-semibold text-slate-700">{section.title}</p>
+      <p className="mt-1 text-xs text-slate-500">{section.source}</p>
+      <p className="mt-2 text-xs text-slate-500">
+        {section.fields.length} campo(s), {section.fields.filter((field) => field.required).length} essencial(is).
+      </p>
+    </div>
   );
 }
 

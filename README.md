@@ -61,6 +61,12 @@ A tela `/data` inclui uma importacao assistida para colar dados agregados de Ins
 
 Essa etapa nao conecta APIs externas, nao usa tokens e nao busca dados automaticamente. Ela serve para validar o fluxo real com numeros consolidados antes de evoluir para CSV/Excel ou integracoes oficiais.
 
+## v1.3 - Template de coleta semanal
+
+A tela `/data` tambem inclui um template copiavel para orientar a coleta manual de metricas semanais em Instagram, Meta Ads, Google Ads e funil comercial.
+
+O template funciona como checklist operacional: ajuda a coletar numeros consolidados, colar na importacao assistida e revisar antes de salvar. Ele nao conecta APIs externas, nao cria tokens e nao salva dados automaticamente.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

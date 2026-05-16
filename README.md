@@ -67,6 +67,12 @@ A tela `/data` tambem inclui um template copiavel para orientar a coleta manual 
 
 O template funciona como checklist operacional: ajuda a coletar numeros consolidados, colar na importacao assistida e revisar antes de salvar. Ele nao conecta APIs externas, nao cria tokens e nao salva dados automaticamente.
 
+## v1.4 - Importacao CSV/planilha
+
+A tela `/data` inclui uma importacao assistida por CSV/TSV para dados copiados de planilha ou arquivo `.csv`. A tabela e convertida para linhas `campo: valor` antes de entrar no fluxo de previa e aplicacao manual.
+
+Essa etapa nao le `.xlsx` diretamente, nao conecta Google Sheets, nao usa tokens e nao salva dados automaticamente. Ela serve para acelerar o preenchimento com dados agregados ja revisados.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

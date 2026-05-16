@@ -73,6 +73,12 @@ A tela `/data` inclui uma importacao assistida por CSV/TSV para dados copiados d
 
 Essa etapa nao le `.xlsx` diretamente, nao conecta Google Sheets, nao usa tokens e nao salva dados automaticamente. Ela serve para acelerar o preenchimento com dados agregados ja revisados.
 
+## v1.5 - Mapeamento manual de colunas CSV
+
+A importacao CSV/TSV em `/data` tambem permite revisar cada coluna da planilha e escolher o campo correspondente antes de enviar para a importacao assistida.
+
+Esse mapeamento ajuda quando o cabecalho vem como `Meta R$`, `WA Ads`, `Stories IG` ou outro nome operacional. Colunas sem uso podem ser ignoradas. O fluxo continua local, sem API externa, sem token, sem salvamento automatico e com revisao humana antes de aplicar.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

@@ -22,7 +22,8 @@ import {
   type WeeklyCsvColumnMappingOption,
   type WeeklyCsvColumnMappingPreset,
   type WeeklyCsvColumnMappingPresetId,
-  type WeeklyCsvImportResult
+  type WeeklyCsvImportResult,
+  type WeeklyCsvReadinessItem
 } from "@/lib/weeklyCsvImport";
 import {
   WEEKLY_MARKETING_DATA_MOCK,
@@ -233,7 +234,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   }
 
   function sendCsvToAssistedImport() {
-    if (!csvResult || !csvResult.normalizedText || csvResult.sensitiveWarnings.length > 0) return;
+    if (!csvResult || !csvResult.readinessReport.canSendToAssistedImport) return;
     setImportText(csvResult.normalizedText);
     setImportResult(csvResult.assistedResult);
   }
@@ -334,10 +335,10 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
       <section className="panel">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,1fr)]">
           <div>
-            <p className="text-sm font-medium text-ocean">v1.6</p>
+            <p className="text-sm font-medium text-ocean">v1.7</p>
             <h3 className="mt-1 text-lg font-semibold">Importacao por CSV/planilha</h3>
             <p className="mt-2 text-sm text-slate-500">
-              Cole uma tabela CSV/TSV ou carregue um arquivo exportado da planilha. A leitura permite usar presets, mapear colunas e converter a tabela em campos revisaveis antes da importacao assistida.
+              Cole uma tabela CSV/TSV ou carregue um arquivo exportado da planilha. A leitura permite usar presets, mapear colunas e validar a prontidao antes da importacao assistida.
             </p>
             <label className="mt-4 block">
               <span className="text-sm font-medium text-slate-700">Perfil da planilha</span>
@@ -378,7 +379,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
               <button
                 type="button"
                 onClick={sendCsvToAssistedImport}
-                disabled={!csvResult || !csvResult.normalizedText || csvResult.sensitiveWarnings.length > 0}
+                disabled={!csvResult || !csvResult.readinessReport.canSendToAssistedImport}
                 className="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Enviar para importacao assistida
@@ -574,6 +575,8 @@ function CsvImportPreview({
         </div>
       ) : null}
 
+      <CsvReadinessPanel result={result} />
+
       {result.headers.length && !result.isFieldValueTable ? (
         <div className="mt-4 rounded-md border border-slate-200 bg-slate-50 p-3">
           <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
@@ -640,6 +643,70 @@ function csvDelimiterLabel(delimiter: WeeklyCsvImportResult["delimiter"]): strin
   if (delimiter === "comma") return "virgula";
   if (delimiter === "tab") return "tabulacao";
   return "nao identificado";
+}
+
+function CsvReadinessPanel({ result }: { result: WeeklyCsvImportResult }) {
+  const readiness = result.readinessReport;
+
+  return (
+    <div className={`mt-4 rounded-md border p-3 text-sm ${readinessPanelClass(readiness.status)}`}>
+      <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="font-semibold">Validacao antes de enviar</p>
+          <p className="mt-1">{readiness.summary}</p>
+        </div>
+        <span className="inline-flex w-fit rounded-full bg-white px-2 py-1 text-xs font-semibold text-slate-700">
+          {readinessStatusLabel(readiness.status)}
+        </span>
+      </div>
+
+      <div className="mt-3 grid gap-2">
+        {readiness.items.map((item) => (
+          <CsvReadinessItemView key={item.id} item={item} />
+        ))}
+      </div>
+
+      {readiness.blockers.length ? (
+        <div className="mt-3">
+          <p className="font-semibold">Bloqueios</p>
+          <ul className="mt-1 space-y-1">
+            {readiness.blockers.map((blocker) => (
+              <li key={blocker}>- {blocker}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CsvReadinessItemView({ item }: { item: WeeklyCsvReadinessItem }) {
+  return (
+    <div className="rounded-md bg-white p-2">
+      <p className="font-semibold text-slate-700">
+        {readinessItemStatusLabel(item.status)} {item.label}
+      </p>
+      <p className="mt-1 text-xs text-slate-500">{item.detail}</p>
+    </div>
+  );
+}
+
+function readinessPanelClass(status: WeeklyCsvImportResult["readinessReport"]["status"]): string {
+  if (status === "ready") return "border-green-200 bg-green-50 text-leaf";
+  if (status === "blocked") return "border-red-200 bg-red-50 text-danger";
+  return "border-amber-200 bg-amber-50 text-amber";
+}
+
+function readinessStatusLabel(status: WeeklyCsvImportResult["readinessReport"]["status"]): string {
+  if (status === "ready") return "pronta";
+  if (status === "blocked") return "bloqueada";
+  return "revisar";
+}
+
+function readinessItemStatusLabel(status: WeeklyCsvReadinessItem["status"]): string {
+  if (status === "ok") return "OK -";
+  if (status === "missing") return "Falta -";
+  return "Revisar -";
 }
 
 function CollectionTemplateSectionSummary({ section }: { section: WeeklyCollectionTemplateSection }) {

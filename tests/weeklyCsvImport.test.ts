@@ -28,6 +28,8 @@ Stories publicados;42`);
         instagramStories: 42
       })
     );
+    expect(result.readinessReport.status).toBe("ready");
+    expect(result.readinessReport.canSendToAssistedImport).toBe(true);
   });
 
   it("converte tabela larga com cabecalho e uma linha de dados", () => {
@@ -73,6 +75,8 @@ Paciente;Maria`);
     expect(result.assistedResult.fields.metaSpend).toBe(500);
     expect(result.sensitiveWarnings.length).toBeGreaterThanOrEqual(1);
     expect(result.sensitiveWarnings.join(" ")).toContain("possivel dado sensivel");
+    expect(result.readinessReport.status).toBe("blocked");
+    expect(result.readinessReport.canSendToAssistedImport).toBe(false);
   });
 
   it("nao quebra com texto vazio ou sem delimitador", () => {
@@ -82,6 +86,7 @@ Paciente;Maria`);
     expect(empty.warnings).toContain("Cole um CSV/TSV ou carregue um arquivo antes de gerar a previa.");
     expect(unknown.delimiter).toBe("unknown");
     expect(unknown.assistedResult.fields.metaSpend).toBe(500);
+    expect(empty.readinessReport.status).toBe("blocked");
   });
 
   it("sugere mapeamento para colunas comuns de planilha", () => {
@@ -143,6 +148,8 @@ Semana teste;500;nao importar`,
 
     expect(result.normalizedText).not.toContain("nao importar");
     expect(result.warnings.join(" ")).toContain("Colunas sem mapeamento foram ignoradas");
+    expect(result.readinessReport.status).toBe("needs-review");
+    expect(result.readinessReport.canSendToAssistedImport).toBe(true);
   });
 
   it("propaga alertas sensiveis mesmo com mapeamento manual", () => {
@@ -221,5 +228,29 @@ Semana funil;150;60;18;14`;
         consultationsAttended: 14
       })
     );
+  });
+
+  it("marca previa como revisao quando faltam periodo e funil", () => {
+    const result = parseWeeklyCsvImport(`Campo;Valor
+Rotulo da semana;Semana sem periodo
+Stories publicados;42`);
+
+    expect(result.readinessReport.status).toBe("needs-review");
+    expect(result.readinessReport.canSendToAssistedImport).toBe(true);
+    expect(result.readinessReport.items).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: "period", status: "missing" }),
+        expect.objectContaining({ id: "week-label", status: "ok" })
+      ])
+    );
+  });
+
+  it("bloqueia envio quando nenhum campo conhecido e reconhecido", () => {
+    const result = parseWeeklyCsvImport(`Coisa;Valor
+Algo;123`);
+
+    expect(result.readinessReport.status).toBe("blocked");
+    expect(result.readinessReport.canSendToAssistedImport).toBe(false);
+    expect(result.readinessReport.blockers).toEqual(expect.arrayContaining(["Nenhum campo conhecido foi reconhecido."]));
   });
 });

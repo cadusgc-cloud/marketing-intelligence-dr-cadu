@@ -55,6 +55,12 @@ A Central Semanal em `/weekly` inclui uma camada de decisão estratégica que co
 
 Essa leitura identifica gargalos comerciais, queda de presença orgânica, pressão de custo e alertas de eficiência. As recomendações são apoio operacional: devem ser revisadas por uma pessoa antes de qualquer decisão de investimento e não prometem resultado.
 
+## v1.2 - Importacao assistida de dados semanais
+
+A tela `/data` inclui uma importacao assistida para colar dados agregados de Instagram, Meta Ads, Google Ads e funil comercial. O sistema gera uma previa dos campos reconhecidos antes de aplicar nos inputs semanais.
+
+Essa etapa nao conecta APIs externas, nao usa tokens e nao busca dados automaticamente. Ela serve para validar o fluxo real com numeros consolidados antes de evoluir para CSV/Excel ou integracoes oficiais.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

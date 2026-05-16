@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { saveWeeklyMarketingData, type SaveWeeklyMarketingDataState } from "@/app/data/actions";
 import { channelLabel } from "@/lib/decisionSignals";
+import { applyWeeklyAssistedImport, parseWeeklyAssistedImport, type WeeklyAssistedImportResult } from "@/lib/weeklyAssistedImport";
 import {
   WEEKLY_MARKETING_DATA_MOCK,
   convertWeeklyDataToDecisionInputs,
@@ -111,6 +112,8 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const [saveState, formAction] = useFormState(saveWeeklyMarketingData, initialSaveWeeklyMarketingDataState);
   const [data, setData] = useState(() => normalizeWeeklyMarketingData(initialData));
   const [dirty, setDirty] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [importResult, setImportResult] = useState<WeeklyAssistedImportResult | null>(null);
   const metrics = useMemo(() => getCalculatedWeeklyMetrics(data), [data]);
   const validation = useMemo(() => validateWeeklyMarketingData(data), [data]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
@@ -142,6 +145,21 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
     setData((current) => normalizeWeeklyMarketingData(current));
   }
 
+  function previewAssistedImport() {
+    setImportResult(parseWeeklyAssistedImport(importText));
+  }
+
+  function applyAssistedImport() {
+    if (!importResult || importResult.recognizedFields.length === 0 || importResult.sensitiveWarnings.length > 0) return;
+    setDirty(true);
+    setData((current) => applyWeeklyAssistedImport(current, importResult));
+  }
+
+  function clearAssistedImport() {
+    setImportText("");
+    setImportResult(null);
+  }
+
   return (
     <form action={formAction} className="space-y-6">
       <section className="panel">
@@ -166,6 +184,45 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
           <button type="button" onClick={recalculateData} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
             Recalcular indicadores
           </button>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+          <div>
+            <p className="text-sm font-medium text-ocean">v1.2</p>
+            <h3 className="mt-1 text-lg font-semibold">Importacao assistida</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Cole dados agregados de Instagram, Meta Ads, Google Ads ou comercial. O sistema reconhece campos conhecidos e preenche a semana apenas depois da sua confirmacao.
+            </p>
+            <textarea
+              value={importText}
+              onChange={(event) => setImportText(event.target.value)}
+              rows={9}
+              placeholder={assistedImportPlaceholder}
+              className="mt-4 w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-ocean focus:ring-1 focus:ring-ocean"
+            />
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" onClick={previewAssistedImport} className="rounded-md bg-ocean px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+                Gerar previa
+              </button>
+              <button
+                type="button"
+                onClick={applyAssistedImport}
+                disabled={!importResult || importResult.recognizedFields.length === 0 || importResult.sensitiveWarnings.length > 0}
+                className="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Aplicar campos detectados
+              </button>
+              <button type="button" onClick={clearAssistedImport} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+                Limpar importacao
+              </button>
+            </div>
+            <p className="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber">
+              Nao cole nomes, telefones, DMs, prontuarios, dados de paciente ou conversa individual. Use apenas numeros consolidados.
+            </p>
+          </div>
+          <AssistedImportPreview result={importResult} />
         </div>
       </section>
 
@@ -256,6 +313,73 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         </div>
       </section>
     </form>
+  );
+}
+
+function AssistedImportPreview({ result }: { result: WeeklyAssistedImportResult | null }) {
+  if (!result) {
+    return (
+      <div className="rounded-lg border border-dashed border-slate-300 p-4">
+        <h4 className="font-semibold">Previa da importacao</h4>
+        <p className="mt-2 text-sm text-slate-500">Cole um relatorio agregado e clique em gerar previa para revisar os campos antes de aplicar.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border border-slate-200 p-4">
+      <h4 className="font-semibold">Previa da importacao</h4>
+      <p className="mt-1 text-sm text-slate-500">
+        {result.recognizedFields.length} campo(s) detectado(s). Campos sensiveis bloqueiam a aplicacao automatica.
+      </p>
+
+      {result.sensitiveWarnings.length ? (
+        <div className="mt-3 rounded-md bg-red-50 p-3 text-sm text-danger" role="alert">
+          <p className="font-semibold">Revisao obrigatoria</p>
+          <ul className="mt-2 space-y-1">
+            {result.sensitiveWarnings.map((warning) => (
+              <li key={warning}>- {warning}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {result.recognizedFields.length ? (
+        <div className="mt-4 grid gap-2">
+          {result.recognizedFields.map((field) => (
+            <div key={`${field.key}-${field.sourceLine}`} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-slate-700">{field.label}</p>
+              <p className="mt-1 text-slate-600">{field.value === null ? "sem dado" : String(field.value)}</p>
+              <p className="mt-1 text-xs text-slate-500">{field.sourceLine}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-3 rounded-md bg-amber-50 p-3 text-sm text-amber">Nenhum campo conhecido foi detectado.</p>
+      )}
+
+      {result.warnings.length ? (
+        <div className="mt-4 rounded-md bg-amber-50 p-3 text-sm text-amber">
+          <p className="font-semibold">Avisos</p>
+          <ul className="mt-2 space-y-1">
+            {result.warnings.map((warning) => (
+              <li key={warning}>- {warning}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {result.ignoredLines.length ? (
+        <details className="mt-4 text-sm text-slate-500">
+          <summary className="cursor-pointer font-medium text-slate-700">Linhas ignoradas ({result.ignoredLines.length})</summary>
+          <ul className="mt-2 space-y-1">
+            {result.ignoredLines.slice(0, 8).map((line) => (
+              <li key={line}>- {line}</li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+    </div>
   );
 }
 
@@ -363,3 +487,19 @@ const funnelFields: NumberField[] = [
   { key: "consultationsAttended", label: "Consultas comparecidas", nullable: true },
   { key: "surgeriesClosed", label: "Cirurgias fechadas", nullable: true }
 ];
+
+const assistedImportPlaceholder = `Periodo: 11/05/2026 a 17/05/2026
+Rotulo da semana: Semana 11/05 a 17/05/2026
+Investimento Meta Ads: R$ 780,00
+Conversas Meta: 118
+Investimento Google Ads: R$ 220,00
+Cliques Google Ads: 48
+Conversoes Google Ads: 0
+Stories publicados: 42
+Reels publicados: 3
+Posts publicados: 2
+WhatsApps totais: 126
+Conversas qualificadas: 42
+Consultas marcadas: 12
+Consultas comparecidas: 9
+Cirurgias fechadas: 2`;

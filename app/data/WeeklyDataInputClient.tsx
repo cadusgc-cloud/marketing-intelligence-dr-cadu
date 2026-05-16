@@ -27,6 +27,7 @@ import {
 } from "@/lib/weeklyCsvImport";
 import {
   WEEKLY_MARKETING_DATA_MOCK,
+  buildWeeklySaveReadinessReport,
   convertWeeklyDataToDecisionInputs,
   createEmptyWeeklyMarketingData,
   getCalculatedWeeklyMetrics,
@@ -35,7 +36,9 @@ import {
   summarizeWeeklyMarketingData,
   updateWeeklyMarketingDataField,
   validateWeeklyMarketingData,
-  type WeeklyMarketingData
+  type WeeklyMarketingData,
+  type WeeklySaveReadinessItem,
+  type WeeklySaveReadinessReport
 } from "@/lib/weeklyDataInput";
 
 type WeeklyDataSource = "saved" | "draft";
@@ -108,12 +111,12 @@ function NumberInput({ field, data, onChange }: { field: NumberField; data: Week
   );
 }
 
-function SubmitButton() {
+function SubmitButton({ blocked }: { blocked: boolean }) {
   const { pending } = useFormStatus();
 
   return (
-    <button type="submit" disabled={pending} className="rounded-md bg-ocean px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-70">
-      {pending ? "Salvando..." : "Salvar semana"}
+    <button type="submit" disabled={pending || blocked} className="rounded-md bg-ocean px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-70">
+      {pending ? "Salvando..." : blocked ? "Complete essenciais" : "Salvar semana"}
     </button>
   );
 }
@@ -142,6 +145,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const [csvMappingPresetId, setCsvMappingPresetId] = useState<WeeklyCsvColumnMappingPresetId>("auto");
   const metrics = useMemo(() => getCalculatedWeeklyMetrics(data), [data]);
   const validation = useMemo(() => validateWeeklyMarketingData(data), [data]);
+  const saveReadiness = useMemo(() => buildWeeklySaveReadinessReport(data), [data]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
   const collectionTemplate = useMemo(() => buildWeeklyCollectionTemplate(), []);
   const collectionSections = useMemo(() => getWeeklyCollectionTemplateSections(), []);
@@ -268,10 +272,11 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
             <h2 className="mt-1 text-2xl font-semibold">Dados semanais</h2>
             <p className="mt-2 text-sm text-slate-500">Entrada leve de metricas agregadas para alimentar a auditoria, os sinais de decisao e a Central Semanal.</p>
           </div>
-          <SubmitButton />
+          <SubmitButton blocked={!saveReadiness.canSave} />
         </div>
 
         <StatusMessage source={source} dirty={dirty} status={saveState.status} message={saveState.message} errors={saveState.errors} />
+        <WeeklySaveReadinessPanel report={saveReadiness} />
 
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" onClick={restoreMockData} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
@@ -531,6 +536,79 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
       </section>
     </form>
   );
+}
+
+function WeeklySaveReadinessPanel({ report }: { report: WeeklySaveReadinessReport }) {
+  return (
+    <div className={`mt-4 rounded-md border p-3 text-sm ${saveReadinessPanelClass(report.status)}`}>
+      <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="font-semibold">Validacao antes de salvar</p>
+          <p className="mt-1">{report.summary}</p>
+        </div>
+        <span className="inline-flex w-fit rounded-full bg-white px-2 py-1 text-xs font-semibold text-slate-700">
+          {saveReadinessStatusLabel(report.status)}
+        </span>
+      </div>
+
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
+        {report.items.map((item) => (
+          <WeeklySaveReadinessItemView key={item.id} item={item} />
+        ))}
+      </div>
+
+      {report.blockers.length ? (
+        <div className="mt-3">
+          <p className="font-semibold">Bloqueios para salvar</p>
+          <ul className="mt-1 space-y-1">
+            {report.blockers.map((blocker) => (
+              <li key={blocker}>- {blocker}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {report.reviewNotes.length ? (
+        <div className="mt-3">
+          <p className="font-semibold">Pontos para revisao</p>
+          <ul className="mt-1 space-y-1">
+            {report.reviewNotes.slice(0, 5).map((note) => (
+              <li key={note}>- {note}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function WeeklySaveReadinessItemView({ item }: { item: WeeklySaveReadinessItem }) {
+  return (
+    <div className="rounded-md bg-white p-2">
+      <p className="font-semibold text-slate-700">
+        {saveReadinessItemStatusLabel(item.status)} {item.label}
+      </p>
+      <p className="mt-1 text-xs text-slate-500">{item.detail}</p>
+    </div>
+  );
+}
+
+function saveReadinessPanelClass(status: WeeklySaveReadinessReport["status"]): string {
+  if (status === "ready") return "border-green-200 bg-green-50 text-leaf";
+  if (status === "blocked") return "border-red-200 bg-red-50 text-danger";
+  return "border-amber-200 bg-amber-50 text-amber";
+}
+
+function saveReadinessStatusLabel(status: WeeklySaveReadinessReport["status"]): string {
+  if (status === "ready") return "pronta";
+  if (status === "blocked") return "bloqueada";
+  return "revisar";
+}
+
+function saveReadinessItemStatusLabel(status: WeeklySaveReadinessItem["status"]): string {
+  if (status === "ok") return "OK -";
+  if (status === "missing") return "Falta -";
+  return "Revisar -";
 }
 
 function CsvImportPreview({

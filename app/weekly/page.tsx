@@ -281,6 +281,9 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
             <Link href="/stories/learning" className="rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
               Aprender com os stories
             </Link>
+            <Link href="/stories/today" className="rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
+              Briefing de stories de hoje
+            </Link>
             <Link href="/stories/next-week" className="rounded-md bg-slate-100 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-200">
               Planejar próxima semana
             </Link>

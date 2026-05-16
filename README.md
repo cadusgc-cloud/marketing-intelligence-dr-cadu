@@ -97,6 +97,12 @@ A tela `/data` agora mostra uma validacao final antes de salvar a semana. O pain
 
 Quando ha bloqueio, o botao de salvar fica desativado. Quando ha apenas revisao, a semana ainda pode ser salva, mas a leitura da Central Semanal deve ser interpretada com cautela humana.
 
+## v1.9 - Briefing diario de Stories
+
+A rota `/stories/today` cria um briefing operacional do dia para conectar planejamento semanal, exportacao, execucao manual e registro de resultados dos Stories.
+
+O painel separa fila de publicacao manual, fila de revisao, prioridades do dia, metricas agregadas a registrar e guardrails de privacidade. Ele nao conecta Instagram, Meta, WhatsApp ou APIs externas, nao publica automaticamente e nao usa dados pessoais ou clinicos.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

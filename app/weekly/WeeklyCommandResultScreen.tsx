@@ -4,7 +4,9 @@ import type {
   WeeklyResultMetricCard,
   WeeklyResultSignal,
   WeeklyResultSignalType,
-  WeeklyResultStatus
+  WeeklyResultStatus,
+  WeeklyTrendMetric,
+  WeeklyValidHistoryContext
 } from "@/lib/weeklyCommandResult";
 
 const statusClasses: Record<WeeklyResultStatus, string> = {
@@ -63,6 +65,8 @@ export function WeeklyCommandResultScreen({ report }: { report: WeeklyCommandRes
           ))}
         </div>
       </div>
+
+      <HistoryContextPanel context={report.historyContext} />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
         <section className="panel">
@@ -156,6 +160,53 @@ export function WeeklyCommandResultScreen({ report }: { report: WeeklyCommandRes
         </div>
       </section>
     </section>
+  );
+}
+
+function HistoryContextPanel({ context }: { context: WeeklyValidHistoryContext }) {
+  return (
+    <section className="panel">
+      <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+        <SectionTitle eyebrow="Historico valido" title="Contexto das semanas validas" description={context.summary} />
+        <span className="badge bg-slate-100 text-slate-700">{historyStatusLabel(context.status)}</span>
+      </div>
+
+      {context.weeksConsidered.length ? (
+        <p className="mt-4 text-xs text-slate-500">
+          Semanas usadas: {context.weeksConsidered.join("; ")}
+        </p>
+      ) : null}
+
+      <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        {context.metrics.slice(0, 6).map((metric) => (
+          <TrendMetricCard key={metric.key} metric={metric} />
+        ))}
+      </div>
+
+      <div className="mt-4 grid gap-2 md:grid-cols-2">
+        {context.guardrails.map((guardrail) => (
+          <p key={guardrail} className="rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+            {guardrail}
+          </p>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TrendMetricCard({ metric }: { metric: WeeklyTrendMetric }) {
+  return (
+    <article className="rounded-lg border border-slate-200 p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <h4 className="font-semibold">{metric.label}</h4>
+        <span className="badge bg-slate-100 text-slate-700">{trendDirectionLabel(metric.direction)}</span>
+      </div>
+      <p className="mt-3 text-sm text-slate-600">{metric.summary}</p>
+      <div className="mt-3 grid gap-2 text-sm text-slate-500 sm:grid-cols-2">
+        <p>Atual: <span className="font-semibold text-slate-700">{formatMetricValue(metric.currentValue, metric.unit)}</span></p>
+        <p>Media: <span className="font-semibold text-slate-700">{formatMetricValue(metric.averageValue, metric.unit)}</span></p>
+      </div>
+    </article>
   );
 }
 
@@ -282,4 +333,22 @@ function storiesStatusLabel(status: "active" | "attention" | "missing_data"): st
     attention: "Requer cadencia",
     missing_data: "Sem dado"
   }[status];
+}
+
+function historyStatusLabel(status: WeeklyValidHistoryContext["status"]): string {
+  return {
+    ready: "Contexto pronto",
+    limited: "Contexto limitado",
+    empty: "Sem historico valido"
+  }[status];
+}
+
+function trendDirectionLabel(direction: WeeklyTrendMetric["direction"]): string {
+  return {
+    above_average: "Acima da media",
+    below_average: "Abaixo da media",
+    near_average: "Perto da media",
+    not_enough_history: "Sem historico",
+    missing: "Sem dado"
+  }[direction];
 }

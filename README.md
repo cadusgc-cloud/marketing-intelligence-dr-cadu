@@ -109,6 +109,12 @@ A rota `/weekly` agora abre com uma tela de resultado operacional chamada Weekly
 
 A leitura permanece deterministica, interna e baseada somente em metricas agregadas. Dezembro/2025 continua excluido de comparacoes normais por anomalia operacional, e o sistema nao publica, nao envia mensagens e nao conecta APIs externas.
 
+## v2.1 - Contexto de semanas validas
+
+O Weekly Command Center tambem calcula uma janela recente de semanas anteriores validas para dar contexto historico a metricas agregadas. A tela mostra se a semana atual esta acima, abaixo ou perto da media recente em visitas ao perfil, cadencia, conversas, funil e conversoes disponiveis.
+
+Dezembro/2025 segue excluido da janela historica por anomalia operacional. A media recente e apenas apoio de contexto: nao e previsao, benchmark definitivo nem autorizacao automatica para decisao de verba, conteudo ou equipe.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

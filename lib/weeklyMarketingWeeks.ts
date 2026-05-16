@@ -97,8 +97,14 @@ export async function getWeeklyMarketingDataById(id: string): Promise<WeeklyMark
 }
 
 export async function getPreviousWeeklyMarketingData(selectedWeek: WeeklyMarketingData): Promise<WeeklyMarketingData | null> {
+  const records = await getPreviousValidWeeklyMarketingData(selectedWeek, 1);
+  return records[0] ?? null;
+}
+
+export async function getPreviousValidWeeklyMarketingData(selectedWeek: WeeklyMarketingData, limit = 4): Promise<WeeklyMarketingData[]> {
   const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
-  if (!isValidIsoDate(referenceDate)) return null;
+  if (!isValidIsoDate(referenceDate)) return [];
+  const safeLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 12) : 4;
 
   const records = await prisma.weeklyMarketingWeek.findMany({
     where: {
@@ -106,11 +112,10 @@ export async function getPreviousWeeklyMarketingData(selectedWeek: WeeklyMarketi
       endDate: { lt: referenceDate }
     },
     orderBy: [{ endDate: "desc" }, { updatedAt: "desc" }],
-    take: 12
+    take: Math.min(safeLimit * 4, 52)
   });
-  const record = records.find((item) => !isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(item)) ?? null;
 
-  return record ? mapWeeklyMarketingWeekToData(record) : null;
+  return selectPreviousValidWeeklyMarketingWeekRecords(records, selectedWeek, safeLimit).map(mapWeeklyMarketingWeekToData);
 }
 
 export async function getWeeklyMarketingWeekSummaries(limit = 12): Promise<WeeklyMarketingWeekSummary[]> {
@@ -127,14 +132,22 @@ export function selectPreviousWeeklyMarketingWeekRecord(
   records: WeeklyMarketingWeek[],
   selectedWeek: Pick<WeeklyMarketingData, "id" | "startDate" | "endDate">
 ): WeeklyMarketingWeek | null {
-  const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
-  if (!isValidIsoDate(referenceDate)) return null;
+  return selectPreviousValidWeeklyMarketingWeekRecords(records, selectedWeek, 1)[0] ?? null;
+}
 
-  return (
-    records
-      .filter((record) => record.id !== selectedWeek.id && record.endDate < referenceDate && !isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(record))
-      .sort((a, b) => b.endDate.localeCompare(a.endDate) || b.updatedAt.getTime() - a.updatedAt.getTime())[0] ?? null
-  );
+export function selectPreviousValidWeeklyMarketingWeekRecords(
+  records: WeeklyMarketingWeek[],
+  selectedWeek: Pick<WeeklyMarketingData, "id" | "startDate" | "endDate">,
+  limit = 4
+): WeeklyMarketingWeek[] {
+  const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
+  if (!isValidIsoDate(referenceDate)) return [];
+  const safeLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 12) : 4;
+
+  return records
+    .filter((record) => record.id !== selectedWeek.id && record.endDate < referenceDate && !isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(record))
+    .sort((a, b) => b.endDate.localeCompare(a.endDate) || b.updatedAt.getTime() - a.updatedAt.getTime())
+    .slice(0, safeLimit);
 }
 
 export function isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(record: Pick<WeeklyMarketingWeek, "startDate" | "endDate">): boolean {

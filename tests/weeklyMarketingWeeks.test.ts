@@ -5,6 +5,7 @@ import {
   mapWeeklyMarketingWeekToSummary,
   isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis,
   selectPreviousWeeklyMarketingWeekRecord,
+  selectPreviousValidWeeklyMarketingWeekRecords,
   validateWeeklyMarketingWeekInput,
   type WeeklyMarketingWeekInput
 } from "@/lib/weeklyMarketingWeeks";
@@ -140,6 +141,29 @@ describe("Weekly Marketing Weeks", () => {
 
     expect(isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(records[1])).toBe(true);
     expect(previous?.id).toBe("valid-previous-week");
+  });
+
+  it("seleciona uma janela de semanas anteriores validas excluindo anomalias", () => {
+    const records = [
+      makeRecord("current-week", "2026-01-26", "2026-02-01"),
+      makeRecord("valid-week-1", "2026-01-19", "2026-01-25"),
+      makeRecord("valid-week-2", "2026-01-12", "2026-01-18"),
+      makeRecord("valid-week-3", "2026-01-05", "2026-01-11"),
+      makeRecord("december-anomaly-week", "2025-12-08", "2025-12-14"),
+      makeRecord("valid-week-4", "2025-11-24", "2025-11-30")
+    ];
+
+    const previousWeeks = selectPreviousValidWeeklyMarketingWeekRecords(
+      records,
+      {
+        id: "current-week",
+        startDate: "2026-01-26",
+        endDate: "2026-02-01"
+      },
+      4
+    );
+
+    expect(previousWeeks.map((week) => week.id)).toEqual(["valid-week-1", "valid-week-2", "valid-week-3", "valid-week-4"]);
   });
 });
 

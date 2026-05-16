@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildWeeklyCommandCenter } from "@/lib/weeklyCommandCenter";
 import {
   buildWeeklyCommandResult,
+  buildWeeklyValidHistoryContext,
   buildWeeklyResultMetricCards,
   interpretCadenceVsQuality,
   isWeeklyMarketingDataOperationalAnomaly
@@ -73,6 +74,41 @@ describe("Weekly Command Center result screen domain", () => {
         deltaPercent: 0.5
       })
     );
+  });
+
+  it("gera contexto de semanas validas com media historica recente", () => {
+    const current = makeWeek({ instagramProfileVisits: 1200, whatsappTotal: 150 });
+    const history = [
+      makeWeek({ id: "week-previous-1", startDate: "2026-05-04", endDate: "2026-05-10", instagramProfileVisits: 900, whatsappTotal: 100 }),
+      makeWeek({ id: "week-previous-2", startDate: "2026-04-27", endDate: "2026-05-03", instagramProfileVisits: 700, whatsappTotal: 90 }),
+      makeWeek({ id: "week-previous-3", startDate: "2026-04-20", endDate: "2026-04-26", instagramProfileVisits: 800, whatsappTotal: 110 })
+    ];
+    const context = buildWeeklyValidHistoryContext(current, history);
+    const profileMetric = context.metrics.find((metric) => metric.key === "instagramProfileVisits");
+
+    expect(context.status).toBe("ready");
+    expect(context.validWeeksUsed).toBe(3);
+    expect(profileMetric).toEqual(
+      expect.objectContaining({
+        averageValue: 800,
+        differenceAbsolute: 400,
+        differencePercent: 0.5,
+        direction: "above_average"
+      })
+    );
+  });
+
+  it("exclui dezembro de 2025 do contexto historico multi-semana", () => {
+    const current = makeWeek({ startDate: "2026-01-12", endDate: "2026-01-18" });
+    const history = [
+      makeWeek({ id: "december-week", weekLabel: "Dezembro 2025", startDate: "2025-12-08", endDate: "2025-12-14" }),
+      makeWeek({ id: "valid-week", weekLabel: "Semana valida", startDate: "2025-11-24", endDate: "2025-11-30" })
+    ];
+    const report = buildWeeklyCommandResult(current, history[0], undefined, undefined, history);
+
+    expect(report.historyContext.validWeeksUsed).toBe(1);
+    expect(report.historyContext.weeksConsidered.join(" ")).toContain("Semana valida");
+    expect(report.historyContext.weeksConsidered.join(" ")).not.toContain("Dezembro 2025");
   });
 
   it("classifica queda por cadencia quando performance cai junto com volume menor", () => {

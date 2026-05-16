@@ -13,6 +13,7 @@ import { isInsideDecember2025 } from "@/lib/utils/dates";
 export type WeeklyResultStatus = "growth" | "stable" | "cadence_drop" | "quality_drop" | "insufficient_data";
 export type WeeklyResultSignalType = "positive" | "warning" | "anomaly" | "insufficient_data";
 export type WeeklyResultContentFunction = "autoridade" | "confianca" | "educacao" | "desejo" | "conversao" | "distribuicao";
+export type WeeklyTrendDirection = "above_average" | "below_average" | "near_average" | "not_enough_history" | "missing";
 
 export type WeeklyResultMetricCard = {
   key: string;
@@ -24,6 +25,28 @@ export type WeeklyResultMetricCard = {
   unit: "count" | "BRL" | "rate";
   status: "available" | "missing";
   interpretation: string;
+};
+
+export type WeeklyTrendMetric = {
+  key: string;
+  label: string;
+  currentValue: number | null;
+  averageValue: number | null;
+  differenceAbsolute: number | null;
+  differencePercent: number | null;
+  unit: WeeklyResultMetricCard["unit"];
+  direction: WeeklyTrendDirection;
+  validWeeksUsed: number;
+  summary: string;
+};
+
+export type WeeklyValidHistoryContext = {
+  status: "ready" | "limited" | "empty";
+  summary: string;
+  validWeeksUsed: number;
+  weeksConsidered: string[];
+  metrics: WeeklyTrendMetric[];
+  guardrails: string[];
 };
 
 export type WeeklyResultExecutiveDiagnosis = {
@@ -89,6 +112,7 @@ export type WeeklyCommandResult = {
   executiveSummary: string;
   diagnosis: WeeklyResultExecutiveDiagnosis;
   coreMetrics: WeeklyResultMetricCard[];
+  historyContext: WeeklyValidHistoryContext;
   cadenceQuality: WeeklyCadenceQualityReading;
   signals: WeeklyResultSignal[];
   contentLearning: WeeklyResultContentLearning[];
@@ -132,11 +156,14 @@ export function buildWeeklyCommandResult(
   current: WeeklyMarketingData,
   previous?: WeeklyMarketingData | null,
   center: WeeklyCommandCenter = buildWeeklyCommandCenter(current),
-  strategicReport?: WeeklyStrategicDecisionReport
+  strategicReport?: WeeklyStrategicDecisionReport,
+  validHistory: WeeklyMarketingData[] = previous ? [previous] : []
 ): WeeklyCommandResult {
   const validPrevious = previous && !isWeeklyMarketingDataOperationalAnomaly(previous) ? previous : null;
+  const safeHistory = normalizeValidHistoryWeeks(current, validHistory.length ? validHistory : validPrevious ? [validPrevious] : []);
   const safeStrategicReport = strategicReport ?? buildWeeklyStrategicDecisionReport(current, validPrevious);
   const coreMetrics = buildWeeklyResultMetricCards(current, validPrevious);
+  const historyContext = buildWeeklyValidHistoryContext(current, safeHistory);
   const cadenceQuality = interpretCadenceVsQuality(current, validPrevious);
   const status = determineWeeklyResultStatus(current, validPrevious, cadenceQuality, center);
   const diagnosis = buildExecutiveDiagnosis(current, validPrevious, safeStrategicReport, center, cadenceQuality);
@@ -155,6 +182,7 @@ export function buildWeeklyCommandResult(
     executiveSummary: buildResultExecutiveSummary(current, validPrevious, status, diagnosis, center),
     diagnosis,
     coreMetrics,
+    historyContext,
     cadenceQuality,
     signals,
     contentLearning,
@@ -172,6 +200,26 @@ export function buildWeeklyCommandResult(
       { label: "Plano da proxima semana", href: "/stories/next-week" }
     ],
     caution: "Leitura interna e deterministica com metricas agregadas. Nao publica, nao envia mensagens e nao substitui revisao humana antes de decisoes de investimento ou comunicacao medica."
+  };
+}
+
+export function buildWeeklyValidHistoryContext(current: WeeklyMarketingData, historyWeeks: WeeklyMarketingData[] = []): WeeklyValidHistoryContext {
+  const validHistory = normalizeValidHistoryWeeks(current, historyWeeks);
+  const metrics = buildWeeklyTrendMetrics(current, validHistory);
+  const validWeeksUsed = validHistory.length;
+
+  return {
+    status: validWeeksUsed >= 2 ? "ready" : validWeeksUsed === 1 ? "limited" : "empty",
+    summary: buildHistoryContextSummary(current, validHistory, metrics),
+    validWeeksUsed,
+    weeksConsidered: validHistory.map((week) => `${week.weekLabel} (${week.startDate} a ${week.endDate})`),
+    metrics,
+    guardrails: [
+      "Dezembro/2025 permanece excluido por anomalia operacional.",
+      "A media historica e apoio de contexto, nao previsao de resultado.",
+      "Comparacoes usam apenas metricas agregadas ja registradas.",
+      "Decisoes de verba, conteudo e equipe continuam dependendo de revisao humana."
+    ]
   };
 }
 
@@ -363,6 +411,96 @@ function buildWeeklyResultSignals(
   }
 
   return uniqueById(resultSignals).slice(0, 8);
+}
+
+function buildWeeklyTrendMetrics(current: WeeklyMarketingData, historyWeeks: WeeklyMarketingData[]): WeeklyTrendMetric[] {
+  const trackedKeys = new Set([
+    "instagramProfileVisits",
+    "contentPublished",
+    "instagramStories",
+    "instagramReels",
+    "metaWhatsappConversations",
+    "whatsappTotal",
+    "qualifiedConversations",
+    "googleConversions",
+    "consultationsScheduled"
+  ]);
+
+  return metricDefinitions
+    .filter((definition) => trackedKeys.has(definition.key))
+    .map((definition) => {
+      const currentValue = definition.getValue(current);
+      const historyValues = historyWeeks
+        .map((week) => definition.getValue(week))
+        .filter((value): value is number => value !== null && Number.isFinite(value));
+      const averageValue = historyValues.length ? round(historyValues.reduce((sum, value) => sum + value, 0) / historyValues.length) : null;
+      const delta = calculateDelta(currentValue, averageValue);
+      const direction = classifyTrendDirection(currentValue, averageValue, delta.deltaPercent, historyValues.length);
+
+      return {
+        key: definition.key,
+        label: definition.label,
+        currentValue,
+        averageValue,
+        differenceAbsolute: delta.deltaAbsolute,
+        differencePercent: delta.deltaPercent,
+        unit: definition.unit,
+        direction,
+        validWeeksUsed: historyValues.length,
+        summary: summarizeTrendMetric(definition.label, direction, delta.deltaPercent, historyValues.length)
+      };
+    });
+}
+
+function buildHistoryContextSummary(current: WeeklyMarketingData, validHistory: WeeklyMarketingData[], metrics: WeeklyTrendMetric[]): string {
+  if (isWeeklyMarketingDataOperationalAnomaly(current)) {
+    return "A semana selecionada cruza dezembro/2025 e deve ficar como contexto historico, fora de medias e conclusoes normais.";
+  }
+
+  if (!validHistory.length) {
+    return "Ainda nao ha semanas anteriores validas suficientes para formar contexto historico. Use a leitura como linha de base.";
+  }
+
+  const above = metrics.filter((metric) => metric.direction === "above_average").length;
+  const below = metrics.filter((metric) => metric.direction === "below_average").length;
+
+  if (validHistory.length === 1) {
+    return `Contexto limitado: comparacao com 1 semana valida anterior. ${above} metrica(s) acima da media simples e ${below} abaixo.`;
+  }
+
+  return `Contexto de ${validHistory.length} semanas validas anteriores. ${above} metrica(s) acima da media historica recente e ${below} abaixo, sem usar dezembro/2025 como benchmark.`;
+}
+
+function normalizeValidHistoryWeeks(current: WeeklyMarketingData, historyWeeks: WeeklyMarketingData[]): WeeklyMarketingData[] {
+  const referenceDate = current.startDate || current.endDate;
+  return uniqueWeeks(historyWeeks)
+    .filter((week) => week.id !== current.id)
+    .filter((week) => !isWeeklyMarketingDataOperationalAnomaly(week))
+    .filter((week) => !referenceDate || !week.endDate || week.endDate < referenceDate)
+    .sort((a, b) => b.endDate.localeCompare(a.endDate) || b.updatedAt.getTime() - a.updatedAt.getTime())
+    .slice(0, 4);
+}
+
+function classifyTrendDirection(
+  currentValue: number | null,
+  averageValue: number | null,
+  deltaPercent: number | null,
+  validWeeksUsed: number
+): WeeklyTrendDirection {
+  if (currentValue === null) return "missing";
+  if (!validWeeksUsed || averageValue === null) return "not_enough_history";
+  if (deltaPercent === null || Math.abs(deltaPercent) < 0.1) return "near_average";
+  return deltaPercent > 0 ? "above_average" : "below_average";
+}
+
+function summarizeTrendMetric(label: string, direction: WeeklyTrendDirection, deltaPercent: number | null, validWeeksUsed: number): string {
+  if (direction === "missing") return `${label} ainda nao tem dado atual suficiente.`;
+  if (direction === "not_enough_history") return `${label} sem historico valido suficiente para media recente.`;
+  if (direction === "near_average") return `${label} esta perto da media das ${validWeeksUsed} semana(s) valida(s).`;
+  const delta = formatSignedPercent(deltaPercent);
+  return direction === "above_average"
+    ? `${label} esta ${delta} acima da media recente valida.`
+    : `${label} esta ${delta} abaixo da media recente valida.`;
 }
 
 function buildContentFunctionLearning(current: WeeklyMarketingData, center: WeeklyCommandCenter): WeeklyResultContentLearning[] {
@@ -592,4 +730,8 @@ function uniqueById<T extends { id: string }>(items: T[]): T[] {
     seen.add(item.id);
     return true;
   });
+}
+
+function uniqueWeeks(weeks: WeeklyMarketingData[]): WeeklyMarketingData[] {
+  return uniqueById(weeks);
 }

@@ -91,6 +91,12 @@ A previa CSV/TSV em `/data` agora mostra uma validacao antes de enviar para a im
 
 O bloqueio ocorre quando ha possiveis dados sensiveis, nenhum texto importavel ou nenhum campo conhecido reconhecido. Avisos como periodo ausente, rotulo ausente ou colunas ignoradas exigem revisao humana, mas nao salvam nada automaticamente.
 
+## v1.8 - Validacao antes de salvar a semana
+
+A tela `/data` agora mostra uma validacao final antes de salvar a semana. O painel separa bloqueios essenciais, como periodo invalido ou campos numericos inconsistentes, de pontos que apenas exigem revisao operacional.
+
+Quando ha bloqueio, o botao de salvar fica desativado. Quando ha apenas revisao, a semana ainda pode ser salva, mas a leitura da Central Semanal deve ser interpretada com cautela humana.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

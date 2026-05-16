@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   WEEKLY_MARKETING_DATA_MOCK,
+  buildWeeklySaveReadinessReport,
   calculateConsultationShowRate,
   calculateDailyStoriesAverage,
   calculateGoogleConversionRate,
@@ -162,5 +163,73 @@ describe("Weekly Data Input", () => {
     const metaInput = convertWeeklyDataToDecisionInputs(WEEKLY_MARKETING_DATA_MOCK).find((input) => input.metric === "meta_bofu_whatsapp_cost");
     expect(metaInput?.channel).toBe("meta");
     expect(metaInput?.value).toBe(6.6102);
+  });
+});
+
+describe("Weekly Save Readiness", () => {
+  it("bloqueia salvamento quando campos essenciais da semana estao ausentes", () => {
+    const report = buildWeeklySaveReadinessReport(createEmptyWeeklyMarketingData());
+
+    expect(report.status).toBe("blocked");
+    expect(report.canSave).toBe(false);
+    expect(report.blockers.join(" ")).toContain("rotulo da semana");
+    expect(report.blockers.join(" ")).toContain("data de inicio");
+    expect(report.blockers.join(" ")).toContain("data de fim");
+    expect(report.items.find((item) => item.id === "week-period")?.status).toBe("missing");
+  });
+
+  it("permite salvar com revisao quando faltam dados operacionais nao criticos", () => {
+    const report = buildWeeklySaveReadinessReport(WEEKLY_MARKETING_DATA_MOCK);
+
+    expect(report.status).toBe("needs-review");
+    expect(report.canSave).toBe(true);
+    expect(report.blockers).toEqual([]);
+    expect(report.reviewNotes.join(" ")).toContain("Funil comercial incompleto");
+    expect(report.items.find((item) => item.id === "commercial-funnel")?.status).toBe("review");
+  });
+
+  it("marca semana completa como pronta para salvar", () => {
+    const report = buildWeeklySaveReadinessReport(
+      createWeeklyMarketingDataFromEditableFields({
+        weekLabel: "Semana 11/05 a 17/05/2026",
+        startDate: "2026-05-11",
+        endDate: "2026-05-17",
+        metaSpend: 780,
+        metaWhatsappConversations: 118,
+        metaProfileVisits: 6100,
+        googleSpend: 220,
+        googleClicks: 48,
+        googleConversions: 4,
+        instagramStories: 42,
+        instagramReels: 3,
+        instagramPosts: 2,
+        instagramProfileVisits: 1290,
+        whatsappTotal: 126,
+        qualifiedConversations: 42,
+        consultationsScheduled: 12,
+        consultationsAttended: 9,
+        surgeriesClosed: 2
+      })
+    );
+
+    expect(report.status).toBe("ready");
+    expect(report.canSave).toBe(true);
+    expect(report.blockers).toEqual([]);
+    expect(report.reviewNotes).toEqual([]);
+    expect(report.items.every((item) => item.status === "ok")).toBe(true);
+  });
+
+  it("bloqueia salvamento quando o periodo esta fora de ordem", () => {
+    const report = buildWeeklySaveReadinessReport(
+      createWeeklyMarketingDataFromEditableFields({
+        weekLabel: "Semana invertida",
+        startDate: "2026-05-17",
+        endDate: "2026-05-11"
+      })
+    );
+
+    expect(report.status).toBe("blocked");
+    expect(report.canSave).toBe(false);
+    expect(report.blockers).toContain("A data de fim nao pode ser anterior a data de inicio.");
   });
 });

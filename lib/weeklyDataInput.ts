@@ -35,6 +35,26 @@ export type WeeklyMarketingDataValidation = {
   warnings: string[];
 };
 
+export type WeeklySaveReadinessStatus = "ready" | "needs-review" | "blocked";
+
+export type WeeklySaveReadinessItemStatus = "ok" | "missing" | "review";
+
+export type WeeklySaveReadinessItem = {
+  id: string;
+  label: string;
+  status: WeeklySaveReadinessItemStatus;
+  detail: string;
+};
+
+export type WeeklySaveReadinessReport = {
+  status: WeeklySaveReadinessStatus;
+  summary: string;
+  canSave: boolean;
+  items: WeeklySaveReadinessItem[];
+  blockers: string[];
+  reviewNotes: string[];
+};
+
 export type WeeklyCalculatedMetrics = {
   metaCostPerWhatsapp: number | null;
   metaCostPerProfileVisit: number | null;
@@ -45,6 +65,42 @@ export type WeeklyCalculatedMetrics = {
 };
 
 const baseDate = new Date("2026-05-09T12:00:00.000Z");
+
+const saveReadinessMoneyFields = ["metaSpend", "googleSpend"] as const;
+const saveReadinessCountFields = [
+  "metaWhatsappConversations",
+  "metaProfileVisits",
+  "googleClicks",
+  "googleConversions",
+  "instagramStories",
+  "instagramReels",
+  "instagramPosts",
+  "instagramProfileVisits",
+  "whatsappTotal",
+  "qualifiedConversations"
+] as const;
+const saveReadinessNullableCountFields = ["consultationsScheduled", "consultationsAttended", "surgeriesClosed"] as const;
+
+const saveReadinessFieldLabels: Record<
+  (typeof saveReadinessMoneyFields)[number] | (typeof saveReadinessCountFields)[number] | (typeof saveReadinessNullableCountFields)[number],
+  string
+> = {
+  metaSpend: "investimento Meta Ads",
+  metaWhatsappConversations: "conversas Meta no WhatsApp",
+  metaProfileVisits: "visitas ao perfil Meta",
+  googleSpend: "investimento Google Ads",
+  googleClicks: "cliques Google Ads",
+  googleConversions: "conversoes Google Ads",
+  instagramStories: "Stories na semana",
+  instagramReels: "Reels/Shorts na semana",
+  instagramPosts: "posts na semana",
+  instagramProfileVisits: "visitas ao perfil Instagram",
+  whatsappTotal: "WhatsApps totais",
+  qualifiedConversations: "conversas qualificadas",
+  consultationsScheduled: "consultas marcadas",
+  consultationsAttended: "consultas comparecidas",
+  surgeriesClosed: "cirurgias fechadas"
+};
 
 export const WEEKLY_MARKETING_DATA_MOCK: WeeklyMarketingData = {
   id: "week-2026-05-04",
@@ -202,6 +258,95 @@ export function validateWeeklyMarketingData(data: WeeklyMarketingData): WeeklyMa
   };
 }
 
+export function buildWeeklySaveReadinessReport(data: WeeklyMarketingData): WeeklySaveReadinessReport {
+  const blockers: string[] = [];
+  const reviewNotes: string[] = [];
+  const validation = validateWeeklyMarketingData(data);
+
+  const hasWeekLabel = data.weekLabel.trim().length > 0;
+  const hasValidStartDate = isValidIsoDate(data.startDate);
+  const hasValidEndDate = isValidIsoDate(data.endDate);
+  const hasValidPeriod = hasValidStartDate && hasValidEndDate && data.endDate >= data.startDate;
+
+  if (!hasWeekLabel) blockers.push("Informe o rotulo da semana antes de salvar.");
+  if (!hasValidStartDate) blockers.push("Informe uma data de inicio valida antes de salvar.");
+  if (!hasValidEndDate) blockers.push("Informe uma data de fim valida antes de salvar.");
+  if (hasValidStartDate && hasValidEndDate && data.endDate < data.startDate) {
+    blockers.push("A data de fim nao pode ser anterior a data de inicio.");
+  }
+
+  validateReadinessNumbers(data, blockers);
+
+  const hasPaidMediaData =
+    data.metaSpend > 0 ||
+    data.metaWhatsappConversations > 0 ||
+    data.metaProfileVisits > 0 ||
+    data.googleSpend > 0 ||
+    data.googleClicks > 0 ||
+    data.googleConversions > 0;
+  const hasOrganicData = data.instagramStories > 0 || data.instagramReels > 0 || data.instagramPosts > 0 || data.instagramProfileVisits > 0;
+  const hasFunnelData = data.consultationsScheduled !== null && data.consultationsAttended !== null && data.surgeriesClosed !== null;
+  const hasFunnelVolume = (data.consultationsScheduled ?? 0) > 0;
+
+  if (!hasPaidMediaData) {
+    pushUnique(reviewNotes, "Midia paga sem dados agregados; revise se a semana deve ser salva como rascunho operacional.");
+  }
+  if (!hasOrganicData) {
+    pushUnique(reviewNotes, "Instagram organico sem dados agregados; a leitura de conteudo ficara limitada.");
+  }
+  if (!hasFunnelData || !hasFunnelVolume) {
+    pushUnique(reviewNotes, "Funil comercial incompleto; a semana pode ser salva, mas a leitura de conversao ficara limitada.");
+  }
+
+  for (const warning of validation.warnings) pushUnique(reviewNotes, warning);
+
+  const normalizedBlockers = unique(blockers);
+  const normalizedReviewNotes = unique(reviewNotes);
+  const status: WeeklySaveReadinessStatus = normalizedBlockers.length > 0 ? "blocked" : normalizedReviewNotes.length > 0 ? "needs-review" : "ready";
+
+  return {
+    status,
+    summary: saveReadinessSummary(status),
+    canSave: normalizedBlockers.length === 0,
+    items: [
+      {
+        id: "week-identity",
+        label: "Identificacao da semana",
+        status: hasWeekLabel ? "ok" : "missing",
+        detail: hasWeekLabel ? "Rotulo informado para identificar a semana salva." : "Informe um rotulo claro para evitar salvar um rascunho sem identidade."
+      },
+      {
+        id: "week-period",
+        label: "Periodo da semana",
+        status: hasValidPeriod ? "ok" : "missing",
+        detail: hasValidPeriod ? "Datas validas e em ordem cronologica." : "Informe inicio e fim validos; o fim nao pode ser anterior ao inicio."
+      },
+      {
+        id: "paid-media",
+        label: "Midia paga agregada",
+        status: hasPaidMediaData ? "ok" : "review",
+        detail: hasPaidMediaData ? "Ha dados agregados de Meta Ads ou Google Ads para leitura operacional." : "Sem dados de midia paga; salve apenas se isso representar a semana real."
+      },
+      {
+        id: "organic-instagram",
+        label: "Instagram organico",
+        status: hasOrganicData && data.instagramStories >= 42 && data.instagramReels >= 3 ? "ok" : "review",
+        detail: hasOrganicData
+          ? "Dados organicos existem; revise avisos de volume quando Stories ou Reels estiverem baixos."
+          : "Sem dados organicos; a leitura de conteudo ficara incompleta."
+      },
+      {
+        id: "commercial-funnel",
+        label: "Funil comercial",
+        status: hasFunnelData && hasFunnelVolume ? "ok" : "review",
+        detail: hasFunnelData && hasFunnelVolume ? "Consultas e fechamentos foram informados." : "Dados de consultas ou fechamentos ainda limitam a leitura comercial."
+      }
+    ],
+    blockers: normalizedBlockers,
+    reviewNotes: normalizedReviewNotes
+  };
+}
+
 export function summarizeWeeklyMarketingData(data: WeeklyMarketingData): string {
   const metrics = getCalculatedWeeklyMetrics(data);
 
@@ -255,6 +400,43 @@ function calculateConsultRate(consultationsScheduled: number, whatsappTotal: num
   return safeDivide(consultationsScheduled, whatsappTotal);
 }
 
+function validateReadinessNumbers(data: WeeklyMarketingData, blockers: string[]) {
+  for (const field of saveReadinessMoneyFields) {
+    validateReadinessNumber(data[field], saveReadinessFieldLabels[field], blockers, false);
+  }
+
+  for (const field of saveReadinessCountFields) {
+    validateReadinessNumber(data[field], saveReadinessFieldLabels[field], blockers, true);
+  }
+
+  for (const field of saveReadinessNullableCountFields) {
+    const value = data[field];
+    if (value !== null) validateReadinessNumber(value, saveReadinessFieldLabels[field], blockers, true);
+  }
+}
+
+function validateReadinessNumber(value: number, label: string, blockers: string[], integerOnly: boolean) {
+  if (!Number.isFinite(value)) {
+    blockers.push(`O campo ${label} precisa ser numerico antes de salvar.`);
+    return;
+  }
+
+  if (value < 0) blockers.push(`O campo ${label} nao pode ser negativo.`);
+  if (integerOnly && !Number.isInteger(value)) blockers.push(`O campo ${label} precisa ser um numero inteiro.`);
+}
+
+function saveReadinessSummary(status: WeeklySaveReadinessStatus): string {
+  if (status === "ready") return "Semana pronta para salvar.";
+  if (status === "blocked") return "Complete os campos essenciais antes de salvar a semana.";
+  return "Semana pode ser salva, mas ainda merece revisao operacional.";
+}
+
+function isValidIsoDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
 function safeDivide(numerator: number, denominator: number): number | null {
   if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return null;
   return round(numerator / denominator);
@@ -272,4 +454,12 @@ function formatCurrency(value: number | null): string {
 function formatPercent(value: number | null): string {
   if (value === null) return "sem dado";
   return `${(value * 100).toFixed(1).replace(".", ",")}%`;
+}
+
+function pushUnique(values: string[], value: string) {
+  if (!values.includes(value)) values.push(value);
+}
+
+function unique(values: string[]): string[] {
+  return Array.from(new Set(values));
 }

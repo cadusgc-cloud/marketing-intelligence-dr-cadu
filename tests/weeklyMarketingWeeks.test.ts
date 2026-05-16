@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   mapWeeklyMarketingWeekToData,
   mapWeeklyMarketingWeekToSummary,
+  selectPreviousWeeklyMarketingWeekRecord,
   validateWeeklyMarketingWeekInput,
   type WeeklyMarketingWeekInput
 } from "@/lib/weeklyMarketingWeeks";
@@ -105,4 +106,36 @@ describe("Weekly Marketing Weeks", () => {
 
     expect(errors).toEqual([]);
   });
+
+  it("seleciona a semana imediatamente anterior por data de fim", () => {
+    const records = [
+      makeRecord("older-week", "2026-04-27", "2026-05-03"),
+      makeRecord("previous-week", "2026-05-04", "2026-05-10"),
+      makeRecord("current-week", "2026-05-11", "2026-05-17"),
+      makeRecord("future-week", "2026-05-18", "2026-05-24")
+    ];
+
+    const previous = selectPreviousWeeklyMarketingWeekRecord(records, {
+      id: "current-week",
+      startDate: "2026-05-11",
+      endDate: "2026-05-17"
+    });
+
+    expect(previous?.id).toBe("previous-week");
+  });
 });
+
+function makeRecord(id: string, startDate: string, endDate: string): WeeklyMarketingWeek {
+  const createdAt = new Date(`${endDate}T12:00:00.000Z`);
+  const updatedAt = new Date(`${endDate}T13:00:00.000Z`);
+
+  return {
+    id,
+    createdAt,
+    updatedAt,
+    ...validInput,
+    weekLabel: id,
+    startDate,
+    endDate
+  };
+}

@@ -95,6 +95,21 @@ export async function getWeeklyMarketingDataById(id: string): Promise<WeeklyMark
   return record ? mapWeeklyMarketingWeekToData(record) : null;
 }
 
+export async function getPreviousWeeklyMarketingData(selectedWeek: WeeklyMarketingData): Promise<WeeklyMarketingData | null> {
+  const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
+  if (!isValidIsoDate(referenceDate)) return null;
+
+  const record = await prisma.weeklyMarketingWeek.findFirst({
+    where: {
+      id: { not: selectedWeek.id },
+      endDate: { lt: referenceDate }
+    },
+    orderBy: [{ endDate: "desc" }, { updatedAt: "desc" }]
+  });
+
+  return record ? mapWeeklyMarketingWeekToData(record) : null;
+}
+
 export async function getWeeklyMarketingWeekSummaries(limit = 12): Promise<WeeklyMarketingWeekSummary[]> {
   const safeLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 52) : 12;
   const records = await prisma.weeklyMarketingWeek.findMany({
@@ -103,6 +118,20 @@ export async function getWeeklyMarketingWeekSummaries(limit = 12): Promise<Weekl
   });
 
   return records.map(mapWeeklyMarketingWeekToSummary);
+}
+
+export function selectPreviousWeeklyMarketingWeekRecord(
+  records: WeeklyMarketingWeek[],
+  selectedWeek: Pick<WeeklyMarketingData, "id" | "startDate" | "endDate">
+): WeeklyMarketingWeek | null {
+  const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
+  if (!isValidIsoDate(referenceDate)) return null;
+
+  return (
+    records
+      .filter((record) => record.id !== selectedWeek.id && record.endDate < referenceDate)
+      .sort((a, b) => b.endDate.localeCompare(a.endDate) || b.updatedAt.getTime() - a.updatedAt.getTime())[0] ?? null
+  );
 }
 
 export async function upsertWeeklyMarketingData(input: WeeklyMarketingWeekInput): Promise<WeeklyMarketingData> {

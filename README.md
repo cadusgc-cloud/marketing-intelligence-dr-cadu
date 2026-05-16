@@ -49,6 +49,12 @@ npm run db:seed   # recria benchmarks e relatórios iniciais
 - `/benchmarks` benchmarks internos
 - `/settings` edição simples dos benchmarks
 
+## v1.1 - Leitura Estratégica da Semana
+
+A Central Semanal em `/weekly` inclui uma camada de decisão estratégica que compara a semana selecionada com a semana anterior salva, calcula deltas e organiza sinais práticos para a próxima semana.
+
+Essa leitura identifica gargalos comerciais, queda de presença orgânica, pressão de custo e alertas de eficiência. As recomendações são apoio operacional: devem ser revisadas por uma pessoa antes de qualquer decisão de investimento e não prometem resultado.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

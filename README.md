@@ -115,6 +115,12 @@ O Weekly Command Center tambem calcula uma janela recente de semanas anteriores 
 
 Dezembro/2025 segue excluido da janela historica por anomalia operacional. A media recente e apenas apoio de contexto: nao e previsao, benchmark definitivo nem autorizacao automatica para decisao de verba, conteudo ou equipe.
 
+## v2.2 - Prioridades da proxima semana
+
+O Weekly Command Center agora ranqueia alavancas internas para a proxima semana. A camada organiza o que repetir, ajustar, pausar ou testar com base em sinais deterministicos, contexto historico valido, cadencia, funil, Meta, Google e Team Audit Mode.
+
+As prioridades mostram score, area, responsavel sugerido, janela de acao, evidencias e guardrails. Elas nao enviam recomendacoes automaticamente, nao publicam conteudo, nao conectam APIs externas e nao substituem revisao humana.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

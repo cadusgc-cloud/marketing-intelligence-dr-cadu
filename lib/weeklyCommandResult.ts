@@ -14,6 +14,9 @@ export type WeeklyResultStatus = "growth" | "stable" | "cadence_drop" | "quality
 export type WeeklyResultSignalType = "positive" | "warning" | "anomaly" | "insufficient_data";
 export type WeeklyResultContentFunction = "autoridade" | "confianca" | "educacao" | "desejo" | "conversao" | "distribuicao";
 export type WeeklyTrendDirection = "above_average" | "below_average" | "near_average" | "not_enough_history" | "missing";
+export type WeeklyPriorityLeverAction = "repeat" | "adjust" | "pause" | "test";
+export type WeeklyPriorityLeverArea = "meta" | "google" | "instagram" | "content" | "commercial" | "tracking" | "team";
+export type WeeklyPriorityLeverPriority = "high" | "medium" | "low";
 
 export type WeeklyResultMetricCard = {
   key: string;
@@ -95,6 +98,21 @@ export type WeeklyResultNextWeekPlan = {
   avoid: string[];
 };
 
+export type WeeklyPriorityLever = {
+  id: string;
+  rank: number;
+  title: string;
+  action: WeeklyPriorityLeverAction;
+  area: WeeklyPriorityLeverArea;
+  priority: WeeklyPriorityLeverPriority;
+  score: number;
+  rationale: string;
+  evidence: string[];
+  ownerSuggestion: string;
+  actionWindow: "esta semana" | "proxima semana" | "revisar mensalmente";
+  guardrail: string;
+};
+
 export type WeeklyResultTeamAudit = {
   summary: string;
   risks: string[];
@@ -118,6 +136,7 @@ export type WeeklyCommandResult = {
   contentLearning: WeeklyResultContentLearning[];
   storiesPresence: WeeklyResultStoriesPresence;
   nextWeekPlan: WeeklyResultNextWeekPlan;
+  priorityLevers: WeeklyPriorityLever[];
   teamAudit: WeeklyResultTeamAudit;
   finalActions: Array<{ label: string; href: string }>;
   caution: string;
@@ -171,6 +190,7 @@ export function buildWeeklyCommandResult(
   const contentLearning = buildContentFunctionLearning(current, center);
   const storiesPresence = buildStoriesPresence(current);
   const nextWeekPlan = buildNextWeekPlan(current, validPrevious, center, cadenceQuality, safeStrategicReport);
+  const priorityLevers = buildWeeklyPriorityLevers(current, validPrevious, center, cadenceQuality, historyContext, safeStrategicReport);
 
   return {
     id: `weekly-result-${current.id}`,
@@ -188,6 +208,7 @@ export function buildWeeklyCommandResult(
     contentLearning,
     storiesPresence,
     nextWeekPlan,
+    priorityLevers,
     teamAudit: buildTeamAuditSnapshot(center.auditFindings),
     finalActions: [
       { label: "Historico semanal", href: "/weekly" },
@@ -201,6 +222,177 @@ export function buildWeeklyCommandResult(
     ],
     caution: "Leitura interna e deterministica com metricas agregadas. Nao publica, nao envia mensagens e nao substitui revisao humana antes de decisoes de investimento ou comunicacao medica."
   };
+}
+
+export function buildWeeklyPriorityLevers(
+  current: WeeklyMarketingData,
+  previous: WeeklyMarketingData | null,
+  center: WeeklyCommandCenter,
+  cadenceQuality: WeeklyCadenceQualityReading,
+  historyContext: WeeklyValidHistoryContext,
+  strategicReport: WeeklyStrategicDecisionReport
+): WeeklyPriorityLever[] {
+  const levers: Omit<WeeklyPriorityLever, "rank">[] = [];
+  const trend = (key: string) => historyContext.metrics.find((metric) => metric.key === key);
+  const hasStrategicSignal = (id: string) => strategicReport.signals.some((signal) => signal.id === id);
+  const hasMissingFunnel = current.consultationsScheduled === null || current.consultationsAttended === null || current.surgeriesClosed === null;
+
+  if (current.instagramStories < 42 || cadenceQuality.status === "cadence_drop" || trend("instagramStories")?.direction === "below_average") {
+    levers.push(priorityLever({
+      id: "restore-organic-cadence",
+      title: "Recuperar cadencia organica antes de julgar qualidade",
+      action: "adjust",
+      area: "instagram",
+      priority: "high",
+      score: cadenceQuality.status === "cadence_drop" ? 96 : 86,
+      rationale: "Quando Stories/Reels caem, a leitura de performance pode confundir queda de volume com queda de criativo.",
+      evidence: [
+        `${current.instagramStories} Stories e ${current.instagramReels} Reels/Shorts na semana.`,
+        cadenceQuality.summary,
+        trend("instagramStories")?.summary ?? "Sem media historica suficiente de Stories."
+      ],
+      ownerSuggestion: "marketing",
+      actionWindow: "esta semana",
+      guardrail: "Planejar presenca diaria manual, sem publicacao automatica e sem inventar rotina real."
+    }));
+  }
+
+  if (current.metaWhatsappConversations > 0 && (trend("metaWhatsappConversations")?.direction === "above_average" || strategicReport.comparisons.some((item) => item.key === "metaWhatsappConversations" && item.classification === "improved"))) {
+    levers.push(priorityLever({
+      id: "repeat-meta-demand-pattern",
+      title: "Repetir padrao de Meta que gerou demanda agregada",
+      action: "repeat",
+      area: "meta",
+      priority: "high",
+      score: 88,
+      rationale: "Meta aparece como canal acionavel quando conversas sobem ou ficam acima da media recente.",
+      evidence: [
+        `${current.metaWhatsappConversations} conversas Meta registradas.`,
+        trend("metaWhatsappConversations")?.summary ?? "Comparacao historica ainda limitada.",
+        center.metaSummary
+      ],
+      ownerSuggestion: "Cadu + marketing",
+      actionWindow: "proxima semana",
+      guardrail: "Repetir estrutura criativa e CTA; nao aumentar verba automaticamente sem revisar custo e agenda."
+    }));
+  }
+
+  if (current.googleConversions === 0 || hasStrategicSignal("google-cost-with-low-conversion") || trend("googleConversions")?.direction === "below_average") {
+    levers.push(priorityLever({
+      id: "pause-google-scale-until-tracking",
+      title: "Segurar escala de Google ate validar conversoes",
+      action: "pause",
+      area: "google",
+      priority: "high",
+      score: current.googleConversions === 0 ? 94 : 82,
+      rationale: "Google com conversao baixa ou zerada deve ficar em diagnostico antes de receber mais investimento.",
+      evidence: [
+        `${current.googleConversions} conversoes Google na semana.`,
+        trend("googleConversions")?.summary ?? "Sem contexto historico suficiente para Google.",
+        center.googleSummary
+      ],
+      ownerSuggestion: "marketing",
+      actionWindow: "esta semana",
+      guardrail: "Nao redistribuir verba para Google sem revisao humana de rastreamento, termos e pagina."
+    }));
+  }
+
+  if (hasMissingFunnel || center.missingData.length > 0 || hasStrategicSignal("limited-funnel-data")) {
+    levers.push(priorityLever({
+      id: "complete-commercial-funnel",
+      title: "Fechar lacunas do funil comercial",
+      action: "adjust",
+      area: "tracking",
+      priority: "high",
+      score: 90,
+      rationale: "Sem consultas, comparecimentos e fechamentos por semana, a leitura nao separa volume de lead, qualidade e atendimento.",
+      evidence: [
+        center.funnelSummary,
+        center.missingData.slice(0, 2).join("; ") || "Funil comercial precisa permanecer preenchido.",
+        trend("consultationsScheduled")?.summary ?? "Consultas ainda sem media historica robusta."
+      ],
+      ownerSuggestion: "revisao humana",
+      actionWindow: "esta semana",
+      guardrail: "Registrar apenas numeros agregados, sem nomes, DMs, prontuarios ou dados pessoais."
+    }));
+  }
+
+  if (cadenceQuality.status === "quality_drop") {
+    levers.push(priorityLever({
+      id: "test-creative-quality-hypothesis",
+      title: "Testar hipotese de qualidade criativa",
+      action: "test",
+      area: "content",
+      priority: "high",
+      score: 87,
+      rationale: "Quando cadencia esta adequada e demanda cai, a proxima investigacao deve olhar tema, CTA, oferta e alinhamento de publico.",
+      evidence: [
+        cadenceQuality.summary,
+        trend("instagramProfileVisits")?.summary ?? "Visitas ao perfil sem contexto historico suficiente.",
+        trend("whatsappTotal")?.summary ?? "WhatsApp sem contexto historico suficiente."
+      ],
+      ownerSuggestion: "Cadu + marketing",
+      actionWindow: "proxima semana",
+      guardrail: "Tratar como teste editorial interno, nao como conclusao definitiva sobre a equipe ou criativo."
+    }));
+  }
+
+  if (historyContext.status === "ready" && historyContext.metrics.some((metric) => metric.direction === "below_average" && ["whatsappTotal", "qualifiedConversations"].includes(metric.key))) {
+    const metric = historyContext.metrics.find((item) => item.direction === "below_average" && ["whatsappTotal", "qualifiedConversations"].includes(item.key));
+    levers.push(priorityLever({
+      id: "audit-demand-to-commercial-passage",
+      title: "Auditar passagem de demanda para conversa qualificada",
+      action: "adjust",
+      area: "commercial",
+      priority: "medium",
+      score: 78,
+      rationale: "Queda frente a media recente em WhatsApp ou qualificacao pode indicar problema de CTA, atendimento ou origem do lead.",
+      evidence: [
+        metric?.summary ?? "Demanda comercial abaixo da media recente.",
+        center.funnelSummary
+      ],
+      ownerSuggestion: "atendimento",
+      actionWindow: "proxima semana",
+      guardrail: "Auditar fluxo com numeros agregados; nao analisar conversas individuais ou dados identificaveis."
+    }));
+  }
+
+  if (center.auditFindings.some((finding) => finding.impact === "high")) {
+    levers.push(priorityLever({
+      id: "use-team-audit-internally",
+      title: "Usar Team Audit Mode para revisar execucao sem interferencia externa",
+      action: "adjust",
+      area: "team",
+      priority: "medium",
+      score: 72,
+      rationale: "Achados de auditoria ajudam a aprender com decisoes da equipe, mas continuam internos por padrao.",
+      evidence: center.auditFindings.slice(0, 2).map((finding) => finding.title),
+      ownerSuggestion: "Cadu",
+      actionWindow: "revisar mensalmente",
+      guardrail: "Nao enviar recomendacoes para a equipe automaticamente; usar como preparo para revisao humana."
+    }));
+  }
+
+  if (!levers.length) {
+    levers.push(priorityLever({
+      id: "maintain-weekly-learning-routine",
+      title: "Manter rotina de aprendizado semanal",
+      action: "repeat",
+      area: "tracking",
+      priority: "low",
+      score: 50,
+      rationale: "Sem sinal forte, o melhor ganho e manter coleta consistente para reduzir incerteza.",
+      evidence: [historyContext.summary],
+      ownerSuggestion: "Cadu",
+      actionWindow: "proxima semana",
+      guardrail: "Usar apenas dados agregados e revisar contexto antes de qualquer mudanca operacional."
+    }));
+  }
+
+  return uniqueById(levers)
+    .sort((a, b) => b.score - a.score || a.title.localeCompare(b.title, "pt-BR"))
+    .slice(0, 6)
+    .map((lever, index) => ({ ...lever, rank: index + 1 }));
 }
 
 export function buildWeeklyValidHistoryContext(current: WeeklyMarketingData, historyWeeks: WeeklyMarketingData[] = []): WeeklyValidHistoryContext {
@@ -677,6 +869,10 @@ function contentLearning(
   nextAction: string
 ): WeeklyResultContentLearning {
   return { functionName, label, status, evidence, nextAction };
+}
+
+function priorityLever(lever: Omit<WeeklyPriorityLever, "rank">): Omit<WeeklyPriorityLever, "rank"> {
+  return lever;
 }
 
 function metric(

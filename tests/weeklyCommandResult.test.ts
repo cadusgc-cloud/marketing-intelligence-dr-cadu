@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildWeeklyCommandCenter } from "@/lib/weeklyCommandCenter";
 import {
   buildWeeklyCommandResult,
+  buildWeeklyPriorityLevers,
   buildWeeklyValidHistoryContext,
   buildWeeklyResultMetricCards,
   interpretCadenceVsQuality,
@@ -182,6 +183,66 @@ describe("Weekly Command Center result screen domain", () => {
     expect(report.nextWeekPlan.adjust.length).toBeGreaterThan(0);
     expect(report.nextWeekPlan.test.length).toBeGreaterThan(0);
     expect(report.nextWeekPlan.avoid.join(" ")).toContain("Nao enviar recomendacoes automaticamente");
+  });
+
+  it("ranqueia alavancas da proxima semana por prioridade e score", () => {
+    const current = makeWeek({
+      googleConversions: 0,
+      instagramStories: 20,
+      instagramReels: 1,
+      consultationsScheduled: null,
+      consultationsAttended: null,
+      surgeriesClosed: null
+    });
+    const previous = makeWeek({ id: "week-previous", startDate: "2026-05-04", endDate: "2026-05-10", googleConversions: 4, instagramStories: 60 });
+    const report = buildWeeklyCommandResult(current, previous);
+
+    expect(report.priorityLevers.length).toBeGreaterThan(2);
+    expect(report.priorityLevers[0].rank).toBe(1);
+    expect(report.priorityLevers.map((lever) => lever.score)).toEqual([...report.priorityLevers.map((lever) => lever.score)].sort((a, b) => b - a));
+    expect(report.priorityLevers.map((lever) => lever.id)).toEqual(
+      expect.arrayContaining(["restore-organic-cadence", "pause-google-scale-until-tracking", "complete-commercial-funnel"])
+    );
+  });
+
+  it("gera pausa de Google quando conversoes estao zeradas", () => {
+    const current = makeWeek({ googleConversions: 0 });
+    const previous = makeWeek({ id: "week-previous", startDate: "2026-05-04", endDate: "2026-05-10", googleConversions: 4 });
+    const report = buildWeeklyCommandResult(current, previous);
+    const googleLever = report.priorityLevers.find((lever) => lever.id === "pause-google-scale-until-tracking");
+
+    expect(googleLever).toEqual(
+      expect.objectContaining({
+        action: "pause",
+        area: "google",
+        priority: "high"
+      })
+    );
+    expect(googleLever?.guardrail).toContain("Nao redistribuir verba");
+  });
+
+  it("mantem alavancas internas, sem automacao externa ou promessa", () => {
+    const current = makeWeek({ googleConversions: 0, instagramStories: 20, consultationsScheduled: null });
+    const previous = makeWeek({ id: "week-previous", startDate: "2026-05-04", endDate: "2026-05-10" });
+    const text = JSON.stringify(buildWeeklyCommandResult(current, previous).priorityLevers).toLocaleLowerCase("pt-BR");
+
+    expect(text).toContain("revisao humana");
+    expect(text).toContain("sem publicacao automatica");
+    expect(text).not.toMatch(/resultado garantido|garante|envio autom[aá]tico para a equipe/);
+  });
+
+  it("permite montar alavancas diretamente a partir do contexto historico", () => {
+    const current = makeWeek({ whatsappTotal: 70, qualifiedConversations: 20 });
+    const previous = makeWeek({ id: "week-previous", startDate: "2026-05-04", endDate: "2026-05-10", whatsappTotal: 120, qualifiedConversations: 50 });
+    const center = buildWeeklyCommandCenter(current);
+    const strategic = buildWeeklyStrategicDecisionReport(current, previous);
+    const historyContext = buildWeeklyValidHistoryContext(current, [
+      previous,
+      makeWeek({ id: "week-2", startDate: "2026-04-27", endDate: "2026-05-03", whatsappTotal: 130, qualifiedConversations: 45 })
+    ]);
+    const levers = buildWeeklyPriorityLevers(current, previous, center, interpretCadenceVsQuality(current, previous), historyContext, strategic);
+
+    expect(levers.some((lever) => lever.id === "audit-demand-to-commercial-passage")).toBe(true);
   });
 
   it("ignora dezembro de 2025 como semana anterior normal", () => {

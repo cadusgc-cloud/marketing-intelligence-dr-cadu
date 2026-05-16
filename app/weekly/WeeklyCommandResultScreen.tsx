@@ -2,6 +2,9 @@ import Link from "next/link";
 import type {
   WeeklyCommandResult,
   WeeklyResultMetricCard,
+  WeeklyPriorityLever,
+  WeeklyPriorityLeverAction,
+  WeeklyPriorityLeverPriority,
   WeeklyResultSignal,
   WeeklyResultSignalType,
   WeeklyResultStatus,
@@ -22,6 +25,19 @@ const signalClasses: Record<WeeklyResultSignalType, string> = {
   warning: "bg-amber-50 text-amber",
   anomaly: "bg-red-50 text-red-700",
   insufficient_data: "bg-cyan-50 text-ocean"
+};
+
+const leverActionClasses: Record<WeeklyPriorityLeverAction, string> = {
+  repeat: "bg-green-50 text-leaf",
+  adjust: "bg-amber-50 text-amber",
+  pause: "bg-red-50 text-red-700",
+  test: "bg-cyan-50 text-ocean"
+};
+
+const leverPriorityClasses: Record<WeeklyPriorityLeverPriority, string> = {
+  high: "bg-red-50 text-red-700",
+  medium: "bg-amber-50 text-amber",
+  low: "bg-slate-100 text-slate-700"
 };
 
 export function WeeklyCommandResultScreen({ report }: { report: WeeklyCommandResult }) {
@@ -150,6 +166,15 @@ export function WeeklyCommandResultScreen({ report }: { report: WeeklyCommandRes
       </section>
 
       <section className="panel">
+        <SectionTitle eyebrow="Prioridades" title="Prioridades da proxima semana" description="Ranking deterministico de alavancas internas para repetir, ajustar, pausar ou testar." />
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {report.priorityLevers.map((lever) => (
+            <PriorityLeverCard key={lever.id} lever={lever} />
+          ))}
+        </div>
+      </section>
+
+      <section className="panel">
         <SectionTitle eyebrow="Acoes finais" title="Abrir modulos conectados" />
         <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
           {report.finalActions.map((action) => (
@@ -160,6 +185,31 @@ export function WeeklyCommandResultScreen({ report }: { report: WeeklyCommandRes
         </div>
       </section>
     </section>
+  );
+}
+
+function PriorityLeverCard({ lever }: { lever: WeeklyPriorityLever }) {
+  return (
+    <article className="rounded-lg border border-slate-200 p-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="badge bg-slate-100 text-slate-700">#{lever.rank}</span>
+        <span className={`badge ${leverActionClasses[lever.action]}`}>{leverActionLabel(lever.action)}</span>
+        <span className={`badge ${leverPriorityClasses[lever.priority]}`}>{leverPriorityLabel(lever.priority)}</span>
+        <span className="badge bg-slate-100 text-slate-700">{lever.area}</span>
+      </div>
+      <h4 className="mt-3 font-semibold">{lever.title}</h4>
+      <p className="mt-2 text-sm leading-6 text-slate-600">{lever.rationale}</p>
+      <ul className="mt-3 space-y-2 text-sm text-slate-500">
+        {lever.evidence.map((item) => (
+          <li key={item}>- {item}</li>
+        ))}
+      </ul>
+      <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+        <p><span className="font-semibold">Responsavel sugerido:</span> {lever.ownerSuggestion}</p>
+        <p><span className="font-semibold">Janela:</span> {lever.actionWindow}</p>
+      </div>
+      <p className="mt-3 rounded-md bg-slate-50 p-3 text-sm text-slate-700">{lever.guardrail}</p>
+    </article>
   );
 }
 
@@ -351,4 +401,21 @@ function trendDirectionLabel(direction: WeeklyTrendMetric["direction"]): string 
     not_enough_history: "Sem historico",
     missing: "Sem dado"
   }[direction];
+}
+
+function leverActionLabel(action: WeeklyPriorityLeverAction): string {
+  return {
+    repeat: "Repetir",
+    adjust: "Ajustar",
+    pause: "Pausar",
+    test: "Testar"
+  }[action];
+}
+
+function leverPriorityLabel(priority: WeeklyPriorityLeverPriority): string {
+  return {
+    high: "Alta",
+    medium: "Media",
+    low: "Baixa"
+  }[priority];
 }

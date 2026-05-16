@@ -20,6 +20,25 @@ export type WeeklyCsvColumnMappingPreset = {
   description: string;
 };
 
+export type WeeklyCsvReadinessStatus = "ready" | "needs-review" | "blocked";
+export type WeeklyCsvReadinessItemStatus = "ok" | "missing" | "review";
+
+export type WeeklyCsvReadinessItem = {
+  id: string;
+  label: string;
+  status: WeeklyCsvReadinessItemStatus;
+  detail: string;
+};
+
+export type WeeklyCsvReadinessReport = {
+  status: WeeklyCsvReadinessStatus;
+  summary: string;
+  canSendToAssistedImport: boolean;
+  items: WeeklyCsvReadinessItem[];
+  blockers: string[];
+  reviewNotes: string[];
+};
+
 export type WeeklyCsvImportResult = {
   delimiter: WeeklyCsvDelimiter;
   rowCount: number;
@@ -33,6 +52,7 @@ export type WeeklyCsvImportResult = {
   sensitiveWarnings: string[];
   ignoredRows: string[];
   assistedResult: WeeklyAssistedImportResult;
+  readinessReport: WeeklyCsvReadinessReport;
 };
 
 type DelimiterCandidate = {
@@ -237,6 +257,7 @@ function parseWeeklyCsvImportWithMapping(rawText: string, overrideMappings?: Wee
 
   if (!trimmedText) {
     const assistedResult = parseWeeklyAssistedImport("");
+    const finalWarnings = ["Cole um CSV/TSV ou carregue um arquivo antes de gerar a previa."];
     return {
       delimiter: "unknown",
       rowCount: 0,
@@ -246,10 +267,11 @@ function parseWeeklyCsvImportWithMapping(rawText: string, overrideMappings?: Wee
       suggestedMappings: {},
       isFieldValueTable: false,
       normalizedText: "",
-      warnings: ["Cole um CSV/TSV ou carregue um arquivo antes de gerar a previa."],
+      warnings: finalWarnings,
       sensitiveWarnings,
       ignoredRows,
-      assistedResult
+      assistedResult,
+      readinessReport: buildWeeklyCsvReadinessReport("", assistedResult, finalWarnings, sensitiveWarnings)
     };
   }
 
@@ -257,6 +279,8 @@ function parseWeeklyCsvImportWithMapping(rawText: string, overrideMappings?: Wee
   if (!delimiter) {
     warnings.push("Nenhum delimitador CSV/TSV foi identificado. Use virgula, ponto e virgula ou tabulacao.");
     const assistedResult = parseWeeklyAssistedImport(trimmedText);
+    const finalWarnings = unique([...warnings, ...assistedResult.warnings]);
+    const finalSensitiveWarnings = unique([...sensitiveWarnings, ...assistedResult.sensitiveWarnings]);
     return {
       delimiter: "unknown",
       rowCount: trimmedText.split(/\r?\n/).filter(Boolean).length,
@@ -266,10 +290,11 @@ function parseWeeklyCsvImportWithMapping(rawText: string, overrideMappings?: Wee
       suggestedMappings: {},
       isFieldValueTable: false,
       normalizedText: trimmedText,
-      warnings: unique([...warnings, ...assistedResult.warnings]),
-      sensitiveWarnings: unique([...sensitiveWarnings, ...assistedResult.sensitiveWarnings]),
+      warnings: finalWarnings,
+      sensitiveWarnings: finalSensitiveWarnings,
       ignoredRows,
-      assistedResult
+      assistedResult,
+      readinessReport: buildWeeklyCsvReadinessReport(trimmedText, assistedResult, finalWarnings, finalSensitiveWarnings)
     };
   }
 
@@ -286,6 +311,8 @@ function parseWeeklyCsvImportWithMapping(rawText: string, overrideMappings?: Wee
   if (!normalizedText) {
     warnings.push("A tabela nao tem campos e valores suficientes para montar uma importacao.");
   }
+  const finalWarnings = unique([...warnings, ...assistedResult.warnings]);
+  const finalSensitiveWarnings = unique([...sensitiveWarnings, ...assistedResult.sensitiveWarnings]);
 
   return {
     delimiter: delimiter.type,
@@ -296,10 +323,11 @@ function parseWeeklyCsvImportWithMapping(rawText: string, overrideMappings?: Wee
     suggestedMappings,
     isFieldValueTable: fieldValueTable,
     normalizedText,
-    warnings: unique([...warnings, ...assistedResult.warnings]),
-    sensitiveWarnings: unique([...sensitiveWarnings, ...assistedResult.sensitiveWarnings]),
+    warnings: finalWarnings,
+    sensitiveWarnings: finalSensitiveWarnings,
     ignoredRows,
-    assistedResult
+    assistedResult,
+    readinessReport: buildWeeklyCsvReadinessReport(normalizedText, assistedResult, finalWarnings, finalSensitiveWarnings)
   };
 }
 
@@ -485,6 +513,135 @@ function getDuplicatedMappings(mappings: WeeklyCsvColumnMappingKey[]): WeeklyCsv
 
 function getColumnMappingLabel(key: WeeklyCsvColumnMappingKey): string {
   return csvColumnMappingOptions.find((option) => option.key === key)?.label ?? String(key);
+}
+
+function buildWeeklyCsvReadinessReport(
+  normalizedText: string,
+  assistedResult: WeeklyAssistedImportResult,
+  warnings: string[],
+  sensitiveWarnings: string[]
+): WeeklyCsvReadinessReport {
+  const fields = assistedResult.fields;
+  const blockers: string[] = [];
+  const reviewNotes: string[] = [];
+  const items: WeeklyCsvReadinessItem[] = [];
+
+  if (!normalizedText.trim()) blockers.push("Nenhum texto importavel foi gerado.");
+  if (sensitiveWarnings.length > 0) blockers.push("Ha possiveis dados sensiveis na importacao.");
+  if (assistedResult.recognizedFields.length === 0) blockers.push("Nenhum campo conhecido foi reconhecido.");
+
+  items.push(
+    readinessItem(
+      "recognized-fields",
+      "Campos reconhecidos",
+      assistedResult.recognizedFields.length > 0 ? "ok" : "missing",
+      assistedResult.recognizedFields.length > 0
+        ? `${assistedResult.recognizedFields.length} campo(s) reconhecido(s).`
+        : "Gere uma previa com campos conhecidos antes de enviar."
+    )
+  );
+
+  const hasPeriod = Boolean(fields.startDate && fields.endDate);
+  items.push(
+    readinessItem(
+      "period",
+      "Periodo da semana",
+      hasPeriod ? "ok" : "missing",
+      hasPeriod ? `${fields.startDate} a ${fields.endDate}.` : "Informe periodo, inicio/fim ou revise o mapeamento de datas."
+    )
+  );
+
+  const hasWeekLabel = Boolean(fields.weekLabel);
+  items.push(
+    readinessItem(
+      "week-label",
+      "Rotulo da semana",
+      hasWeekLabel ? "ok" : "missing",
+      hasWeekLabel ? String(fields.weekLabel) : "Inclua um rotulo para facilitar historico e revisao."
+    )
+  );
+
+  const acquisitionFields: WeeklyCsvImportField[] = [
+    "metaSpend",
+    "metaWhatsappConversations",
+    "metaProfileVisits",
+    "googleSpend",
+    "googleClicks",
+    "googleConversions",
+    "instagramStories",
+    "instagramReels",
+    "instagramPosts",
+    "instagramProfileVisits"
+  ];
+  const acquisitionCount = countPresentFields(fields, acquisitionFields);
+  items.push(
+    readinessItem(
+      "acquisition",
+      "Midia e conteudo",
+      acquisitionCount > 0 ? "ok" : "review",
+      acquisitionCount > 0 ? `${acquisitionCount} campo(s) de aquisicao/conteudo detectado(s).` : "Nenhum campo de midia ou conteudo foi detectado."
+    )
+  );
+
+  const funnelFields: WeeklyCsvImportField[] = [
+    "whatsappTotal",
+    "qualifiedConversations",
+    "consultationsScheduled",
+    "consultationsAttended",
+    "surgeriesClosed"
+  ];
+  const funnelCount = countPresentFields(fields, funnelFields);
+  items.push(
+    readinessItem(
+      "funnel",
+      "Funil comercial",
+      funnelCount > 0 ? "ok" : "review",
+      funnelCount > 0 ? `${funnelCount} campo(s) do funil detectado(s).` : "Nenhum campo de funil foi detectado."
+    )
+  );
+
+  if (warnings.length > 0) {
+    reviewNotes.push("Ha avisos operacionais na previa CSV.");
+    items.push(readinessItem("warnings", "Avisos da importacao", "review", `${warnings.length} aviso(s) precisam de leitura.`));
+  }
+
+  if (!hasPeriod) reviewNotes.push("Periodo ausente ou incompleto.");
+  if (!hasWeekLabel) reviewNotes.push("Rotulo da semana ausente.");
+  if (acquisitionCount === 0 && funnelCount === 0) reviewNotes.push("Poucas metricas operacionais foram reconhecidas.");
+
+  const status: WeeklyCsvReadinessStatus =
+    blockers.length > 0 ? "blocked" : reviewNotes.length > 0 ? "needs-review" : "ready";
+
+  return {
+    status,
+    summary: getReadinessSummary(status),
+    canSendToAssistedImport: blockers.length === 0,
+    items,
+    blockers,
+    reviewNotes
+  };
+}
+
+function countPresentFields(fields: Partial<WeeklyMarketingWeekInput>, keys: WeeklyCsvImportField[]): number {
+  return keys.filter((key) => {
+    const value = fields[key];
+    return value !== undefined && value !== null && value !== "";
+  }).length;
+}
+
+function readinessItem(
+  id: string,
+  label: string,
+  status: WeeklyCsvReadinessItemStatus,
+  detail: string
+): WeeklyCsvReadinessItem {
+  return { id, label, status, detail };
+}
+
+function getReadinessSummary(status: WeeklyCsvReadinessStatus): string {
+  if (status === "ready") return "Previa pronta para enviar a importacao assistida.";
+  if (status === "blocked") return "Corrija os bloqueios antes de enviar para a importacao assistida.";
+  return "Previa utilizavel, mas exige revisao antes de enviar.";
 }
 
 function findPresetMapping(

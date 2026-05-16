@@ -85,6 +85,12 @@ A tela `/data` inclui presets de mapeamento para acelerar planilhas recorrentes:
 
 O preset apenas sugere o mapeamento inicial. O usuario continua podendo revisar cada coluna, ignorar campos e enviar a previa para a importacao assistida antes de aplicar nos dados semanais.
 
+## v1.7 - Validacao visual da importacao CSV
+
+A previa CSV/TSV em `/data` agora mostra uma validacao antes de enviar para a importacao assistida. O painel indica se a previa esta pronta, se precisa de revisao ou se deve ficar bloqueada.
+
+O bloqueio ocorre quando ha possiveis dados sensiveis, nenhum texto importavel ou nenhum campo conhecido reconhecido. Avisos como periodo ausente, rotulo ausente ou colunas ignoradas exigem revisao humana, mas nao salvam nada automaticamente.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

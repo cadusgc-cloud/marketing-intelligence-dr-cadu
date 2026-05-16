@@ -174,4 +174,20 @@ describe("Weekly Command Center", () => {
     expect(executionLayer).toContain("Team Audit Mode permanece interno");
     expect(executionLayer).toContain("nao publica");
   });
+
+  it("integra o pacote manual de execucao semanal como rota interna", () => {
+    const executionPage = readFileSync(path.join(process.cwd(), "app", "weekly", "execution", "page.tsx"), "utf8");
+    const packetPage = readFileSync(path.join(process.cwd(), "app", "weekly", "execution", "packet", "page.tsx"), "utf8");
+    const packetPanel = readFileSync(path.join(process.cwd(), "app", "weekly", "execution", "WeeklyManualExecutionPacketPanel.tsx"), "utf8");
+    const packetLayer = readFileSync(path.join(process.cwd(), "lib", "weeklyManualExecutionPacket.ts"), "utf8");
+
+    expect(executionPage).toContain("/weekly/execution/packet");
+    expect(packetPage).toContain("buildWeeklyManualExecutionPacket");
+    expect(packetPage).toContain("WeeklyManualExecutionPacketPanel");
+    expect(packetPanel).toContain("Pacote de Execucao Manual");
+    expect(packetPanel).toContain("Gates antes de executar");
+    expect(packetPanel).toContain("Plano de coleta da proxima semana");
+    expect(packetLayer).toContain("Nao publicar conteudo automaticamente");
+    expect(packetLayer).toContain("Dezembro/2025");
+  });
 });

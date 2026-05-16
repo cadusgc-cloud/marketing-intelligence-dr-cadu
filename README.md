@@ -127,6 +127,12 @@ O Weekly Command Center agora inclui um board interno de execucao semanal em `/w
 
 Cada tarefa mostra status, risco, responsavel sugerido, checklist, criterios de aceite, evidencias e guardrail. O board ajuda a preparar execucao manual e revisao humana; ele nao publica, nao envia mensagens, nao altera campanhas, nao conecta APIs externas e nao usa dados pessoais.
 
+## v2.4 - Pacote manual de execucao
+
+A rota `/weekly/execution/packet` organiza o board em um pacote de revisao humana: brief executivo, foco da semana, gates de aprovacao, brief por responsavel sugerido, plano de coleta agregada da proxima semana e roteiro de revisao.
+
+O pacote continua interno e deterministico. Ele nao salva decisoes, nao publica, nao envia mensagens, nao altera campanhas, nao integra APIs externas e nao transforma Team Audit Mode em acao externa automatica.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

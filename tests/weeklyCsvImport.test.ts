@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildWeeklyCsvMappedImport, getWeeklyCsvColumnMappingOptions, parseWeeklyCsvImport } from "@/lib/weeklyCsvImport";
+import {
+  applyWeeklyCsvColumnMappingPreset,
+  buildWeeklyCsvMappedImport,
+  getWeeklyCsvColumnMappingOptions,
+  getWeeklyCsvColumnMappingPresets,
+  parseWeeklyCsvImport
+} from "@/lib/weeklyCsvImport";
 
 describe("Weekly CSV Import", () => {
   it("converte tabela campo/valor com ponto e virgula para importacao assistida", () => {
@@ -160,5 +166,60 @@ Maria Exemplo;500;20`,
     expect(options.some((option) => option.key === "ignore")).toBe(true);
     expect(options.some((option) => option.key === "period")).toBe(true);
     expect(options.some((option) => option.key === "metaSpend")).toBe(true);
+  });
+
+  it("expoe presets de mapeamento para a interface", () => {
+    const presets = getWeeklyCsvColumnMappingPresets();
+
+    expect(presets.map((preset) => preset.id)).toEqual(
+      expect.arrayContaining(["auto", "weekly-sheet", "paid-media", "organic-content", "commercial-funnel"])
+    );
+    expect(presets.every((preset) => preset.label && preset.description)).toBe(true);
+  });
+
+  it("aplica preset de planilha semanal consolidada", () => {
+    const headers = ["Semana", "Periodo", "Meta R$", "WA Ads", "Stories IG", "Agendamentos", "Campo livre"];
+    const mappings = applyWeeklyCsvColumnMappingPreset(headers, "weekly-sheet");
+
+    expect(mappings).toEqual(
+      expect.objectContaining({
+        0: "weekLabel",
+        1: "period",
+        2: "metaSpend",
+        3: "metaWhatsappConversations",
+        4: "instagramStories",
+        5: "consultationsScheduled",
+        6: "ignore"
+      })
+    );
+  });
+
+  it("aplica preset de funil comercial sem forcar midia paga", () => {
+    const headers = ["Semana", "WhatsApp total", "Qualificados", "Comparecimentos", "Meta R$"];
+    const mappings = applyWeeklyCsvColumnMappingPreset(headers, "commercial-funnel");
+
+    expect(mappings[0]).toBe("weekLabel");
+    expect(mappings[1]).toBe("whatsappTotal");
+    expect(mappings[2]).toBe("qualifiedConversations");
+    expect(mappings[3]).toBe("consultationsAttended");
+    expect(mappings[4]).toBe("metaSpend");
+  });
+
+  it("usa preset escolhido para montar importacao mapeada", () => {
+    const rawText = `Semana;WhatsApp total;Qualificados;Agendamentos;Comparecimentos
+Semana funil;150;60;18;14`;
+    const preview = parseWeeklyCsvImport(rawText);
+    const mappings = applyWeeklyCsvColumnMappingPreset(preview.headers, "commercial-funnel");
+    const result = buildWeeklyCsvMappedImport(rawText, mappings);
+
+    expect(result.assistedResult.fields).toEqual(
+      expect.objectContaining({
+        weekLabel: "Semana funil",
+        whatsappTotal: 150,
+        qualifiedConversations: 60,
+        consultationsScheduled: 18,
+        consultationsAttended: 14
+      })
+    );
   });
 });

@@ -79,6 +79,12 @@ A importacao CSV/TSV em `/data` tambem permite revisar cada coluna da planilha e
 
 Esse mapeamento ajuda quando o cabecalho vem como `Meta R$`, `WA Ads`, `Stories IG` ou outro nome operacional. Colunas sem uso podem ser ignoradas. O fluxo continua local, sem API externa, sem token, sem salvamento automatico e com revisao humana antes de aplicar.
 
+## v1.6 - Presets de mapeamento CSV
+
+A tela `/data` inclui presets de mapeamento para acelerar planilhas recorrentes: deteccao automatica, planilha semanal consolidada, midia paga, Instagram organico e funil comercial.
+
+O preset apenas sugere o mapeamento inicial. O usuario continua podendo revisar cada coluna, ignorar campos e enviar a previa para a importacao assistida antes de aplicar nos dados semanais.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

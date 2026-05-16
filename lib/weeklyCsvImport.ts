@@ -12,6 +12,14 @@ export type WeeklyCsvColumnMappingOption = {
   description: string;
 };
 
+export type WeeklyCsvColumnMappingPresetId = "auto" | "weekly-sheet" | "paid-media" | "organic-content" | "commercial-funnel";
+
+export type WeeklyCsvColumnMappingPreset = {
+  id: WeeklyCsvColumnMappingPresetId;
+  label: string;
+  description: string;
+};
+
 export type WeeklyCsvImportResult = {
   delimiter: WeeklyCsvDelimiter;
   rowCount: number;
@@ -85,6 +93,81 @@ const manualMappingAliases: Array<{ key: WeeklyCsvColumnMappingKey; aliases: str
   { key: "notes", aliases: ["observacoes", "observacao", "notas", "notes"] }
 ];
 
+const csvColumnMappingPresetDefinitions: Array<WeeklyCsvColumnMappingPreset & { fields: Array<{ key: WeeklyCsvColumnMappingKey; aliases: string[] }> }> = [
+  {
+    id: "auto",
+    label: "Detectar automaticamente",
+    description: "Usa os cabecalhos reconhecidos pelo sistema e deixa o restante para revisao manual.",
+    fields: []
+  },
+  {
+    id: "weekly-sheet",
+    label: "Planilha semanal consolidada",
+    description: "Perfil amplo para a planilha operacional da semana com midia, Instagram e funil.",
+    fields: [
+      presetField("weekLabel", ["semana", "rotulo", "nome da semana"]),
+      presetField("period", ["periodo", "intervalo", "datas"]),
+      presetField("metaSpend", ["meta r", "meta rs", "investimento meta", "gasto meta"]),
+      presetField("metaWhatsappConversations", ["wa ads", "whatsapp ads", "conversas meta", "leads meta"]),
+      presetField("googleSpend", ["google r", "google rs", "investimento google", "gasto google"]),
+      presetField("googleClicks", ["cliques google", "clicks google"]),
+      presetField("googleConversions", ["conversoes google", "conv google"]),
+      presetField("instagramStories", ["stories ig", "stories"]),
+      presetField("instagramReels", ["reels ig", "reels", "shorts"]),
+      presetField("instagramPosts", ["posts ig", "posts", "publicacoes"]),
+      presetField("instagramProfileVisits", ["visitas ig", "visitas instagram", "perfil instagram"]),
+      presetField("whatsappTotal", ["whatsapp total", "total whatsapp", "conversas totais"]),
+      presetField("qualifiedConversations", ["qualificados", "conversas qualificadas"]),
+      presetField("consultationsScheduled", ["consultas marcadas", "agendamentos"]),
+      presetField("consultationsAttended", ["consultas comparecidas", "comparecimentos"]),
+      presetField("surgeriesClosed", ["cirurgias fechadas", "fechamentos"]),
+      presetField("notes", ["observacoes", "notas"])
+    ]
+  },
+  {
+    id: "paid-media",
+    label: "Midia paga",
+    description: "Foca em Meta Ads e Google Ads, mantendo colunas organicas e comerciais como revisao manual.",
+    fields: [
+      presetField("period", ["periodo", "intervalo"]),
+      presetField("weekLabel", ["semana", "rotulo"]),
+      presetField("metaSpend", ["meta r", "meta rs", "amount spent meta", "gasto meta", "investimento meta"]),
+      presetField("metaWhatsappConversations", ["wa ads", "whatsapp ads", "conversas meta", "leads meta"]),
+      presetField("metaProfileVisits", ["visitas meta", "perfil meta"]),
+      presetField("googleSpend", ["google r", "google rs", "cost google", "gasto google", "investimento google"]),
+      presetField("googleClicks", ["cliques google", "clicks google"]),
+      presetField("googleConversions", ["conversoes google", "google conversions", "conv google"])
+    ]
+  },
+  {
+    id: "organic-content",
+    label: "Instagram organico",
+    description: "Foca em Stories, Reels, posts e visitas ao perfil.",
+    fields: [
+      presetField("period", ["periodo", "intervalo"]),
+      presetField("weekLabel", ["semana", "rotulo"]),
+      presetField("instagramStories", ["stories", "stories ig", "instagram stories"]),
+      presetField("instagramReels", ["reels", "reels ig", "shorts"]),
+      presetField("instagramPosts", ["posts", "posts ig", "publicacoes"]),
+      presetField("instagramProfileVisits", ["visitas perfil", "visitas ig", "perfil instagram", "profile visits"])
+    ]
+  },
+  {
+    id: "commercial-funnel",
+    label: "Funil comercial",
+    description: "Foca em WhatsApp, qualificacao, consultas e fechamentos.",
+    fields: [
+      presetField("period", ["periodo", "intervalo"]),
+      presetField("weekLabel", ["semana", "rotulo"]),
+      presetField("whatsappTotal", ["whatsapp total", "total whatsapp", "conversas totais", "whatsapps"]),
+      presetField("qualifiedConversations", ["qualificados", "conversas qualificadas", "leads qualificados"]),
+      presetField("consultationsScheduled", ["consultas marcadas", "consultas agendadas", "agendamentos"]),
+      presetField("consultationsAttended", ["consultas comparecidas", "comparecimentos"]),
+      presetField("surgeriesClosed", ["cirurgias fechadas", "fechamentos"])
+    ]
+  }
+];
+
 const sensitivePatterns = [
   /paciente/i,
   /prontu[aá]rio/i,
@@ -107,6 +190,23 @@ export function buildWeeklyCsvMappedImport(rawText: string, mappings: WeeklyCsvC
 
 export function getWeeklyCsvColumnMappingOptions(): WeeklyCsvColumnMappingOption[] {
   return csvColumnMappingOptions;
+}
+
+export function getWeeklyCsvColumnMappingPresets(): WeeklyCsvColumnMappingPreset[] {
+  return csvColumnMappingPresetDefinitions.map(({ id, label, description }) => ({ id, label, description }));
+}
+
+export function applyWeeklyCsvColumnMappingPreset(headers: string[], presetId: WeeklyCsvColumnMappingPresetId): WeeklyCsvColumnMapping {
+  if (presetId === "auto") return suggestWeeklyCsvColumnMappings(headers);
+
+  const preset = csvColumnMappingPresetDefinitions.find((item) => item.id === presetId);
+  if (!preset) return suggestWeeklyCsvColumnMappings(headers);
+
+  return headers.reduce<WeeklyCsvColumnMapping>((mappings, header, index) => {
+    const presetMapping = findPresetMapping(header, preset.fields);
+    mappings[index] = presetMapping ?? suggestWeeklyCsvColumnMapping(header);
+    return mappings;
+  }, {});
 }
 
 export function suggestWeeklyCsvColumnMapping(header: string): WeeklyCsvColumnMappingKey {
@@ -387,6 +487,20 @@ function getColumnMappingLabel(key: WeeklyCsvColumnMappingKey): string {
   return csvColumnMappingOptions.find((option) => option.key === key)?.label ?? String(key);
 }
 
+function findPresetMapping(
+  header: string,
+  fields: Array<{ key: WeeklyCsvColumnMappingKey; aliases: string[] }>
+): WeeklyCsvColumnMappingKey | null {
+  const normalizedHeader = normalize(header);
+  if (!normalizedHeader) return null;
+
+  const match = fields.find((field) =>
+    field.aliases.some((alias) => normalizedHeader === normalize(alias) || normalizedHeader.includes(normalize(alias)))
+  );
+
+  return match?.key ?? null;
+}
+
 function detectSensitiveRows(text: string): string[] {
   return text
     .split(/\r?\n/)
@@ -410,4 +524,8 @@ function unique(values: string[]): string[] {
 
 function option(key: WeeklyCsvColumnMappingKey, label: string, description: string): WeeklyCsvColumnMappingOption {
   return { key, label, description };
+}
+
+function presetField(key: WeeklyCsvColumnMappingKey, aliases: string[]): { key: WeeklyCsvColumnMappingKey; aliases: string[] } {
+  return { key, aliases };
 }

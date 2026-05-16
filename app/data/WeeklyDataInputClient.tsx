@@ -12,12 +12,16 @@ import {
   type WeeklyCollectionTemplateSection
 } from "@/lib/weeklyCollectionTemplate";
 import {
+  applyWeeklyCsvColumnMappingPreset,
   buildWeeklyCsvMappedImport,
   getWeeklyCsvColumnMappingOptions,
+  getWeeklyCsvColumnMappingPresets,
   parseWeeklyCsvImport,
   type WeeklyCsvColumnMapping,
   type WeeklyCsvColumnMappingKey,
   type WeeklyCsvColumnMappingOption,
+  type WeeklyCsvColumnMappingPreset,
+  type WeeklyCsvColumnMappingPresetId,
   type WeeklyCsvImportResult
 } from "@/lib/weeklyCsvImport";
 import {
@@ -134,6 +138,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const [csvFileName, setCsvFileName] = useState("");
   const [csvResult, setCsvResult] = useState<WeeklyCsvImportResult | null>(null);
   const [csvColumnMappings, setCsvColumnMappings] = useState<WeeklyCsvColumnMapping>({});
+  const [csvMappingPresetId, setCsvMappingPresetId] = useState<WeeklyCsvColumnMappingPresetId>("auto");
   const metrics = useMemo(() => getCalculatedWeeklyMetrics(data), [data]);
   const validation = useMemo(() => validateWeeklyMarketingData(data), [data]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
@@ -141,6 +146,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const collectionSections = useMemo(() => getWeeklyCollectionTemplateSections(), []);
   const collectionSafetyChecklist = useMemo(() => getWeeklyCollectionSafetyChecklist(), []);
   const csvColumnMappingOptions = useMemo(() => getWeeklyCsvColumnMappingOptions(), []);
+  const csvColumnMappingPresets = useMemo(() => getWeeklyCsvColumnMappingPresets(), []);
 
   function setTextField(field: keyof WeeklyMarketingData, value: string) {
     setDirty(true);
@@ -201,9 +207,11 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   }
 
   function previewCsvImport() {
-    const result = parseWeeklyCsvImport(csvText);
+    const baseResult = parseWeeklyCsvImport(csvText);
+    const presetMappings = applyWeeklyCsvColumnMappingPreset(baseResult.headers, csvMappingPresetId);
+    const result = baseResult.headers.length && !baseResult.isFieldValueTable ? buildWeeklyCsvMappedImport(csvText, presetMappings) : baseResult;
     setCsvResult(result);
-    setCsvColumnMappings(result.suggestedMappings);
+    setCsvColumnMappings(baseResult.headers.length ? presetMappings : result.suggestedMappings);
   }
 
   function setCsvColumnMapping(index: number, mapping: WeeklyCsvColumnMappingKey) {
@@ -213,6 +221,15 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   function applyCsvColumnMapping() {
     const result = buildWeeklyCsvMappedImport(csvText, csvColumnMappings);
     setCsvResult(result);
+  }
+
+  function applyCsvMappingPreset(presetId: WeeklyCsvColumnMappingPresetId) {
+    setCsvMappingPresetId(presetId);
+    if (!csvResult || !csvResult.headers.length || csvResult.isFieldValueTable) return;
+
+    const presetMappings = applyWeeklyCsvColumnMappingPreset(csvResult.headers, presetId);
+    setCsvColumnMappings(presetMappings);
+    setCsvResult(buildWeeklyCsvMappedImport(csvText, presetMappings));
   }
 
   function sendCsvToAssistedImport() {
@@ -226,6 +243,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
     setCsvFileName("");
     setCsvResult(null);
     setCsvColumnMappings({});
+    setCsvMappingPresetId("auto");
   }
 
   async function loadCsvFile(event: ChangeEvent<HTMLInputElement>) {
@@ -316,11 +334,28 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
       <section className="panel">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,1fr)]">
           <div>
-            <p className="text-sm font-medium text-ocean">v1.5</p>
+            <p className="text-sm font-medium text-ocean">v1.6</p>
             <h3 className="mt-1 text-lg font-semibold">Importacao por CSV/planilha</h3>
             <p className="mt-2 text-sm text-slate-500">
-              Cole uma tabela CSV/TSV ou carregue um arquivo exportado da planilha. A leitura permite mapear colunas e converter a tabela em campos revisaveis antes da importacao assistida.
+              Cole uma tabela CSV/TSV ou carregue um arquivo exportado da planilha. A leitura permite usar presets, mapear colunas e converter a tabela em campos revisaveis antes da importacao assistida.
             </p>
+            <label className="mt-4 block">
+              <span className="text-sm font-medium text-slate-700">Perfil da planilha</span>
+              <select
+                value={csvMappingPresetId}
+                onChange={(event) => applyCsvMappingPreset(event.target.value as WeeklyCsvColumnMappingPresetId)}
+                className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-ocean focus:ring-1 focus:ring-ocean"
+              >
+                {csvColumnMappingPresets.map((preset) => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block text-xs text-slate-500">
+                {csvColumnMappingPresets.find((preset) => preset.id === csvMappingPresetId)?.description}
+              </span>
+            </label>
             <textarea
               value={csvText}
               onChange={(event) => {
@@ -361,6 +396,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
             result={csvResult}
             mappings={csvColumnMappings}
             mappingOptions={csvColumnMappingOptions}
+            selectedPreset={csvColumnMappingPresets.find((preset) => preset.id === csvMappingPresetId) ?? csvColumnMappingPresets[0]}
             onMappingChange={setCsvColumnMapping}
             onApplyMapping={applyCsvColumnMapping}
           />
@@ -500,12 +536,14 @@ function CsvImportPreview({
   result,
   mappings,
   mappingOptions,
+  selectedPreset,
   onMappingChange,
   onApplyMapping
 }: {
   result: WeeklyCsvImportResult | null;
   mappings: WeeklyCsvColumnMapping;
   mappingOptions: WeeklyCsvColumnMappingOption[];
+  selectedPreset: WeeklyCsvColumnMappingPreset | undefined;
   onMappingChange: (index: number, mapping: WeeklyCsvColumnMappingKey) => void;
   onApplyMapping: () => void;
 }) {
@@ -541,7 +579,9 @@ function CsvImportPreview({
           <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-sm font-semibold text-slate-700">Mapeamento manual de colunas</p>
-              <p className="mt-1 text-xs text-slate-500">Ajuste quando a planilha vier com nomes diferentes dos campos do sistema.</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Preset aplicado: {selectedPreset?.label ?? "Detectar automaticamente"}. Ajuste qualquer coluna antes de enviar.
+              </p>
             </div>
             <button type="button" onClick={onApplyMapping} className="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700">
               Atualizar previa

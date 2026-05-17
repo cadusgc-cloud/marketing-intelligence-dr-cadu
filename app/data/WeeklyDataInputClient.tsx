@@ -6,6 +6,13 @@ import { saveWeeklyMarketingData, type SaveWeeklyMarketingDataState } from "@/ap
 import { channelLabel } from "@/lib/decisionSignals";
 import { applyWeeklyAssistedImport, parseWeeklyAssistedImport, type WeeklyAssistedImportResult } from "@/lib/weeklyAssistedImport";
 import {
+  buildWeeklyCollectionReadinessBoard,
+  type WeeklyCollectionReadinessBoard,
+  type WeeklyCollectionReadinessStatus,
+  type WeeklyCollectionSourceFieldReadiness,
+  type WeeklyCollectionSourceReadiness
+} from "@/lib/weeklyCollectionReadiness";
+import {
   buildWeeklyCollectionTemplate,
   getWeeklyCollectionSafetyChecklist,
   getWeeklyCollectionTemplateSections,
@@ -146,6 +153,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const metrics = useMemo(() => getCalculatedWeeklyMetrics(data), [data]);
   const validation = useMemo(() => validateWeeklyMarketingData(data), [data]);
   const saveReadiness = useMemo(() => buildWeeklySaveReadinessReport(data), [data]);
+  const collectionReadiness = useMemo(() => buildWeeklyCollectionReadinessBoard(data), [data]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
   const collectionTemplate = useMemo(() => buildWeeklyCollectionTemplate(), []);
   const collectionSections = useMemo(() => getWeeklyCollectionTemplateSections(), []);
@@ -277,6 +285,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
 
         <StatusMessage source={source} dirty={dirty} status={saveState.status} message={saveState.message} errors={saveState.errors} />
         <WeeklySaveReadinessPanel report={saveReadiness} />
+        <WeeklyCollectionReadinessBoardPanel board={collectionReadiness} />
 
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" onClick={restoreMockData} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
@@ -593,6 +602,105 @@ function WeeklySaveReadinessItemView({ item }: { item: WeeklySaveReadinessItem }
   );
 }
 
+function WeeklyCollectionReadinessBoardPanel({ board }: { board: WeeklyCollectionReadinessBoard }) {
+  return (
+    <div className={`mt-4 rounded-md border p-3 text-sm ${collectionReadinessPanelClass(board.status)}`}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <p className="font-semibold">Prontidao da coleta por fonte</p>
+          <p className="mt-1">{board.summary}</p>
+          <p className="mt-2 text-xs opacity-90">
+            Score de coleta: {board.score}/100. Esta leitura e interna, manual e baseada somente nos campos agregados preenchidos.
+          </p>
+        </div>
+        <span className="inline-flex w-fit rounded-full bg-white px-2 py-1 text-xs font-semibold text-slate-700">
+          {collectionReadinessStatusLabel(board.status)}
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 xl:grid-cols-3">
+        {board.sources.map((source) => (
+          <WeeklyCollectionSourceCard key={source.id} source={source} />
+        ))}
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-2">
+        <div className="rounded-md bg-white p-3 text-slate-700">
+          <p className="font-semibold">Proximas acoes de coleta</p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {board.priorityActions.map((action) => (
+              <li key={action}>- {action}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="rounded-md bg-white p-3 text-slate-700">
+          <p className="font-semibold">Guardrails</p>
+          <ul className="mt-2 space-y-1 text-sm">
+            {board.privacyGuardrails.slice(0, 4).map((guardrail) => (
+              <li key={guardrail}>- {guardrail}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {board.nextRoutes.map((route) => (
+          <a key={route.href} href={route.href} className="rounded-md bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
+            {route.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WeeklyCollectionSourceCard({ source }: { source: WeeklyCollectionSourceReadiness }) {
+  return (
+    <article className="rounded-md bg-white p-3 text-slate-700">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={`badge ${collectionReadinessBadgeClass(source.status)}`}>{collectionReadinessStatusLabel(source.status)}</span>
+        <span className="text-xs font-semibold text-slate-500">{source.score}/100</span>
+      </div>
+      <h3 className="mt-3 font-semibold text-slate-900">{source.title}</h3>
+      <p className="mt-1 text-xs text-slate-500">{source.sourceOwner}</p>
+      <p className="mt-2 text-sm leading-5 text-slate-600">{source.summary}</p>
+      <p className="mt-3 rounded-md bg-slate-50 p-2 text-xs leading-5 text-slate-600">{source.nextAction}</p>
+
+      <div className="mt-3 space-y-2">
+        {source.fields.map((field) => (
+          <WeeklyCollectionFieldLine key={field.id} field={field} />
+        ))}
+      </div>
+
+      {source.reviewNotes.length ? (
+        <details className="mt-3 text-xs text-slate-500">
+          <summary className="cursor-pointer font-medium text-slate-700">Notas de revisao</summary>
+          <ul className="mt-2 space-y-1">
+            {source.reviewNotes.map((note) => (
+              <li key={note}>- {note}</li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+    </article>
+  );
+}
+
+function WeeklyCollectionFieldLine({ field }: { field: WeeklyCollectionSourceFieldReadiness }) {
+  return (
+    <div className="rounded-md bg-slate-50 p-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={`badge ${collectionFieldBadgeClass(field.status)}`}>{collectionFieldStatusLabel(field.status)}</span>
+        <span className="text-xs font-semibold text-slate-700">{field.label}</span>
+      </div>
+      <p className="mt-1 text-xs text-slate-500">
+        Valor: {field.valueLabel}. {field.detail}
+      </p>
+    </div>
+  );
+}
+
 function saveReadinessPanelClass(status: WeeklySaveReadinessReport["status"]): string {
   if (status === "ready") return "border-green-200 bg-green-50 text-leaf";
   if (status === "blocked") return "border-red-200 bg-red-50 text-danger";
@@ -609,6 +717,39 @@ function saveReadinessItemStatusLabel(status: WeeklySaveReadinessItem["status"])
   if (status === "ok") return "OK -";
   if (status === "missing") return "Falta -";
   return "Revisar -";
+}
+
+function collectionReadinessPanelClass(status: WeeklyCollectionReadinessStatus): string {
+  if (status === "ready") return "border-green-200 bg-green-50 text-leaf";
+  if (status === "blocked") return "border-red-200 bg-red-50 text-danger";
+  if (status === "missing") return "border-slate-200 bg-slate-50 text-slate-700";
+  return "border-amber-200 bg-amber-50 text-amber";
+}
+
+function collectionReadinessBadgeClass(status: WeeklyCollectionReadinessStatus): string {
+  if (status === "ready") return "bg-green-50 text-leaf";
+  if (status === "blocked") return "bg-red-50 text-red-700";
+  if (status === "missing") return "bg-slate-100 text-slate-700";
+  return "bg-amber-50 text-amber";
+}
+
+function collectionReadinessStatusLabel(status: WeeklyCollectionReadinessStatus): string {
+  if (status === "ready") return "pronta";
+  if (status === "blocked") return "bloqueada";
+  if (status === "missing") return "sem coleta";
+  return "revisar";
+}
+
+function collectionFieldBadgeClass(status: WeeklyCollectionSourceFieldReadiness["status"]): string {
+  if (status === "ok") return "bg-green-50 text-leaf";
+  if (status === "missing") return "bg-slate-100 text-slate-700";
+  return "bg-amber-50 text-amber";
+}
+
+function collectionFieldStatusLabel(status: WeeklyCollectionSourceFieldReadiness["status"]): string {
+  if (status === "ok") return "ok";
+  if (status === "missing") return "falta";
+  return "revisar";
 }
 
 function CsvImportPreview({

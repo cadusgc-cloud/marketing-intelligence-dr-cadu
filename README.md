@@ -145,6 +145,12 @@ A rota `/data/collection-packet` transforma o guia de coleta em artefatos pronto
 
 Esse pacote ajuda a coletar numeros semanais de Instagram, Meta Ads, Google Ads e funil comercial sem depender de API. Ele permanece interno, nao envia mensagens, nao publica conteudo, nao altera banco e exige revisao humana antes de salvar a semana em `/data`.
 
+## v2.7 - Prontidao da coleta por fonte
+
+A tela `/data` agora mostra uma leitura de prontidao por fonte antes de salvar: identidade da semana, Instagram organico, Meta Ads, Google Ads, funil comercial e contexto editorial.
+
+A camada classifica cada fonte como pronta, revisar, sem coleta ou bloqueada, calcula score de coleta e lista proximas acoes manuais. Ela nao busca dados automaticamente, nao conecta APIs, nao envia mensagens e mantem Dezembro/2025 fora de benchmarks normais.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

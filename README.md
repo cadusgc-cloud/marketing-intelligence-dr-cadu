@@ -217,6 +217,12 @@ A tela `/weekly` agora inclui uma revisao compacta pos-salvamento. Depois que a 
 
 Essa camada ajuda a fechar o ciclo entre coleta, salvamento e interpretacao da semana. Ela nao altera banco, nao cria schema, nao conecta APIs, nao publica, nao envia mensagens e mantem Dezembro/2025 fora de benchmark normal.
 
+## v3.9 - Pacote pos-salvamento copiavel
+
+A revisao compacta em `/weekly` agora pode ser copiada como Markdown e aberta em uma rota dedicada: `/weekly/post-save-review`.
+
+O pacote pos-salvamento organiza status, confianca, primeiro passo, snapshot salvo, checklist, links de continuidade e guardrails em um artefato interno de revisao humana. Ele nao salva automaticamente, nao altera banco, nao conecta API externa, nao envia recomendacao para equipe e nao publica conteudo.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

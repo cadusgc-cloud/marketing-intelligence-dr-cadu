@@ -63,6 +63,6 @@ git diff --check
 
 ## Proximas melhorias possiveis
 
-- Criar um pacote copiavel da revisao pos-salvamento.
+- Ampliar o pacote copiavel com impressao local.
 - Mostrar diferenca entre semana atual, semana anterior e media historica em uma faixa unica.
 - Conectar a revisao compacta ao pacote manual de execucao sem persistir novos campos.

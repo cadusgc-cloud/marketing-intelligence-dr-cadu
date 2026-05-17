@@ -140,6 +140,7 @@ describe("Weekly Command Center", () => {
     const resultScreen = readFileSync(path.join(process.cwd(), "app", "weekly", "WeeklyCommandResultScreen.tsx"), "utf8");
     const panel = readFileSync(path.join(process.cwd(), "app", "weekly", "WeeklyStrategicDecisionPanel.tsx"), "utf8");
     const decisionLayer = readFileSync(path.join(process.cwd(), "lib", "weeklyStrategicDecision.ts"), "utf8");
+    const commandResult = readFileSync(path.join(process.cwd(), "lib", "weeklyCommandResult.ts"), "utf8");
 
     expect(page).toContain("getPreviousValidWeeklyMarketingData");
     expect(page).toContain("buildWeeklyStrategicDecisionReport");
@@ -150,6 +151,7 @@ describe("Weekly Command Center", () => {
     expect(page).toContain("WeeklyStrategicDecisionPanel");
     expect(resultScreen).toContain("Prioridades da proxima semana");
     expect(resultScreen).toContain("priorityLevers");
+    expect(commandResult).toContain("Pacote pos-salvamento");
     expect(panel).toContain("Leitura Estrat");
     expect(panel).toContain("Principais sinais");
     expect(panel).toContain("Recomenda");

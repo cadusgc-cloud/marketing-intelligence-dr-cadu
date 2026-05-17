@@ -32,6 +32,7 @@ export type WeeklyPostSaveReviewAction = {
 
 export type WeeklyPostSaveReviewReport = {
   id: string;
+  weekId: string;
   title: string;
   status: WeeklyPostSaveReviewStatus;
   statusLabel: string;
@@ -66,6 +67,7 @@ export function buildWeeklyPostSaveReview(
   const firstAction = selectFirstAction(current, previous, commandResult, reviewItems);
   const report: Omit<WeeklyPostSaveReviewReport, "copyMarkdown"> = {
     id: `weekly-post-save-review-${current.id}`,
+    weekId: current.id,
     title: "Revisao compacta pos-salvamento",
     status,
     statusLabel: statusLabel(status),
@@ -256,6 +258,7 @@ function selectFirstAction(
 
 function buildNextOpenLinks(current: WeeklyMarketingData, commandResult: WeeklyCommandResult): WeeklyPostSaveReviewReport["nextOpenLinks"] {
   const links = [
+    { label: "Pacote pos-salvamento", href: `/weekly/post-save-review?week=${current.id}`, purpose: "Copiar revisao compacta e roteiro de continuidade." },
     { label: "Board de execucao", href: "/weekly/execution", purpose: "Transformar leitura em tarefas internas manuais." },
     { label: "Pacote manual", href: "/weekly/execution/packet", purpose: "Copiar plano de revisao humana e execucao." },
     { label: "Dados semanais", href: "/data", purpose: "Corrigir ou completar metricas agregadas da proxima semana." },

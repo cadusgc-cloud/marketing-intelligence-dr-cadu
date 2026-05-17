@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WeeklyPostSaveReviewCopyButton } from "@/app/weekly/WeeklyPostSaveReviewCopyButton";
 import type {
   WeeklyPostSaveReviewConfidence,
   WeeklyPostSaveReviewItemStatus,
@@ -18,6 +19,12 @@ export function WeeklyPostSaveReviewPanel({ review }: { review: WeeklyPostSaveRe
           </div>
           <h3 className="mt-2 text-lg font-semibold text-ink">{review.title}</h3>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-700">{review.summary}</p>
+          <div className="mt-4 flex flex-wrap items-start gap-2">
+            <WeeklyPostSaveReviewCopyButton copyText={review.copyMarkdown} />
+            <Link href={`/weekly/post-save-review?week=${review.weekId}`} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">
+              Abrir pacote completo
+            </Link>
+          </div>
         </div>
 
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">

@@ -47,8 +47,10 @@ describe("Weekly Post Save Review", () => {
     expect(review.title).toBe("Revisao compacta pos-salvamento");
     expect(review.status).toBe("ready_for_review");
     expect(review.confidence).toBe("alta");
+    expect(review.weekId).toBe("week-current");
     expect(review.savedSnapshot.map((item) => item.label)).toEqual(expect.arrayContaining(["Semana", "Status", "Meta WhatsApp", "Funil comercial"]));
     expect(review.firstAction.targetHref).toBe("/weekly/execution");
+    expect(review.nextOpenLinks.map((link) => link.href)).toContain("/weekly/post-save-review?week=week-current");
   });
 
   it("marca leitura limitada quando falta funil comercial ou historico anterior", () => {
@@ -108,16 +110,28 @@ describe("Weekly Post Save Review", () => {
   it("integra a revisao pos-salvamento em /weekly, docs e README", () => {
     const page = readFileSync(path.join(process.cwd(), "app", "weekly", "page.tsx"), "utf8");
     const panel = readFileSync(path.join(process.cwd(), "app", "weekly", "WeeklyPostSaveReviewPanel.tsx"), "utf8");
+    const copyButton = readFileSync(path.join(process.cwd(), "app", "weekly", "WeeklyPostSaveReviewCopyButton.tsx"), "utf8");
+    const packetPage = readFileSync(path.join(process.cwd(), "app", "weekly", "post-save-review", "page.tsx"), "utf8");
     const layer = readFileSync(path.join(process.cwd(), "lib", "weeklyPostSaveReview.ts"), "utf8");
     const docs = readFileSync(path.join(process.cwd(), "docs", "WEEKLY_POST_SAVE_REVIEW_V3_8.md"), "utf8");
+    const packetDocs = readFileSync(path.join(process.cwd(), "docs", "WEEKLY_POST_SAVE_REVIEW_PACKET_V3_9.md"), "utf8");
     const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
 
     expect(page).toContain("buildWeeklyPostSaveReview");
     expect(page).toContain("WeeklyPostSaveReviewPanel");
     expect(panel).toContain("Pos-salvamento v3.8");
     expect(panel).toContain("Checklist compacto");
+    expect(panel).toContain("WeeklyPostSaveReviewCopyButton");
+    expect(panel).toContain("Abrir pacote completo");
+    expect(copyButton).toContain("navigator.clipboard");
+    expect(copyButton).toContain("Copiar pacote");
+    expect(packetPage).toContain("Pacote pos-salvamento");
+    expect(packetPage).toContain("Copiar revisao");
+    expect(packetPage).toContain("getPreviousValidWeeklyMarketingData");
     expect(layer).toContain("buildWeeklyPostSaveReview");
     expect(`${docs}\n${readme}`.toLocaleLowerCase("pt-BR")).toContain("v3.8");
     expect(`${docs}\n${readme}`.toLocaleLowerCase("pt-BR")).toContain("revisao compacta pos-salvamento");
+    expect(`${packetDocs}\n${readme}`.toLocaleLowerCase("pt-BR")).toContain("v3.9");
+    expect(`${packetDocs}\n${readme}`.toLocaleLowerCase("pt-BR")).toContain("pacote pos-salvamento");
   });
 });

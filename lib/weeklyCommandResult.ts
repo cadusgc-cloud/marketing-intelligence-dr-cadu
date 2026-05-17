@@ -217,6 +217,7 @@ export function buildWeeklyCommandResult(
       { label: "Conteudo", href: "/content" },
       { label: "Calendario", href: "/calendar" },
       { label: "Dados semanais", href: "/data" },
+      { label: "Pacote pos-salvamento", href: "/weekly/post-save-review" },
       { label: "Stories de hoje", href: "/stories/today" },
       { label: "Plano da proxima semana", href: "/stories/next-week" },
       { label: "Board de execucao", href: "/weekly/execution" },

@@ -294,7 +294,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         <WeeklyCollectionReadinessBoardPanel board={collectionReadiness} />
         <WeeklyNextCollectionPlanPanel plan={nextCollectionPlan} />
         <div className="mt-4">
-          <WeeklyCollectionWorkspacePanel workspace={collectionWorkspace} saveReadiness={saveReadiness} />
+          <WeeklyCollectionWorkspacePanel workspace={collectionWorkspace} saveReadiness={saveReadiness} collectionReadiness={collectionReadiness} />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -310,7 +310,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         </div>
       </section>
 
-      <section id="weekly-fields-identity" className="panel scroll-mt-4">
+      <section className="panel">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(320px,1.1fr)]">
           <div>
             <p className="text-sm font-medium text-ocean">v1.3</p>
@@ -467,7 +467,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         </div>
       </section>
 
-      <section className="panel">
+      <section id="weekly-fields-identity" className="panel scroll-mt-4">
         <h3 className="text-lg font-semibold">Dados da semana</h3>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <TextInput name="weekLabel" label="Rotulo da semana" value={data.weekLabel} onChange={(value) => setTextField("weekLabel", value)} />

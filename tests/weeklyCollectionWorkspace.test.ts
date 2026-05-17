@@ -44,7 +44,7 @@ describe("Weekly Collection Workspace", () => {
     expect(workspace.title).toBe("Workspace local de coleta semanal");
     expect(workspace.storageKey).toContain("marketing-os:weekly-collection-workspace");
     expect(workspace.items.map((item) => item.kind)).toEqual(expect.arrayContaining(["task", "daily", "weekly_close", "review_gate"]));
-    expect(workspace.nextRoutes.map((route) => route.href)).toEqual(expect.arrayContaining(["/data", "/data/next-collection-plan", "/weekly"]));
+    expect(workspace.nextRoutes.map((route) => route.href)).toEqual(expect.arrayContaining(["/data", "/data/next-collection-plan", "/data/manual-review-trail", "/weekly"]));
   });
 
   it("calcula progresso sem persistir dados reais", () => {
@@ -109,6 +109,8 @@ describe("Weekly Collection Workspace", () => {
     expect(panel).toContain("Gate de decisao da coleta");
     expect(panel).toContain("Copiar handoff");
     expect(panel).toContain("Handoff pre-salvamento da semana");
+    expect(panel).toContain("Copiar trilha");
+    expect(panel).toContain("Trilha de revisao manual da semana");
     expect(panel).toContain("Primeiro foco");
     expect(panel).toContain("Ir para foco");
     expect(panel).not.toContain("<textarea");

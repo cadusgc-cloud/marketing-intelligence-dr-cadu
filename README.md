@@ -187,6 +187,12 @@ O handoff pre-salvamento agora destaca um "Primeiro foco" com area sugerida, mot
 
 O foco continua local e deterministico: nao salva automaticamente, nao altera banco, nao conecta APIs e nao usa dados pessoais. Ele apenas orienta a revisao humana dentro da tela `/data`.
 
+## v3.4 - Trilha de revisao manual
+
+A tela `/data` e as rotas `/data/collection-workspace` e `/data/manual-review-trail` agora mostram uma trilha copiavel de revisao humana antes do salvamento da semana.
+
+A trilha junta workspace, gate de coleta, handoff pre-salvamento, validacao do formulario e prontidao por fonte em um Markdown interno. Ela ajuda a registrar se a semana deve ser salva, revisada, mantida em coleta ou bloqueada. Continua sem API externa, sem envio automatico, sem alteracao de banco e sem dados pessoais.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

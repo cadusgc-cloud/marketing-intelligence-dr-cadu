@@ -13,8 +13,10 @@ import {
   type WeeklyCollectionWorkspaceState
 } from "@/lib/weeklyCollectionWorkspace";
 import { buildWeeklyCollectionDecisionGate, type WeeklyCollectionDecisionGate } from "@/lib/weeklyCollectionDecisionGate";
+import type { WeeklyCollectionReadinessBoard } from "@/lib/weeklyCollectionReadiness";
 import { buildWeeklyCollectionSaveHandoff, type WeeklyCollectionSaveHandoff } from "@/lib/weeklyCollectionSaveHandoff";
 import type { WeeklySaveReadinessReport } from "@/lib/weeklyDataInput";
+import { buildWeeklyManualReviewTrail, type WeeklyManualReviewTrail } from "@/lib/weeklyManualReviewTrail";
 
 const statusOptions: Array<{ status: WeeklyCollectionWorkspaceItemStatus; label: string }> = [
   { status: "pending", label: "Pendente" },
@@ -22,15 +24,36 @@ const statusOptions: Array<{ status: WeeklyCollectionWorkspaceItemStatus; label:
   { status: "blocked", label: "Bloqueado" }
 ];
 
-export function WeeklyCollectionWorkspacePanel({ workspace, saveReadiness }: { workspace: WeeklyCollectionWorkspace; saveReadiness: WeeklySaveReadinessReport }) {
+export function WeeklyCollectionWorkspacePanel({
+  workspace,
+  saveReadiness,
+  collectionReadiness
+}: {
+  workspace: WeeklyCollectionWorkspace;
+  saveReadiness: WeeklySaveReadinessReport;
+  collectionReadiness: WeeklyCollectionReadinessBoard;
+}) {
   const [state, setState] = useState<WeeklyCollectionWorkspaceState>(() => createInitialWorkspaceState(workspace));
   const [copied, setCopied] = useState(false);
   const [gateCopied, setGateCopied] = useState(false);
   const [handoffCopied, setHandoffCopied] = useState(false);
+  const [trailCopied, setTrailCopied] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const progress = useMemo(() => calculateWeeklyCollectionWorkspaceProgress(workspace, state), [workspace, state]);
   const decisionGate = useMemo(() => buildWeeklyCollectionDecisionGate(workspace, state), [workspace, state]);
   const saveHandoff = useMemo(() => buildWeeklyCollectionSaveHandoff(decisionGate, saveReadiness), [decisionGate, saveReadiness]);
+  const reviewTrail = useMemo(
+    () =>
+      buildWeeklyManualReviewTrail({
+        workspace,
+        state,
+        decisionGate,
+        saveHandoff,
+        saveReadiness,
+        collectionReadiness
+      }),
+    [workspace, state, decisionGate, saveHandoff, saveReadiness, collectionReadiness]
+  );
 
   useEffect(() => {
     try {
@@ -55,6 +78,7 @@ export function WeeklyCollectionWorkspacePanel({ workspace, saveReadiness }: { w
     setCopied(false);
     setGateCopied(false);
     setHandoffCopied(false);
+    setTrailCopied(false);
     setState((current) => ({
       statuses: {
         ...current.statuses,
@@ -68,6 +92,7 @@ export function WeeklyCollectionWorkspacePanel({ workspace, saveReadiness }: { w
     setCopied(false);
     setGateCopied(false);
     setHandoffCopied(false);
+    setTrailCopied(false);
     setState(createInitialWorkspaceState(workspace));
   }
 
@@ -101,6 +126,16 @@ export function WeeklyCollectionWorkspacePanel({ workspace, saveReadiness }: { w
     setHandoffCopied(true);
   }
 
+  async function copyReviewTrail() {
+    if (!navigator.clipboard) {
+      setTrailCopied(false);
+      return;
+    }
+
+    await navigator.clipboard.writeText(reviewTrail.copyMarkdown);
+    setTrailCopied(true);
+  }
+
   return (
     <section id="weekly-collection-workspace" className="panel scroll-mt-4">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
@@ -124,6 +159,7 @@ export function WeeklyCollectionWorkspacePanel({ workspace, saveReadiness }: { w
 
       <WorkspaceDecisionGateCard gate={decisionGate} copied={gateCopied} onCopy={copyDecisionGate} />
       <WorkspaceSaveHandoffCard handoff={saveHandoff} copied={handoffCopied} onCopy={copySaveHandoff} />
+      <WorkspaceManualReviewTrailCard trail={reviewTrail} copied={trailCopied} onCopy={copyReviewTrail} />
 
       <div className="mt-5 grid gap-3">
         {workspace.items.map((item) => (
@@ -224,6 +260,58 @@ function WorkspaceSaveHandoffCard({ handoff, copied, onCopy }: { handoff: Weekly
         Este handoff nao salva automaticamente e nao altera banco. Ele apenas cruza o gate de coleta com a validacao do formulario para orientar revisao humana antes de salvar.
       </p>
       {copied ? <p className="mt-3 rounded-md bg-green-50 p-2 text-xs font-medium text-leaf">Handoff copiado para revisao manual.</p> : null}
+    </article>
+  );
+}
+
+function WorkspaceManualReviewTrailCard({ trail, copied, onCopy }: { trail: WeeklyManualReviewTrail; copied: boolean; onCopy: () => void }) {
+  return (
+    <article aria-label="Trilha de revisao manual da semana" className={`mt-5 rounded-md border p-4 ${trailPanelClass(trail.status)}`}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs font-semibold uppercase text-slate-500">Trilha local v3.4</p>
+            <span className={`badge ${trailBadgeClass(trail.status)}`}>{trailStatusLabel(trail.status)}</span>
+          </div>
+          <h3 className="mt-2 text-lg font-semibold text-slate-900">{trail.title}</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">{trail.summary}</p>
+          <p className="mt-2 text-xs font-medium text-slate-500">{trail.generatedAtLabel}</p>
+        </div>
+        <button type="button" onClick={onCopy} className="w-fit rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700">
+          Copiar trilha
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        {trail.sections.slice(0, 6).map((section) => (
+          <div key={section.id} className="rounded-md bg-white/80 p-3 text-sm text-slate-700">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`badge ${trailSectionBadgeClass(section.status)}`}>{trailSectionStatusLabel(section.status)}</span>
+              <p className="font-semibold">{section.title}</p>
+            </div>
+            <ul className="mt-2 space-y-1 text-xs leading-5 text-slate-600">
+              {section.lines.slice(0, 5).map((line) => (
+                <li key={line}>- {line}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 rounded-md bg-white/80 p-3 text-sm text-slate-700">
+        <p className="font-semibold">Decisao humana antes do salvamento</p>
+        <ul className="mt-2 space-y-1 text-xs leading-5 text-slate-600">
+          <li>- Salvar semana manualmente em /data.</li>
+          <li>- Revisar antes de salvar.</li>
+          <li>- Manter como coleta pendente.</li>
+          <li>- Bloquear conclusao por falta de dado, risco de privacidade ou anomalia.</li>
+        </ul>
+      </div>
+
+      <p className="mt-4 rounded-md bg-white/80 p-3 text-xs leading-5 text-slate-600">
+        A trilha e copiavel para revisao humana fora do sistema. Ela nao salva automaticamente, nao envia nada, nao conecta API externa e nao substitui decisao humana.
+      </p>
+      {copied ? <p className="mt-3 rounded-md bg-green-50 p-2 text-xs font-medium text-leaf">Trilha copiada para revisao manual.</p> : null}
     </article>
   );
 }
@@ -434,4 +522,39 @@ function handoffItemStatusLabel(status: WeeklyCollectionSaveHandoff["checklist"]
   if (status === "ok") return "ok";
   if (status === "blocked") return "bloqueio";
   return "revisar";
+}
+
+function trailPanelClass(status: WeeklyManualReviewTrail["status"]): string {
+  if (status === "ready") return "border-green-200 bg-green-50";
+  if (status === "blocked") return "border-red-200 bg-red-50";
+  if (status === "review") return "border-amber-200 bg-amber-50";
+  return "border-cyan-200 bg-cyan-50";
+}
+
+function trailBadgeClass(status: WeeklyManualReviewTrail["status"]): string {
+  if (status === "ready") return "bg-green-100 text-leaf";
+  if (status === "blocked") return "bg-red-100 text-red-700";
+  if (status === "review") return "bg-amber-100 text-amber";
+  return "bg-cyan-100 text-ocean";
+}
+
+function trailStatusLabel(status: WeeklyManualReviewTrail["status"]): string {
+  if (status === "ready") return "pronta";
+  if (status === "blocked") return "bloqueada";
+  if (status === "review") return "revisar";
+  return "coletando";
+}
+
+function trailSectionBadgeClass(status: WeeklyManualReviewTrail["sections"][number]["status"]): string {
+  if (status === "ok") return "bg-green-50 text-leaf";
+  if (status === "blocked") return "bg-red-50 text-red-700";
+  if (status === "review") return "bg-amber-50 text-amber";
+  return "bg-cyan-50 text-ocean";
+}
+
+function trailSectionStatusLabel(status: WeeklyManualReviewTrail["sections"][number]["status"]): string {
+  if (status === "ok") return "ok";
+  if (status === "blocked") return "bloqueio";
+  if (status === "review") return "revisar";
+  return "info";
 }

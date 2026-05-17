@@ -157,6 +157,12 @@ A tela `/data` tambem transforma a prontidao por fonte em um plano de coleta par
 
 O plano continua interno e manual: nao conecta APIs, nao envia mensagens, nao publica conteudo, nao altera campanhas e nao usa dados pessoais. Ele existe para orientar a coleta agregada antes de salvar a proxima semana e ler o Weekly Command Center.
 
+## v2.9 - Pacote copiavel do plano de coleta
+
+A tela `/data` agora permite copiar o pacote completo do plano de coleta da proxima semana. A rota `/data/next-collection-plan` mostra uma versao dedicada de referencia com plano completo, rotina diaria, fechamento semanal, handoff interno e briefs por responsavel sugerido.
+
+O pacote permanece manual, interno e baseado em metricas agregadas. Ele nao envia mensagens, nao conecta APIs, nao salva dados automaticamente e nao altera banco, campanha ou conteudo publicado.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

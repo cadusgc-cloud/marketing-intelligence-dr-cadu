@@ -1,3 +1,7 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { buildWeeklyNextCollectionPacket } from "@/lib/weeklyNextCollectionPacket";
 import type {
   WeeklyNextCollectionPlan,
   WeeklyNextCollectionPlanStatus,
@@ -7,6 +11,19 @@ import type {
 } from "@/lib/weeklyNextCollectionPlan";
 
 export function WeeklyNextCollectionPlanPanel({ plan }: { plan: WeeklyNextCollectionPlan }) {
+  const [copied, setCopied] = useState(false);
+  const packet = useMemo(() => buildWeeklyNextCollectionPacket(plan), [plan]);
+
+  async function copyFullPacket() {
+    if (!navigator.clipboard) {
+      setCopied(false);
+      return;
+    }
+
+    await navigator.clipboard.writeText(packet.fullPacketText);
+    setCopied(true);
+  }
+
   return (
     <div className={`mt-4 rounded-md border p-3 text-sm ${planPanelClass(plan.status)}`}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -54,12 +71,17 @@ export function WeeklyNextCollectionPlanPanel({ plan }: { plan: WeeklyNextCollec
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
+        <button type="button" onClick={copyFullPacket} className="rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700">
+          Copiar pacote completo
+        </button>
         {plan.nextRoutes.map((route) => (
           <a key={route.href} href={route.href} title={route.purpose} className="rounded-md bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
             {route.label}
           </a>
         ))}
       </div>
+
+      {copied ? <p className="mt-3 rounded-md bg-green-50 p-3 text-sm font-medium text-leaf">Pacote completo copiado para revisao manual.</p> : null}
     </div>
   );
 }

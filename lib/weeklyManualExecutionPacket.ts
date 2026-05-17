@@ -86,6 +86,7 @@ export function buildWeeklyManualExecutionPacket(
     nextOpenLinks: [
       { label: "Weekly Command Center", href: `/weekly?week=${board.sourceReportId}` },
       { label: "Board de execucao", href: `/weekly/execution?week=${board.sourceReportId}` },
+      { label: "Guia de coleta", href: "/data/collection-guide" },
       { label: "Dados semanais", href: "/data" },
       { label: "Stories de hoje", href: "/stories/today" },
       { label: "Plano da proxima semana", href: "/stories/next-week" },

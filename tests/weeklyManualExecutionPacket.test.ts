@@ -92,7 +92,7 @@ describe("Weekly Manual Execution Packet", () => {
     const hrefs = packet.nextOpenLinks.map((link) => link.href);
 
     expect(hrefs).toEqual(
-      expect.arrayContaining(["/data", "/stories/today", "/stories/next-week", "/audit"])
+      expect.arrayContaining(["/data/collection-guide", "/data", "/stories/today", "/stories/next-week", "/audit"])
     );
     expect(hrefs.some((href) => href.includes("/weekly/execution/packet"))).toBe(false);
   });

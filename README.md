@@ -133,6 +133,12 @@ A rota `/weekly/execution/packet` organiza o board em um pacote de revisao human
 
 O pacote continua interno e deterministico. Ele nao salva decisoes, nao publica, nao envia mensagens, nao altera campanhas, nao integra APIs externas e nao transforma Team Audit Mode em acao externa automatica.
 
+## v2.5 - Guia de coleta semanal
+
+A rota `/data/collection-guide` mostra de onde tirar cada dado semanal antes de preencher `/data`: Instagram organico, Meta Ads, Google Ads, WhatsApp/funil, identidade da semana, contexto editorial e anomalias.
+
+O guia separa campos que ja existem como input ativo de metricas que ainda devem ficar em observacoes, como alcance, impressoes e interacoes agregadas. Ele reforca coleta manual, metricas consolidadas, privacidade, exclusao de Dezembro/2025 de benchmarks normais e ausencia de API externa nesta fase.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

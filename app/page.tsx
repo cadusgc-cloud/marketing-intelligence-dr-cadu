@@ -1,193 +1,159 @@
 import Link from "next/link";
-import { TrendChart } from "@/components/TrendChart";
-import { CompactReportTable, DiagnosisBadge, EmptyState, MetricCard, PriorityBadge, formatCurrency, formatNumber } from "@/components/ui";
-import { resolveRecommendationBenchmarks } from "@/lib/benchmarks";
-import { prisma } from "@/lib/db";
-import { generateExecutiveDiagnosis } from "@/lib/engine/executiveDiagnosis";
-import { buildExecutiveDiagnosisInput, findLatestExecutiveDiagnosisReport, isExecutiveDiagnosisEligibleReport } from "@/lib/engine/executiveDiagnosisInput";
-import { getReports } from "@/lib/reports";
-import { dateLabel } from "@/lib/utils/dates";
+import { DR_CADU_EDITORIAL_PROFILE } from "@/lib/drCaduEditorialProfile";
+import { analyzeLocalMarketingDemoData, getWeeklyContentPlan } from "@/lib/drCaduContentPlan";
 
-export const dynamic = "force-dynamic";
-
-const executiveStatusLabels = {
-  critical: "CrÃ­tico",
-  attention: "AtenÃ§Ã£o",
-  stable: "EstÃ¡vel",
-  good: "Bom"
-};
-
-const executiveStatusClasses = {
-  critical: "bg-red-50 text-danger",
-  attention: "bg-amber-50 text-amber",
-  stable: "bg-cyan-50 text-ocean",
-  good: "bg-green-50 text-leaf"
-};
-
-export default async function DashboardPage() {
-  const [reports, benchmarkSettings] = await Promise.all([
-    getReports(),
-    prisma.benchmarkSetting.findMany({ select: { key: true, value: true, unit: true } })
-  ]);
-  const benchmarks = resolveRecommendationBenchmarks(benchmarkSettings);
-  const validReports = reports.filter(isExecutiveDiagnosisEligibleReport);
-  const latest = findLatestExecutiveDiagnosisReport(reports);
-  const executiveDiagnosis = latest ? generateExecutiveDiagnosis(buildExecutiveDiagnosisInput(latest)) : null;
-  const consolidated = latest?.channelSummaries.find((item) => item.channel === "consolidated");
-  const meta = latest?.channelSummaries.find((item) => item.channel === "meta_ads");
-  const google = latest?.channelSummaries.find((item) => item.channel === "google_ads");
-  const criticalAlerts = reports.flatMap((report) => report.dataIssues.filter((issue) => issue.severity === "critical" || issue.severity === "high").map((issue) => ({ ...issue, report }))).slice(0, 6);
-  const scaleCreatives = validReports.flatMap((report) => report.creatives.filter((creative) => creative.diagnosis === "scale").map((creative) => ({ ...creative, report }))).slice(0, 6);
-  const scaleKeywords = validReports.flatMap((report) => report.keywords.filter((keyword) => keyword.diagnosis === "scale").map((keyword) => ({ ...keyword, report }))).slice(0, 6);
-  const recommendations = validReports.flatMap((report) => report.recommendations.map((recommendation) => ({ ...recommendation, report }))).filter((item) => item.priority === "critical" || item.priority === "high").slice(0, 6);
-  const chartData = validReports
-    .slice()
-    .reverse()
-    .map((report) => {
-      const summary = report.channelSummaries.find((item) => item.channel === "consolidated");
-      return {
-        period: dateLabel(report.periodStart, report.periodEnd).replace("/2026", ""),
-        investimento: summary?.investment ?? 0,
-        oportunidades: summary?.opportunities ?? 0,
-        alcance: summary?.reach ?? 0
-      };
-    });
-
-  if (!reports.length) {
-    return (
-      <EmptyState
-        title="Ainda não há relatórios analisados."
-        description="Importe um relatório agregado de marketing para preencher o dashboard, gerar alertas e criar recomendações."
-        href="/reports/new"
-        actionLabel="Importar primeiro relatório"
-      />
-    );
-  }
+function MetricCard({ label, value, detail }: { label: string; value: string | number; detail?: string }) {
+  return (
+    <div className="metric-card">
+      <p className="text-sm text-slate-500">{label}</p>
+      <p className="mt-2 text-2xl font-semibold">{value}</p>
+      {detail ? <p className="mt-1 text-xs text-slate-500">{detail}</p> : null}
+    </div>
+  );
+}
+export default function DashboardPage() {
+  const plan = getWeeklyContentPlan();
+  const analysis = analyzeLocalMarketingDemoData();
+  const primaryChannels = plan.channels.slice(0, 7);
 
   return (
     <div className="space-y-6">
       <section className="panel">
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h2 className="text-lg font-semibold">Score executivo mais recente</h2>
-            {executiveDiagnosis && latest ? (
-              <>
-                <p className="mt-1 text-sm text-slate-500">{latest.title} â€¢ {dateLabel(latest.periodStart, latest.periodEnd)}</p>
-                <p className="mt-2 max-w-3xl text-sm text-slate-600">{executiveDiagnosis.summary}</p>
-              </>
-            ) : (
-              <p className="mt-2 max-w-3xl text-sm text-slate-500">Nenhum relatÃ³rio vÃ¡lido disponÃ­vel para score executivo. PerÃ­odos anÃ´malos ficam apenas como contexto histÃ³rico.</p>
-            )}
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium text-ocean">App interno local</p>
+            <h2 className="mt-1 text-3xl font-semibold tracking-normal">Dashboard de Marketing - Dr. Cadu</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">{analysis.executiveSummary}</p>
           </div>
-          {executiveDiagnosis && latest ? (
-            <div className="rounded-lg border border-slate-100 bg-slate-50 px-4 py-3 md:text-right">
-              <p className="text-xs font-semibold uppercase tracking-normal text-slate-500">Score do relatÃ³rio</p>
-              <p className="mt-1 text-2xl font-semibold text-ink">{executiveDiagnosis.healthScore}</p>
-              <span className={`badge mt-2 ${executiveStatusClasses[executiveDiagnosis.status]}`}>
-                {executiveStatusLabels[executiveDiagnosis.status]}
-              </span>
-              <Link href={`/reports/${latest.id}`} className="mt-3 block text-sm font-semibold text-ocean hover:underline">
-                Ver relatÃ³rio
-              </Link>
-            </div>
-          ) : null}
+          <span className="w-fit rounded-md bg-green-50 px-4 py-2 text-sm font-semibold text-leaf">{analysis.statusBadge}</span>
+        </div>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <Link href="/plan" className="rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Abrir plano semanal</Link>
+          <Link href="/content" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Content Studio</Link>
+          <Link href="/prompts" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Prompts copiaveis</Link>
+          <Link href="/export" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Exportar semana</Link>
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard label="Investimento total" value={formatCurrency(consolidated?.investment)} />
-        <MetricCard label="Oportunidades comerciais" value={formatNumber(consolidated?.opportunities)} />
-        <MetricCard label="CPL médio Meta" value={formatCurrency(meta?.cpl)} tone={(meta?.cpl ?? 0) > benchmarks.metaCplAttention ? "bad" : "default"} />
-        <MetricCard label="Alcance" value={formatNumber(consolidated?.reach)} />
-        <MetricCard label="Impressões" value={formatNumber(consolidated?.impressions)} />
-        <MetricCard label="Crescimento de audiência" value={formatNumber(consolidated?.newFollowers)} />
-        <MetricCard label="Conversões Google" value={formatNumber(google?.conversions)} />
-        <MetricCard label="CPA Google" value={formatCurrency(google?.cpa)} tone={(google?.cpa ?? 0) > benchmarks.googleCpaCritical ? "bad" : "default"} />
+      <section className="grid gap-3 md:grid-cols-3 lg:grid-cols-6">
+        <MetricCard label="Dias planejados" value={plan.days.length} detail="semana completa" />
+        <MetricCard label="Pacotes de conteudo" value={plan.packages.length} detail="1 por dia" />
+        <MetricCard label="Stories sugeridos" value={plan.days.reduce((total, day) => total + day.stories.length, 0)} detail="5 a 10 por dia" />
+        <MetricCard label="Videos curtos" value={plan.packages.filter((item) => item.derivedChannels.includes("TikTok") || item.derivedChannels.includes("YouTube Shorts")).length} detail="Reels/TikTok/Shorts" />
+        <MetricCard label="Video longo" value={plan.packages.filter((item) => item.primaryChannel === "YouTube video longo").length} detail="YouTube" />
+        <MetricCard label="Canais" value={primaryChannels.length} detail="sem integracao real" />
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
         <div className="panel lg:col-span-2">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg font-semibold">Evolução por período</h2>
-              <p className="text-sm text-slate-500">Dezembro/2025 é excluído automaticamente das médias históricas.</p>
+          <p className="text-sm font-medium text-ocean">Diagnostico executivo</p>
+          <h3 className="mt-1 text-lg font-semibold">O que aconteceu e o que fazer</h3>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div className="rounded-md bg-slate-50 p-3">
+              <p className="text-sm font-semibold">Melhorou</p>
+              <ul className="mt-2 space-y-1 text-sm text-slate-600">{analysis.whatImproved.map((item) => <li key={item}>- {item}</li>)}</ul>
+            </div>
+            <div className="rounded-md bg-slate-50 p-3">
+              <p className="text-sm font-semibold">Precisa atencao</p>
+              <ul className="mt-2 space-y-1 text-sm text-slate-600">{analysis.needsAttention.map((item) => <li key={item}>- {item}</li>)}</ul>
+            </div>
+            <div className="rounded-md bg-slate-50 p-3">
+              <p className="text-sm font-semibold">Cadencia x qualidade</p>
+              <p className="mt-2 text-sm text-slate-600">{analysis.cadenceQuality.explanation}</p>
+            </div>
+            <div className="rounded-md bg-slate-50 p-3">
+              <p className="text-sm font-semibold">Inconclusivo</p>
+              <ul className="mt-2 space-y-1 text-sm text-slate-600">{analysis.inconclusive.map((item) => <li key={item}>- {item}</li>)}</ul>
             </div>
           </div>
-          <TrendChart data={chartData} />
         </div>
 
-        <div className="panel">
-          <h2 className="text-lg font-semibold">Alertas críticos</h2>
-          <div className="mt-4 space-y-3">
-            {criticalAlerts.length ? (
-              criticalAlerts.map((alert) => (
-                <div key={alert.id} className="rounded-md border border-slate-100 p-3">
-                  <PriorityBadge value={alert.severity} />
-                  <p className="mt-2 text-sm font-medium">{alert.description}</p>
-                  <p className="text-xs text-slate-500">{alert.report.title}</p>
-                </div>
-              ))
-            ) : (
-              <p className="text-sm text-slate-500">Nenhuma inconsistência crítica nos relatórios atuais.</p>
-            )}
-          </div>
-        </div>
+        <aside className="panel">
+          <p className="text-sm font-medium text-ocean">Perfil editorial</p>
+          <h3 className="mt-1 text-lg font-semibold">Tom do Dr. Cadu</h3>
+          <ul className="mt-3 space-y-2 text-sm text-slate-600">
+            {DR_CADU_EDITORIAL_PROFILE.voiceTone.slice(0, 6).map((item) => <li key={item}>- {item}</li>)}
+          </ul>
+        </aside>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-3">
         <div className="panel">
-          <h2 className="text-lg font-semibold">Criativos para escalar</h2>
-          <div className="mt-4 space-y-3">
-            {scaleCreatives.length ? scaleCreatives.map((creative) => (
-              <div key={creative.id} className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
-                <div>
-                  <p className="font-medium">{creative.name}</p>
-                  <p className="text-sm text-slate-500">{formatNumber(creative.leads ?? creative.conversations)} leads • {formatCurrency(creative.cpl)}</p>
-                </div>
-                <DiagnosisBadge value={creative.diagnosis} />
+          <h3 className="text-lg font-semibold">Principais sinais</h3>
+          <div className="mt-3 space-y-3">
+            {analysis.signals.map((signal) => (
+              <div key={signal.title} className="rounded-md bg-slate-50 p-3">
+                <span className="badge bg-cyan-50 text-ocean">{signal.type}</span>
+                <p className="mt-2 text-sm font-semibold">{signal.title}</p>
+                <p className="mt-1 text-sm text-slate-600">{signal.detail}</p>
               </div>
-            )) : (
-              <p className="text-sm text-slate-500">Nenhum criativo com diagnóstico de escala ainda.</p>
-            )}
+            ))}
           </div>
         </div>
-
         <div className="panel">
-          <h2 className="text-lg font-semibold">Keywords vencedoras</h2>
-          <div className="mt-4 space-y-3">
-            {scaleKeywords.length ? scaleKeywords.map((keyword) => (
-              <div key={keyword.id} className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
-                <div>
-                  <p className="font-medium">{keyword.keyword}</p>
-                  <p className="text-sm text-slate-500">{formatNumber(keyword.conversions)} conversões • {formatCurrency(keyword.cpa)}</p>
-                </div>
-                <DiagnosisBadge value={keyword.diagnosis} />
+          <h3 className="text-lg font-semibold">Conteudos com maior potencial</h3>
+          <div className="mt-3 space-y-3">
+            {analysis.bestContent.map((item) => (
+              <div key={item.id} className="rounded-md bg-slate-50 p-3 text-sm">
+                <p className="font-semibold text-ink">{item.contentTitle}</p>
+                <p className="mt-1 text-slate-600">{item.channel} - score {item.internalScore}</p>
               </div>
-            )) : (
-              <p className="text-sm text-slate-500">Nenhuma keyword com diagnóstico de escala ainda.</p>
-            )}
+            ))}
           </div>
         </div>
-
         <div className="panel">
-          <h2 className="text-lg font-semibold">Recomendações da semana</h2>
-          <div className="mt-4 space-y-3">
-            {recommendations.length ? recommendations.map((recommendation) => (
-              <Link key={recommendation.id} href={`/reports/${recommendation.report.id}`} className="block rounded-md border border-slate-100 p-3 hover:bg-slate-50">
-                <PriorityBadge value={recommendation.priority} />
-                <p className="mt-2 font-medium">{recommendation.title}</p>
-                <p className="text-sm text-slate-500">{recommendation.recommendation}</p>
-              </Link>
-            )) : (
-              <p className="text-sm text-slate-500">Nenhuma recomendação de alta prioridade neste momento.</p>
-            )}
-          </div>
+          <h3 className="text-lg font-semibold">Oportunidades da semana</h3>
+          <ul className="mt-3 space-y-2 text-sm text-slate-600">
+            {analysis.recommendations.map((item) => <li key={item}>- {item}</li>)}
+          </ul>
         </div>
       </section>
 
       <section className="panel">
-        <h2 className="mb-4 text-lg font-semibold">Relatórios importados</h2>
-        <CompactReportTable reports={reports} />
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+          <div>
+            <p className="text-sm font-medium text-ocean">Plano da semana</p>
+            <h3 className="mt-1 text-lg font-semibold">Conteudos programados</h3>
+            <p className="mt-2 text-sm text-slate-500">Semana pronta para uso interno local, com execucao manual e revisao etica antes de publicacao real.</p>
+          </div>
+          <Link href="/plan" className="text-sm font-semibold text-ocean hover:underline">Ver planejamento completo</Link>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {plan.packages.map((item) => (
+            <Link key={item.id} href={`/content/${item.id}`} className="rounded-lg border border-slate-200 p-4 hover:bg-slate-50">
+              <div className="flex flex-wrap gap-2">
+                <span className="badge bg-slate-100 text-slate-700">{item.day}</span>
+                <span className="badge bg-cyan-50 text-ocean">{item.primaryChannel}</span>
+              </div>
+              <h4 className="mt-3 font-semibold">{item.title}</h4>
+              <p className="mt-2 text-sm text-slate-600">{item.objective}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-2">
+        <div className="panel">
+          <h3 className="text-lg font-semibold">Checklist de seguranca e etica</h3>
+          <ul className="mt-3 grid gap-2 text-sm text-slate-600 md:grid-cols-2">
+            {plan.safetyChecklist.map((item) => <li key={item}>- {item}</li>)}
+          </ul>
+        </div>
+        <div className="panel">
+          <h3 className="text-lg font-semibold">Atalhos operacionais</h3>
+          <div className="mt-3 grid gap-2 text-sm md:grid-cols-2">
+            {[
+              ["/weekly", "Central Semanal"],
+              ["/signals", "Sinais"],
+              ["/audit", "Auditoria"],
+              ["/calendar", "Calendario"],
+              ["/stories", "Stories"],
+              ["/data", "Adicionar/importar dados"]
+            ].map(([href, label]) => (
+              <Link key={href} href={href} className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">{label}</Link>
+            ))}
+          </div>
+        </div>
       </section>
     </div>
   );

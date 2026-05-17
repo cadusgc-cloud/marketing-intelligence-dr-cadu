@@ -42,6 +42,10 @@ npm run db:seed   # recria benchmarks e relatórios iniciais
 ## Escopo
 
 - `/` dashboard geral
+- `/plan` planejamento semanal completo para uso interno local
+- `/content/[id]` pacote completo de conteudo, legenda, stories, videos, prompts e checklist etico
+- `/prompts` biblioteca de prompts copiaveis para uso manual
+- `/export` exportacao local em Markdown, JSON e CSV
 - `/reports` lista de relatórios
 - `/reports/new` importação por texto colado
 - `/reports/[id]` detalhe analisado
@@ -72,6 +76,12 @@ O template funciona como checklist operacional: ajuda a coletar numeros consolid
 A tela `/data` inclui uma importacao assistida por CSV/TSV para dados copiados de planilha ou arquivo `.csv`. A tabela e convertida para linhas `campo: valor` antes de entrar no fluxo de previa e aplicacao manual.
 
 Essa etapa nao le `.xlsx` diretamente, nao conecta Google Sheets, nao usa tokens e nao salva dados automaticamente. Ela serve para acelerar o preenchimento com dados agregados ja revisados.
+
+## App interno de conteudo - uso local
+
+As rotas `/`, `/plan`, `/content/[id]`, `/prompts` e `/export` formam um fluxo local completo para revisar desempenho demo, planejar a semana, abrir pacotes de conteudo, copiar legendas/hashtags/prompts e exportar o planejamento.
+
+Essa camada usa apenas dados agregados ficticios e deterministica local. Ela nao integra redes sociais, nao chama API externa, nao publica automaticamente e nao usa dados de pacientes.
 
 ## v1.5 - Mapeamento manual de colunas CSV
 

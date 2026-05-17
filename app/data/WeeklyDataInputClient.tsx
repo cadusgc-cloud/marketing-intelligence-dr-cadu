@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ChangeEvent } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { WeeklyCollectionWorkspacePanel } from "@/app/data/WeeklyCollectionWorkspacePanel";
 import { WeeklyNextCollectionPlanPanel } from "@/app/data/WeeklyNextCollectionPlanPanel";
 import { saveWeeklyMarketingData, type SaveWeeklyMarketingDataState } from "@/app/data/actions";
 import { channelLabel } from "@/lib/decisionSignals";
@@ -13,6 +14,7 @@ import {
   type WeeklyCollectionSourceFieldReadiness,
   type WeeklyCollectionSourceReadiness
 } from "@/lib/weeklyCollectionReadiness";
+import { buildWeeklyCollectionWorkspace } from "@/lib/weeklyCollectionWorkspace";
 import { buildWeeklyNextCollectionPlan } from "@/lib/weeklyNextCollectionPlan";
 import {
   buildWeeklyCollectionTemplate,
@@ -157,6 +159,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const saveReadiness = useMemo(() => buildWeeklySaveReadinessReport(data), [data]);
   const collectionReadiness = useMemo(() => buildWeeklyCollectionReadinessBoard(data), [data]);
   const nextCollectionPlan = useMemo(() => buildWeeklyNextCollectionPlan(data, collectionReadiness), [data, collectionReadiness]);
+  const collectionWorkspace = useMemo(() => buildWeeklyCollectionWorkspace(nextCollectionPlan), [nextCollectionPlan]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
   const collectionTemplate = useMemo(() => buildWeeklyCollectionTemplate(), []);
   const collectionSections = useMemo(() => getWeeklyCollectionTemplateSections(), []);
@@ -290,6 +293,9 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         <WeeklySaveReadinessPanel report={saveReadiness} />
         <WeeklyCollectionReadinessBoardPanel board={collectionReadiness} />
         <WeeklyNextCollectionPlanPanel plan={nextCollectionPlan} />
+        <div className="mt-4">
+          <WeeklyCollectionWorkspacePanel workspace={collectionWorkspace} />
+        </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
           <button type="button" onClick={restoreMockData} className="rounded-md bg-slate-100 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200">

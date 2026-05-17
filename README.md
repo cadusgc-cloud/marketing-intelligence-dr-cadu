@@ -163,6 +163,12 @@ A tela `/data` agora permite copiar o pacote completo do plano de coleta da prox
 
 O pacote permanece manual, interno e baseado em metricas agregadas. Ele nao envia mensagens, nao conecta APIs, nao salva dados automaticamente e nao altera banco, campanha ou conteudo publicado.
 
+## v3.0 - Workspace local de coleta
+
+A tela `/data` e a rota `/data/collection-workspace` agora incluem um checklist local para acompanhar a coleta semanal. O usuario pode marcar itens como pendentes, coletados ou bloqueados, ver progresso e copiar um resumo de status.
+
+O progresso fica apenas no navegador via `localStorage` e armazena somente status de tarefa. Nao ha campo livre para nomes, DMs, conversas, prints, pacientes ou dados clinicos; o fluxo continua manual, interno e sem API externa.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

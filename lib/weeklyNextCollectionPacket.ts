@@ -90,6 +90,7 @@ export function buildWeeklyNextCollectionPacket(plan: WeeklyNextCollectionPlan):
     fullPacketText,
     nextRoutes: [
       { label: "Dados semanais", href: "/data", purpose: "Voltar ao formulario e revisar o plano calculado pelos dados atuais." },
+      { label: "Workspace local", href: "/data/collection-workspace", purpose: "Acompanhar status da coleta no navegador." },
       { label: "Guia de coleta", href: "/data/collection-guide", purpose: "Conferir fonte manual de cada metrica." },
       { label: "Pacote de coleta", href: "/data/collection-packet", purpose: "Copiar template geral de coleta semanal." },
       { label: "Weekly Command Center", href: "/weekly", purpose: "Ler diagnostico apenas depois de salvar a semana." }

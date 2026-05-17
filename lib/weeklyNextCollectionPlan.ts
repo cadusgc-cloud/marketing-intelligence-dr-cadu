@@ -71,6 +71,7 @@ export function buildWeeklyNextCollectionPlan(
     weeklyCloseRoutine: buildWeeklyCloseRoutine(readiness),
     doNotDo: coreDoNotDo,
     nextRoutes: [
+      { label: "Workspace local", href: "/data/collection-workspace", purpose: "Acompanhar status local da coleta." },
       { label: "Plano copiavel", href: "/data/next-collection-plan", purpose: "Abrir o pacote copiavel da proxima coleta." },
       { label: "Pacote copiavel", href: "/data/collection-packet", purpose: "Copiar checklist, template, CSV e handoff manual." },
       { label: "Guia de coleta", href: "/data/collection-guide", purpose: "Conferir fonte exata de cada metrica agregada." },

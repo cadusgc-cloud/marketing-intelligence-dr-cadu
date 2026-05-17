@@ -199,6 +199,12 @@ A tela `/data` e a rota `/data/source-evidence` agora mostram um mapa copiavel d
 
 O mapa mostra status da origem, valores agregados presentes, lacunas, perguntas de revisao e guardrails antes do salvamento. Ele nao busca dados automaticamente, nao conecta APIs, nao cria token, nao altera banco e nao usa dados pessoais.
 
+## v3.6 - Conferencia final antes de salvar
+
+A tela `/data` agora mostra um gate final antes do botao de salvamento efetivo. Ele cruza validacao do formulario, mapa de origem, prontidao por fonte, privacidade e revisao humana.
+
+Quando ha bloqueio de formulario, fonte ou privacidade, o botao de salvar fica bloqueado pelo gate final. Quando ha apenas lacunas operacionais, o salvamento continua manualmente possivel, mas a leitura posterior deve ser tratada como limitada e revisada por uma pessoa.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

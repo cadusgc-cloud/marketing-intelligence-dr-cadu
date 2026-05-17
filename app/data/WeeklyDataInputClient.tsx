@@ -4,6 +4,7 @@ import { useMemo, useState, type ChangeEvent } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { WeeklyCollectionWorkspacePanel } from "@/app/data/WeeklyCollectionWorkspacePanel";
 import { WeeklyNextCollectionPlanPanel } from "@/app/data/WeeklyNextCollectionPlanPanel";
+import { WeeklySaveConfirmationGatePanel } from "@/app/data/WeeklySaveConfirmationGatePanel";
 import { WeeklySourceEvidenceLedgerPanel } from "@/app/data/WeeklySourceEvidenceLedgerPanel";
 import { saveWeeklyMarketingData, type SaveWeeklyMarketingDataState } from "@/app/data/actions";
 import { channelLabel } from "@/lib/decisionSignals";
@@ -17,6 +18,7 @@ import {
 } from "@/lib/weeklyCollectionReadiness";
 import { buildWeeklyCollectionWorkspace } from "@/lib/weeklyCollectionWorkspace";
 import { buildWeeklyNextCollectionPlan } from "@/lib/weeklyNextCollectionPlan";
+import { buildWeeklySaveConfirmationGate } from "@/lib/weeklySaveConfirmationGate";
 import { buildWeeklySourceEvidenceLedger } from "@/lib/weeklySourceEvidenceLedger";
 import {
   buildWeeklyCollectionTemplate,
@@ -124,12 +126,12 @@ function NumberInput({ field, data, onChange }: { field: NumberField; data: Week
   );
 }
 
-function SubmitButton({ blocked }: { blocked: boolean }) {
+function SubmitButton({ blocked, label }: { blocked: boolean; label: string }) {
   const { pending } = useFormStatus();
 
   return (
     <button type="submit" disabled={pending || blocked} className="rounded-md bg-ocean px-3 py-2 text-sm font-semibold text-white hover:bg-cyan-800 disabled:cursor-not-allowed disabled:opacity-70">
-      {pending ? "Salvando..." : blocked ? "Complete essenciais" : "Salvar semana"}
+      {pending ? "Salvando..." : label}
     </button>
   );
 }
@@ -161,6 +163,10 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const saveReadiness = useMemo(() => buildWeeklySaveReadinessReport(data), [data]);
   const collectionReadiness = useMemo(() => buildWeeklyCollectionReadinessBoard(data), [data]);
   const sourceEvidenceLedger = useMemo(() => buildWeeklySourceEvidenceLedger(data), [data]);
+  const saveConfirmationGate = useMemo(
+    () => buildWeeklySaveConfirmationGate({ saveReadiness, collectionReadiness, sourceEvidenceLedger }),
+    [saveReadiness, collectionReadiness, sourceEvidenceLedger]
+  );
   const nextCollectionPlan = useMemo(() => buildWeeklyNextCollectionPlan(data, collectionReadiness), [data, collectionReadiness]);
   const collectionWorkspace = useMemo(() => buildWeeklyCollectionWorkspace(nextCollectionPlan), [nextCollectionPlan]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
@@ -289,10 +295,11 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
             <h2 className="mt-1 text-2xl font-semibold">Dados semanais</h2>
             <p className="mt-2 text-sm text-slate-500">Entrada leve de metricas agregadas para alimentar a auditoria, os sinais de decisao e a Central Semanal.</p>
           </div>
-          <SubmitButton blocked={!saveReadiness.canSave} />
+          <SubmitButton blocked={!saveConfirmationGate.canSubmit} label={saveConfirmationGate.submitLabel} />
         </div>
 
         <StatusMessage source={source} dirty={dirty} status={saveState.status} message={saveState.message} errors={saveState.errors} />
+        <WeeklySaveConfirmationGatePanel gate={saveConfirmationGate} />
         <WeeklySaveReadinessPanel report={saveReadiness} />
         <WeeklyCollectionReadinessBoardPanel board={collectionReadiness} />
         <div className="mt-4">
@@ -620,7 +627,7 @@ function WeeklySaveReadinessItemView({ item }: { item: WeeklySaveReadinessItem }
 
 function WeeklyCollectionReadinessBoardPanel({ board }: { board: WeeklyCollectionReadinessBoard }) {
   return (
-    <div className={`mt-4 rounded-md border p-3 text-sm ${collectionReadinessPanelClass(board.status)}`}>
+    <div id="weekly-collection-readiness" className={`mt-4 scroll-mt-4 rounded-md border p-3 text-sm ${collectionReadinessPanelClass(board.status)}`}>
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="font-semibold">Prontidao da coleta por fonte</p>

@@ -151,6 +151,12 @@ A tela `/data` agora mostra uma leitura de prontidao por fonte antes de salvar: 
 
 A camada classifica cada fonte como pronta, revisar, sem coleta ou bloqueada, calcula score de coleta e lista proximas acoes manuais. Ela nao busca dados automaticamente, nao conecta APIs, nao envia mensagens e mantem Dezembro/2025 fora de benchmarks normais.
 
+## v2.8 - Plano de coleta da proxima semana
+
+A tela `/data` tambem transforma a prontidao por fonte em um plano de coleta para a semana seguinte. O painel indica tarefas priorizadas, responsavel sugerido, cadencia, evidencias agregadas, criterios de aceite, rotina diaria, fechamento semanal e um handoff interno copiavel.
+
+O plano continua interno e manual: nao conecta APIs, nao envia mensagens, nao publica conteudo, nao altera campanhas e nao usa dados pessoais. Ele existe para orientar a coleta agregada antes de salvar a proxima semana e ler o Weekly Command Center.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

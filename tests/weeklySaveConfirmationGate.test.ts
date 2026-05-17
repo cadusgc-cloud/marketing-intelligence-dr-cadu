@@ -49,7 +49,11 @@ describe("Weekly Save Confirmation Gate", () => {
     expect(gate.canSubmit).toBe(true);
     expect(gate.submitLabel).toBe("Salvar semana");
     expect(gate.checks.every((check) => check.status === "ok")).toBe(true);
+    expect(gate.focus.status).toBe("ok");
+    expect(gate.focus.targetHref).toBe("#weekly-save-top");
+    expect(gate.focus.action).toContain("/weekly");
     expect(gate.copyMarkdown).toContain("Conferencia final antes de salvar");
+    expect(gate.copyMarkdown).toContain("Primeiro foco");
   });
 
   it("bloqueia quando campos essenciais do formulario estao ausentes", () => {
@@ -60,6 +64,10 @@ describe("Weekly Save Confirmation Gate", () => {
     expect(gate.canSubmit).toBe(false);
     expect(gate.submitLabel).toBe("Resolver bloqueio");
     expect(gate.checks.find((check) => check.id === "form-readiness")?.status).toBe("blocked");
+    expect(gate.focus.status).toBe("blocked");
+    expect(gate.focus.targetHref).toBe("#weekly-save-readiness");
+    expect(gate.focus.title).toContain("Formulario");
+    expect(gate.focus.action).toContain("rotulo da semana");
   });
 
   it("bloqueia quando o mapa de origem indica risco de privacidade", () => {
@@ -69,6 +77,9 @@ describe("Weekly Save Confirmation Gate", () => {
     expect(gate.canSubmit).toBe(false);
     expect(gate.checks.find((check) => check.id === "source-evidence")?.status).toBe("blocked");
     expect(gate.checks.find((check) => check.id === "privacy-safety")?.status).toBe("blocked");
+    expect(gate.focus.status).toBe("blocked");
+    expect(gate.focus.targetHref).toBe("#weekly-source-evidence-ledger");
+    expect(gate.focus.action).toContain("Remover");
   });
 
   it("permite salvar com cautela quando ha lacunas operacionais nao bloqueadoras", () => {
@@ -87,6 +98,9 @@ describe("Weekly Save Confirmation Gate", () => {
     expect(gate.canSubmit).toBe(true);
     expect(gate.summary).toContain("cautela");
     expect(gate.nextActions.join(" ")).toContain("leitura limitada");
+    expect(gate.focus.status).toBe("review");
+    expect(gate.focus.targetHref).toBe("#weekly-save-readiness");
+    expect(gate.focus.action).toMatch(/Stories|Funil|revisar/i);
   });
 
   it("preserva guardrails de seguranca e ausencia de automacao externa", () => {
@@ -104,6 +118,7 @@ describe("Weekly Save Confirmation Gate", () => {
     const dataClient = readFileSync(path.join(process.cwd(), "app", "data", "WeeklyDataInputClient.tsx"), "utf8");
     const panel = readFileSync(path.join(process.cwd(), "app", "data", "WeeklySaveConfirmationGatePanel.tsx"), "utf8");
     const docs = readFileSync(path.join(process.cwd(), "docs", "WEEKLY_SAVE_CONFIRMATION_GATE_V3_6.md"), "utf8");
+    const focusDocs = readFileSync(path.join(process.cwd(), "docs", "WEEKLY_SAVE_CONFIRMATION_FOCUS_V3_7.md"), "utf8");
     const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
 
     expect(dataClient).toContain("buildWeeklySaveConfirmationGate");
@@ -111,8 +126,12 @@ describe("Weekly Save Confirmation Gate", () => {
     expect(dataClient).toContain("blocked={!saveConfirmationGate.canSubmit}");
     expect(dataClient).toContain("id=\"weekly-collection-readiness\"");
     expect(panel).toContain("weekly-save-confirmation-gate");
+    expect(panel).toContain("Gate final v3.7");
+    expect(panel).toContain("Primeiro foco");
+    expect(panel).toContain("Ir para foco");
     expect(panel).toContain("Copiar conferencia");
     expect(`${docs}\n${readme}`.toLocaleLowerCase("pt-BR")).toContain("v3.6");
-    expect(`${docs}\n${readme}`.toLocaleLowerCase("pt-BR")).toContain("conferencia final antes de salvar");
+    expect(`${focusDocs}\n${readme}`.toLocaleLowerCase("pt-BR")).toContain("v3.7");
+    expect(`${focusDocs}\n${readme}`.toLocaleLowerCase("pt-BR")).toContain("primeiro foco");
   });
 });

@@ -205,6 +205,12 @@ A tela `/data` agora mostra um gate final antes do botao de salvamento efetivo. 
 
 Quando ha bloqueio de formulario, fonte ou privacidade, o botao de salvar fica bloqueado pelo gate final. Quando ha apenas lacunas operacionais, o salvamento continua manualmente possivel, mas a leitura posterior deve ser tratada como limitada e revisada por uma pessoa.
 
+## v3.7 - Primeiro foco do gate final
+
+O gate final em `/data` agora destaca um "Primeiro foco" acionavel antes da grade de checks. Ele aponta para o primeiro bloqueio ou revisao relevante, mostra a area sugerida, o motivo e uma acao pratica para resolver antes do salvamento manual.
+
+Quando todos os checks estao ok, o foco orienta salvar a semana manualmente e abrir `/weekly` para revisar diagnostico, sinais e plano. A camada continua deterministica, interna, sem API externa, sem envio automatico, sem alteracao de banco e sem dados pessoais.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

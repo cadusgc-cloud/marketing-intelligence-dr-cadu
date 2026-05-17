@@ -55,6 +55,6 @@ git diff --check
 
 ## Proximas melhorias possiveis
 
-- Destacar automaticamente o primeiro check bloqueado.
+- Ampliar o foco automatico para impressao local e revisao posterior.
 - Criar impressao local da conferencia final.
 - Exibir uma revisao compacta depois que a semana for salva.

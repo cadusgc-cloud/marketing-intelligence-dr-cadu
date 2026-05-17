@@ -14,6 +14,15 @@ export type WeeklySaveConfirmationCheck = {
   targetHref: string;
 };
 
+export type WeeklySaveConfirmationFocus = {
+  status: WeeklySaveConfirmationCheckStatus;
+  title: string;
+  detail: string;
+  targetLabel: string;
+  targetHref: string;
+  action: string;
+};
+
 export type WeeklySaveConfirmationGate = {
   id: string;
   title: string;
@@ -23,6 +32,7 @@ export type WeeklySaveConfirmationGate = {
   submitLabel: string;
   summary: string;
   checks: WeeklySaveConfirmationCheck[];
+  focus: WeeklySaveConfirmationFocus;
   nextActions: string[];
   guardrails: string[];
   copyMarkdown: string;
@@ -46,6 +56,7 @@ const guardrails = [
 export function buildWeeklySaveConfirmationGate(input: BuildWeeklySaveConfirmationGateInput): WeeklySaveConfirmationGate {
   const status = decideStatus(input);
   const checks = buildChecks(input);
+  const focus = buildFocus(checks, input);
   const gate: Omit<WeeklySaveConfirmationGate, "copyMarkdown"> = {
     id: `weekly-save-confirmation-${input.sourceEvidenceLedger.id}`,
     title: "Conferencia final antes de salvar",
@@ -55,6 +66,7 @@ export function buildWeeklySaveConfirmationGate(input: BuildWeeklySaveConfirmati
     submitLabel: status === "blocked" ? "Resolver bloqueio" : "Salvar semana",
     summary: buildSummary(status, input),
     checks,
+    focus,
     nextActions: buildNextActions(status, input),
     guardrails
   };
@@ -174,6 +186,63 @@ function buildNextActions(status: WeeklySaveConfirmationStatus, input: BuildWeek
   ]);
 }
 
+function buildFocus(checks: WeeklySaveConfirmationCheck[], input: BuildWeeklySaveConfirmationGateInput): WeeklySaveConfirmationFocus {
+  const firstBlocked = checks.find((checkItem) => checkItem.status === "blocked");
+  if (firstBlocked) {
+    return focus(
+      "blocked",
+      `Resolver ${firstBlocked.label}`,
+      firstBlocked.detail,
+      firstBlocked.label,
+      firstBlocked.targetHref,
+      firstFocusAction(firstBlocked.id, input)
+    );
+  }
+
+  const firstReview = checks.find((checkItem) => checkItem.status === "review");
+  if (firstReview) {
+    return focus(
+      "review",
+      `Revisar ${firstReview.label}`,
+      firstReview.detail,
+      firstReview.label,
+      firstReview.targetHref,
+      firstFocusAction(firstReview.id, input)
+    );
+  }
+
+  return focus(
+    "ok",
+    "Salvar e revisar leitura semanal",
+    "Todos os checks do gate final estao adequados para salvamento manual.",
+    "Botao Salvar semana",
+    "#weekly-save-top",
+    "Salvar a semana manualmente e abrir /weekly para revisar diagnostico, sinais e plano."
+  );
+}
+
+function firstFocusAction(checkId: string, input: BuildWeeklySaveConfirmationGateInput): string {
+  if (checkId === "form-readiness") {
+    return input.saveReadiness.blockers[0] ?? input.saveReadiness.reviewNotes[0] ?? "Abrir a validacao do formulario e revisar campos essenciais.";
+  }
+
+  if (checkId === "source-evidence") {
+    const source = input.sourceEvidenceLedger.sources.find((item) => item.status === "blocked" || item.status === "missing" || item.status === "needs_review");
+    return source ? `${source.title}: ${source.nextAction}` : "Abrir o mapa de origem e revisar fontes, lacunas e evidencias agregadas.";
+  }
+
+  if (checkId === "collection-readiness") {
+    return input.collectionReadiness.priorityActions[0] ?? "Abrir prontidao por fonte e revisar a primeira acao de coleta.";
+  }
+
+  if (checkId === "privacy-safety") {
+    const source = input.sourceEvidenceLedger.sources.find((item) => item.status === "blocked");
+    return source ? `${source.title}: remover dado sensivel ou identificavel antes de salvar.` : "Revisar privacidade antes de qualquer salvamento.";
+  }
+
+  return "Fazer revisao humana antes de salvar ou interpretar a semana.";
+}
+
 function buildGateMarkdown(gate: Omit<WeeklySaveConfirmationGate, "copyMarkdown">): string {
   return [
     `# ${gate.title}`,
@@ -185,6 +254,13 @@ function buildGateMarkdown(gate: Omit<WeeklySaveConfirmationGate, "copyMarkdown"
     "## Checks",
     "",
     ...gate.checks.map((checkItem) => `- [${checkStatusLabel(checkItem.status)}] ${checkItem.label}: ${checkItem.detail}`),
+    "",
+    "## Primeiro foco",
+    "",
+    `- [${checkStatusLabel(gate.focus.status)}] ${gate.focus.title}`,
+    `- Area: ${gate.focus.targetLabel}`,
+    `- Acao: ${gate.focus.action}`,
+    `- Detalhe: ${gate.focus.detail}`,
     "",
     "## Proximas acoes",
     "",
@@ -205,6 +281,17 @@ function check(
   targetHref: string
 ): WeeklySaveConfirmationCheck {
   return { id, label, status, detail, targetHref };
+}
+
+function focus(
+  status: WeeklySaveConfirmationCheckStatus,
+  title: string,
+  detail: string,
+  targetLabel: string,
+  targetHref: string,
+  action: string
+): WeeklySaveConfirmationFocus {
+  return { status, title, detail, targetLabel, targetHref, action };
 }
 
 function statusLabel(status: WeeklySaveConfirmationStatus): string {

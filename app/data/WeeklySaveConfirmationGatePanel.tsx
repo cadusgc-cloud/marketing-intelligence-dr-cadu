@@ -25,7 +25,7 @@ export function WeeklySaveConfirmationGatePanel({ gate }: { gate: WeeklySaveConf
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs font-semibold uppercase text-slate-500">Gate final v3.6</p>
+            <p className="text-xs font-semibold uppercase text-slate-500">Gate final v3.7</p>
             <span className={`badge ${badgeClass(gate.severity)}`}>{statusLabel(gate.status)}</span>
           </div>
           <h3 className="mt-2 text-lg font-semibold text-slate-900">{gate.title}</h3>
@@ -34,6 +34,24 @@ export function WeeklySaveConfirmationGatePanel({ gate }: { gate: WeeklySaveConf
         <button type="button" onClick={copyGate} className="w-fit rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700">
           Copiar conferencia
         </button>
+      </div>
+
+      <div className="mt-4 rounded-md bg-white/80 p-3 text-sm text-slate-700">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs font-semibold uppercase text-slate-500">Primeiro foco</p>
+              <span className={`badge ${checkBadgeClass(gate.focus.status)}`}>{checkStatusLabel(gate.focus.status)}</span>
+            </div>
+            <h4 className="mt-2 font-semibold text-slate-900">{gate.focus.title}</h4>
+            <p className="mt-1 text-xs leading-5 text-slate-600">{gate.focus.detail}</p>
+            <p className="mt-2 text-xs font-medium text-slate-500">Area sugerida: {gate.focus.targetLabel}</p>
+          </div>
+          <a href={gate.focus.targetHref} className="w-fit rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700">
+            Ir para foco
+          </a>
+        </div>
+        <p className="mt-3 rounded-md bg-slate-50 p-2 text-xs leading-5 text-slate-600">{gate.focus.action}</p>
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-5">

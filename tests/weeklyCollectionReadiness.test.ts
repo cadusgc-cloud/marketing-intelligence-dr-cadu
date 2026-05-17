@@ -122,6 +122,7 @@ describe("Weekly Collection Readiness", () => {
     expect(dataClient).toContain("Prontidao da coleta por fonte");
     expect(readiness).toContain("buildWeeklyCollectionReadinessBoard");
     expect(readiness).toContain("/data/collection-packet");
+    expect(readiness).toContain("/data/source-evidence");
     expect(readiness).toContain("Dezembro/2025");
   });
 });

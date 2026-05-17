@@ -84,6 +84,7 @@ export function buildWeeklyCollectionWorkspace(plan: WeeklyNextCollectionPlan): 
       { label: "Dados semanais", href: "/data", purpose: "Preencher metricas agregadas depois da coleta." },
       { label: "Plano copiavel", href: "/data/next-collection-plan", purpose: "Abrir o pacote do plano de coleta." },
       { label: "Guia de coleta", href: "/data/collection-guide", purpose: "Conferir a fonte manual de cada metrica." },
+      { label: "Mapa de origem", href: "/data/source-evidence", purpose: "Conferir origem e lacunas dos numeros agregados." },
       { label: "Trilha de revisao", href: "/data/manual-review-trail", purpose: "Copiar registro interno de revisao antes de salvar." },
       { label: "Weekly Command Center", href: "/weekly", purpose: "Ler a semana depois de salvar." }
     ]

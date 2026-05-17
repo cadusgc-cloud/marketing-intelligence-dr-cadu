@@ -61,6 +61,7 @@ export function buildWeeklyDataCollectionGuide(): WeeklyDataCollectionGuide {
     ],
     routeFlow: [
       { label: "Guia de coleta", href: "/data/collection-guide", purpose: "Entender fonte, caminho manual e regra de privacidade de cada dado." },
+      { label: "Mapa de origem", href: "/data/source-evidence", purpose: "Conferir origem, lacunas e evidencias agregadas antes de salvar." },
       { label: "Pacote copiavel", href: "/data/collection-packet", purpose: "Copiar checklist, template campo: valor, CSV e handoff interno." },
       { label: "Dados semanais", href: "/data", purpose: "Preencher, importar, revisar e salvar os numeros agregados." },
       { label: "Weekly Command Center", href: "/weekly", purpose: "Ler diagnostico, sinais, metricas e prioridades." },

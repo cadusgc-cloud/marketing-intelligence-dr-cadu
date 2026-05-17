@@ -4,6 +4,7 @@ import { useMemo, useState, type ChangeEvent } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { WeeklyCollectionWorkspacePanel } from "@/app/data/WeeklyCollectionWorkspacePanel";
 import { WeeklyNextCollectionPlanPanel } from "@/app/data/WeeklyNextCollectionPlanPanel";
+import { WeeklySourceEvidenceLedgerPanel } from "@/app/data/WeeklySourceEvidenceLedgerPanel";
 import { saveWeeklyMarketingData, type SaveWeeklyMarketingDataState } from "@/app/data/actions";
 import { channelLabel } from "@/lib/decisionSignals";
 import { applyWeeklyAssistedImport, parseWeeklyAssistedImport, type WeeklyAssistedImportResult } from "@/lib/weeklyAssistedImport";
@@ -16,6 +17,7 @@ import {
 } from "@/lib/weeklyCollectionReadiness";
 import { buildWeeklyCollectionWorkspace } from "@/lib/weeklyCollectionWorkspace";
 import { buildWeeklyNextCollectionPlan } from "@/lib/weeklyNextCollectionPlan";
+import { buildWeeklySourceEvidenceLedger } from "@/lib/weeklySourceEvidenceLedger";
 import {
   buildWeeklyCollectionTemplate,
   getWeeklyCollectionSafetyChecklist,
@@ -158,6 +160,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
   const validation = useMemo(() => validateWeeklyMarketingData(data), [data]);
   const saveReadiness = useMemo(() => buildWeeklySaveReadinessReport(data), [data]);
   const collectionReadiness = useMemo(() => buildWeeklyCollectionReadinessBoard(data), [data]);
+  const sourceEvidenceLedger = useMemo(() => buildWeeklySourceEvidenceLedger(data), [data]);
   const nextCollectionPlan = useMemo(() => buildWeeklyNextCollectionPlan(data, collectionReadiness), [data, collectionReadiness]);
   const collectionWorkspace = useMemo(() => buildWeeklyCollectionWorkspace(nextCollectionPlan), [nextCollectionPlan]);
   const decisionInputs = useMemo(() => convertWeeklyDataToDecisionInputs(data), [data]);
@@ -292,6 +295,9 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         <StatusMessage source={source} dirty={dirty} status={saveState.status} message={saveState.message} errors={saveState.errors} />
         <WeeklySaveReadinessPanel report={saveReadiness} />
         <WeeklyCollectionReadinessBoardPanel board={collectionReadiness} />
+        <div className="mt-4">
+          <WeeklySourceEvidenceLedgerPanel ledger={sourceEvidenceLedger} />
+        </div>
         <WeeklyNextCollectionPlanPanel plan={nextCollectionPlan} />
         <div className="mt-4">
           <WeeklyCollectionWorkspacePanel workspace={collectionWorkspace} saveReadiness={saveReadiness} collectionReadiness={collectionReadiness} />

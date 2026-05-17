@@ -71,6 +71,7 @@ export function buildWeeklyCollectionReadinessBoard(data: WeeklyMarketingData): 
     nextRoutes: [
       { label: "Pacote copiavel", href: "/data/collection-packet", purpose: "Copiar template, CSV e handoff interno." },
       { label: "Guia de coleta", href: "/data/collection-guide", purpose: "Conferir fonte e caminho manual de cada dado." },
+      { label: "Mapa de origem", href: "/data/source-evidence", purpose: "Conferir evidencias agregadas por fonte antes de salvar." },
       { label: "Dados semanais", href: "/data", purpose: "Preencher e salvar somente depois da revisao." },
       { label: "Weekly Command Center", href: "/weekly", purpose: "Ler a semana apenas depois de salvar os dados." }
     ].filter((route) => guide.routeFlow.some((item) => item.href === route.href) || route.href === "/data/collection-packet")

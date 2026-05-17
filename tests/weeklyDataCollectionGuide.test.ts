@@ -22,7 +22,7 @@ describe("Weekly Data Collection Guide", () => {
       "execution-context"
     ]);
     expect(guide.routeFlow.map((route) => route.href)).toEqual(
-      expect.arrayContaining(["/data/collection-packet", "/data", "/weekly", "/weekly/execution", "/weekly/execution/packet"])
+      expect.arrayContaining(["/data/source-evidence", "/data/collection-packet", "/data", "/weekly", "/weekly/execution", "/weekly/execution/packet"])
     );
   });
 
@@ -79,10 +79,12 @@ describe("Weekly Data Collection Guide", () => {
     const guidePage = readFileSync(path.join(process.cwd(), "app", "data", "collection-guide", "page.tsx"), "utf8");
 
     expect(dataPage).toContain("/data/collection-guide");
+    expect(dataPage).toContain("/data/source-evidence");
     expect(dataPage).toContain("/data/collection-packet");
     expect(dataPage).toContain("Abrir guia de coleta");
     expect(guidePage).toContain("buildWeeklyDataCollectionGuide");
     expect(guidePage).toContain("Pacote copiavel");
+    expect(guidePage).toContain("Mapa de origem");
     expect(guidePage).toContain("De onde tirar cada dado");
     expect(guidePage).toContain("Dados proibidos nesta fase");
   });

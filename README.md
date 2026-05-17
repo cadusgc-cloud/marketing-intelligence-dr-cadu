@@ -193,6 +193,12 @@ A tela `/data` e as rotas `/data/collection-workspace` e `/data/manual-review-tr
 
 A trilha junta workspace, gate de coleta, handoff pre-salvamento, validacao do formulario e prontidao por fonte em um Markdown interno. Ela ajuda a registrar se a semana deve ser salva, revisada, mantida em coleta ou bloqueada. Continua sem API externa, sem envio automatico, sem alteracao de banco e sem dados pessoais.
 
+## v3.5 - Mapa de origem dos dados
+
+A tela `/data` e a rota `/data/source-evidence` agora mostram um mapa copiavel de origem dos dados semanais. Ele organiza, por fonte, quais campos vieram de Instagram, Meta Ads, Google Ads, funil comercial, calendario ou revisao humana.
+
+O mapa mostra status da origem, valores agregados presentes, lacunas, perguntas de revisao e guardrails antes do salvamento. Ele nao busca dados automaticamente, nao conecta APIs, nao cria token, nao altera banco e nao usa dados pessoais.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

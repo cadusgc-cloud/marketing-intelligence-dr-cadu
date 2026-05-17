@@ -87,6 +87,7 @@ export function buildWeeklyManualExecutionPacket(
       { label: "Weekly Command Center", href: `/weekly?week=${board.sourceReportId}` },
       { label: "Board de execucao", href: `/weekly/execution?week=${board.sourceReportId}` },
       { label: "Guia de coleta", href: "/data/collection-guide" },
+      { label: "Pacote de coleta", href: "/data/collection-packet" },
       { label: "Dados semanais", href: "/data" },
       { label: "Stories de hoje", href: "/stories/today" },
       { label: "Plano da proxima semana", href: "/stories/next-week" },

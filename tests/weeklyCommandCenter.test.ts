@@ -194,11 +194,17 @@ describe("Weekly Command Center", () => {
   it("integra o guia de coleta manual ao fluxo semanal", () => {
     const dataPage = readFileSync(path.join(process.cwd(), "app", "data", "page.tsx"), "utf8");
     const guidePage = readFileSync(path.join(process.cwd(), "app", "data", "collection-guide", "page.tsx"), "utf8");
+    const packetPage = readFileSync(path.join(process.cwd(), "app", "data", "collection-packet", "page.tsx"), "utf8");
     const commandResult = readFileSync(path.join(process.cwd(), "lib", "weeklyCommandResult.ts"), "utf8");
 
     expect(dataPage).toContain("Abrir guia de coleta");
+    expect(dataPage).toContain("/data/collection-packet");
     expect(guidePage).toContain("buildWeeklyDataCollectionGuide");
+    expect(guidePage).toContain("/data/collection-packet");
+    expect(packetPage).toContain("buildWeeklyCollectionPacket");
+    expect(packetPage).toContain("Copiar, preencher e revisar");
     expect(guidePage).toContain("De onde tirar cada dado");
     expect(commandResult).toContain("/data/collection-guide");
+    expect(commandResult).toContain("/data/collection-packet");
   });
 });

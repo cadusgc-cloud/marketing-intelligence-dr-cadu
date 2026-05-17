@@ -39,6 +39,9 @@ export default function WeeklyDataCollectionGuidePage() {
             <p className="mt-3 rounded-md bg-cyan-50 p-3 text-sm font-medium text-ocean">{guide.operatingPrinciple}</p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Link href="/data/collection-packet" className="rounded-md bg-cyan-50 px-3 py-2 text-sm font-semibold text-ocean hover:bg-cyan-100">
+              Pacote copiavel
+            </Link>
             <Link href="/data" className="rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700">
               Preencher /data
             </Link>

@@ -139,6 +139,12 @@ A rota `/data/collection-guide` mostra de onde tirar cada dado semanal antes de 
 
 O guia separa campos que ja existem como input ativo de metricas que ainda devem ficar em observacoes, como alcance, impressoes e interacoes agregadas. Ele reforca coleta manual, metricas consolidadas, privacidade, exclusao de Dezembro/2025 de benchmarks normais e ausencia de API externa nesta fase.
 
+## v2.6 - Pacote copiavel de coleta
+
+A rota `/data/collection-packet` transforma o guia de coleta em artefatos prontos para uso manual: checklist de fechamento, template `campo: valor`, modelo CSV/TSV e mensagem de handoff interno.
+
+Esse pacote ajuda a coletar numeros semanais de Instagram, Meta Ads, Google Ads e funil comercial sem depender de API. Ele permanece interno, nao envia mensagens, nao publica conteudo, nao altera banco e exige revisao humana antes de salvar a semana em `/data`.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

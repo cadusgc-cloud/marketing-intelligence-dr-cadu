@@ -211,6 +211,12 @@ O gate final em `/data` agora destaca um "Primeiro foco" acionavel antes da grad
 
 Quando todos os checks estao ok, o foco orienta salvar a semana manualmente e abrir `/weekly` para revisar diagnostico, sinais e plano. A camada continua deterministica, interna, sem API externa, sem envio automatico, sem alteracao de banco e sem dados pessoais.
 
+## v3.8 - Revisao compacta pos-salvamento
+
+A tela `/weekly` agora inclui uma revisao compacta pos-salvamento. Depois que a semana e salva em `/data`, o Weekly Command Center mostra o que foi salvo, a confianca da leitura, o primeiro passo humano recomendado, um checklist compacto e os proximos modulos a abrir.
+
+Essa camada ajuda a fechar o ciclo entre coleta, salvamento e interpretacao da semana. Ela nao altera banco, nao cria schema, nao conecta APIs, nao publica, nao envia mensagens e mantem Dezembro/2025 fora de benchmark normal.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

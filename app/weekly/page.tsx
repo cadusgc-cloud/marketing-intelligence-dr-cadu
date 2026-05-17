@@ -11,9 +11,11 @@ import { classificationLabel, impactLabel } from "@/lib/weeklyAudit";
 import { buildWeeklyStrategicDecisionReport } from "@/lib/weeklyStrategicDecision";
 import { buildWeeklyCommandResult } from "@/lib/weeklyCommandResult";
 import { buildWeeklyExecutionBoard } from "@/lib/weeklyExecutionBoard";
+import { buildWeeklyPostSaveReview } from "@/lib/weeklyPostSaveReview";
 import { getLatestWeeklyMarketingData, getPreviousValidWeeklyMarketingData, getWeeklyMarketingDataById, getWeeklyMarketingWeekSummaries, type WeeklyMarketingWeekSummary } from "@/lib/weeklyMarketingWeeks";
 import { WeeklyExecutionBoardPanel } from "@/app/weekly/WeeklyExecutionBoardPanel";
 import { WeeklyCommandResultScreen } from "@/app/weekly/WeeklyCommandResultScreen";
+import { WeeklyPostSaveReviewPanel } from "@/app/weekly/WeeklyPostSaveReviewPanel";
 import { WeeklyStrategicDecisionPanel } from "@/app/weekly/WeeklyStrategicDecisionPanel";
 
 export const dynamic = "force-dynamic";
@@ -96,6 +98,7 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
   const previousWeek = previousValidWeeks[0] ?? null;
   const strategicReport = buildWeeklyStrategicDecisionReport(activeWeek, previousWeek);
   const resultReport = buildWeeklyCommandResult(activeWeek, previousWeek, center, strategicReport, previousValidWeeks);
+  const postSaveReview = buildWeeklyPostSaveReview(activeWeek, previousWeek, resultReport);
   const executionBoard = buildWeeklyExecutionBoard(resultReport);
   const criticalSignals = center.triggeredSignals.filter((signal) => signal.severity === "critical");
   const scaleSignals = center.triggeredSignals.filter((signal) => signal.decisionType === "scale");
@@ -143,6 +146,8 @@ export default async function WeeklyCommandCenterPage({ searchParams }: WeeklyCo
   return (
     <div className="space-y-6">
       <WeeklyCommandResultScreen report={resultReport} />
+
+      <WeeklyPostSaveReviewPanel review={postSaveReview} />
 
       <WeeklyExecutionBoardPanel board={executionBoard} compact />
 

@@ -13,6 +13,8 @@ import {
   type WeeklyCollectionWorkspaceState
 } from "@/lib/weeklyCollectionWorkspace";
 import { buildWeeklyCollectionDecisionGate, type WeeklyCollectionDecisionGate } from "@/lib/weeklyCollectionDecisionGate";
+import { buildWeeklyCollectionSaveHandoff, type WeeklyCollectionSaveHandoff } from "@/lib/weeklyCollectionSaveHandoff";
+import type { WeeklySaveReadinessReport } from "@/lib/weeklyDataInput";
 
 const statusOptions: Array<{ status: WeeklyCollectionWorkspaceItemStatus; label: string }> = [
   { status: "pending", label: "Pendente" },
@@ -20,13 +22,15 @@ const statusOptions: Array<{ status: WeeklyCollectionWorkspaceItemStatus; label:
   { status: "blocked", label: "Bloqueado" }
 ];
 
-export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: WeeklyCollectionWorkspace }) {
+export function WeeklyCollectionWorkspacePanel({ workspace, saveReadiness }: { workspace: WeeklyCollectionWorkspace; saveReadiness: WeeklySaveReadinessReport }) {
   const [state, setState] = useState<WeeklyCollectionWorkspaceState>(() => createInitialWorkspaceState(workspace));
   const [copied, setCopied] = useState(false);
   const [gateCopied, setGateCopied] = useState(false);
+  const [handoffCopied, setHandoffCopied] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const progress = useMemo(() => calculateWeeklyCollectionWorkspaceProgress(workspace, state), [workspace, state]);
   const decisionGate = useMemo(() => buildWeeklyCollectionDecisionGate(workspace, state), [workspace, state]);
+  const saveHandoff = useMemo(() => buildWeeklyCollectionSaveHandoff(decisionGate, saveReadiness), [decisionGate, saveReadiness]);
 
   useEffect(() => {
     try {
@@ -50,6 +54,7 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
   function updateItemStatus(itemId: string, status: WeeklyCollectionWorkspaceItemStatus) {
     setCopied(false);
     setGateCopied(false);
+    setHandoffCopied(false);
     setState((current) => ({
       statuses: {
         ...current.statuses,
@@ -62,6 +67,7 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
   function resetWorkspace() {
     setCopied(false);
     setGateCopied(false);
+    setHandoffCopied(false);
     setState(createInitialWorkspaceState(workspace));
   }
 
@@ -83,6 +89,16 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
 
     await navigator.clipboard.writeText(decisionGate.copyText);
     setGateCopied(true);
+  }
+
+  async function copySaveHandoff() {
+    if (!navigator.clipboard) {
+      setHandoffCopied(false);
+      return;
+    }
+
+    await navigator.clipboard.writeText(saveHandoff.copyText);
+    setHandoffCopied(true);
   }
 
   return (
@@ -107,6 +123,7 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
       </div>
 
       <WorkspaceDecisionGateCard gate={decisionGate} copied={gateCopied} onCopy={copyDecisionGate} />
+      <WorkspaceSaveHandoffCard handoff={saveHandoff} copied={handoffCopied} onCopy={copySaveHandoff} />
 
       <div className="mt-5 grid gap-3">
         {workspace.items.map((item) => (
@@ -147,6 +164,52 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
         ))}
       </div>
     </section>
+  );
+}
+
+function WorkspaceSaveHandoffCard({ handoff, copied, onCopy }: { handoff: WeeklyCollectionSaveHandoff; copied: boolean; onCopy: () => void }) {
+  return (
+    <article aria-label="Handoff pre-salvamento da semana" className={`mt-5 rounded-md border p-4 ${handoffPanelClass(handoff.severity)}`}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs font-semibold uppercase text-slate-500">Handoff local v3.2</p>
+            <span className={`badge ${handoffBadgeClass(handoff.severity)}`}>{handoffStatusLabel(handoff.status)}</span>
+          </div>
+          <h3 className="mt-2 text-lg font-semibold text-slate-900">{handoff.title}</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">{handoff.summary}</p>
+        </div>
+        <button type="button" onClick={onCopy} className="w-fit rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700">
+          Copiar handoff
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-2">
+        {handoff.checklist.map((item) => (
+          <div key={item.id} className="rounded-md bg-white/80 p-3 text-sm text-slate-700">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`badge ${handoffItemBadgeClass(item.status)}`}>{handoffItemStatusLabel(item.status)}</span>
+              <p className="font-semibold">{item.label}</p>
+            </div>
+            <p className="mt-1 text-xs leading-5 text-slate-600">{item.detail}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 rounded-md bg-white/80 p-3 text-sm text-slate-700">
+        <p className="font-semibold">Proximas acoes</p>
+        <ul className="mt-2 space-y-1">
+          {handoff.nextActions.slice(0, 5).map((action) => (
+            <li key={action}>- {action}</li>
+          ))}
+        </ul>
+      </div>
+
+      <p className="mt-4 rounded-md bg-white/80 p-3 text-xs leading-5 text-slate-600">
+        Este handoff nao salva automaticamente e nao altera banco. Ele apenas cruza o gate de coleta com a validacao do formulario para orientar revisao humana antes de salvar.
+      </p>
+      {copied ? <p className="mt-3 rounded-md bg-green-50 p-2 text-xs font-medium text-leaf">Handoff copiado para revisao manual.</p> : null}
+    </article>
   );
 }
 
@@ -323,4 +386,37 @@ function gateStatusLabel(status: WeeklyCollectionDecisionGate["status"]): string
   if (status === "blocked") return "bloqueado";
   if (status === "review_required") return "revisao final";
   return "coleta pendente";
+}
+
+function handoffPanelClass(severity: WeeklyCollectionSaveHandoff["severity"]): string {
+  if (severity === "success") return "border-green-200 bg-green-50";
+  if (severity === "critical") return "border-red-200 bg-red-50";
+  if (severity === "warning") return "border-amber-200 bg-amber-50";
+  return "border-cyan-200 bg-cyan-50";
+}
+
+function handoffBadgeClass(severity: WeeklyCollectionSaveHandoff["severity"]): string {
+  if (severity === "success") return "bg-green-100 text-leaf";
+  if (severity === "critical") return "bg-red-100 text-red-700";
+  if (severity === "warning") return "bg-amber-100 text-amber";
+  return "bg-cyan-100 text-ocean";
+}
+
+function handoffStatusLabel(status: WeeklyCollectionSaveHandoff["status"]): string {
+  if (status === "ready_to_save") return "pronto para salvar";
+  if (status === "blocked") return "bloqueado";
+  if (status === "review_before_save") return "revisar antes de salvar";
+  return "coletar antes de salvar";
+}
+
+function handoffItemBadgeClass(status: WeeklyCollectionSaveHandoff["checklist"][number]["status"]): string {
+  if (status === "ok") return "bg-green-50 text-leaf";
+  if (status === "blocked") return "bg-red-50 text-red-700";
+  return "bg-amber-50 text-amber";
+}
+
+function handoffItemStatusLabel(status: WeeklyCollectionSaveHandoff["checklist"][number]["status"]): string {
+  if (status === "ok") return "ok";
+  if (status === "blocked") return "bloqueio";
+  return "revisar";
 }

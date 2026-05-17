@@ -175,6 +175,12 @@ A tela `/data` e a rota `/data/collection-workspace` agora mostram um gate local
 
 O gate usa somente o status do checklist local, gera proximas acoes e perguntas de revisao humana, e permite copiar um resumo interno. Ele nao salva automaticamente, nao conecta APIs, nao cria banco, nao envia mensagens e nao substitui decisao humana.
 
+## v3.2 - Handoff pre-salvamento
+
+A tela `/data` e a rota `/data/collection-workspace` agora cruzam o gate de coleta com a validacao do formulario antes de salvar a semana. O handoff indica se a semana esta pronta para salvar, se precisa revisar, se deve coletar primeiro ou se esta bloqueada.
+
+O handoff gera checklist e proximas acoes copiaveis para revisao manual. Ele nao salva automaticamente, nao altera banco, nao conecta APIs, nao envia mensagens e continua usando apenas metricas agregadas.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

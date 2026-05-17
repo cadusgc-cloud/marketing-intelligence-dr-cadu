@@ -294,7 +294,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         <WeeklyCollectionReadinessBoardPanel board={collectionReadiness} />
         <WeeklyNextCollectionPlanPanel plan={nextCollectionPlan} />
         <div className="mt-4">
-          <WeeklyCollectionWorkspacePanel workspace={collectionWorkspace} />
+          <WeeklyCollectionWorkspacePanel workspace={collectionWorkspace} saveReadiness={saveReadiness} />
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">

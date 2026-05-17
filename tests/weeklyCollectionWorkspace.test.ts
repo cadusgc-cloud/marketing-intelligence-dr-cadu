@@ -109,6 +109,8 @@ describe("Weekly Collection Workspace", () => {
     expect(panel).toContain("Gate de decisao da coleta");
     expect(panel).toContain("Copiar handoff");
     expect(panel).toContain("Handoff pre-salvamento da semana");
+    expect(panel).toContain("Primeiro foco");
+    expect(panel).toContain("Ir para foco");
     expect(panel).not.toContain("<textarea");
     expect(route).toContain("WeeklyCollectionWorkspacePanel");
     expect(route).toContain("buildWeeklySaveReadinessReport");

@@ -181,6 +181,12 @@ A tela `/data` e a rota `/data/collection-workspace` agora cruzam o gate de cole
 
 O handoff gera checklist e proximas acoes copiaveis para revisao manual. Ele nao salva automaticamente, nao altera banco, nao conecta APIs, nao envia mensagens e continua usando apenas metricas agregadas.
 
+## v3.3 - Primeiro foco de bloqueio
+
+O handoff pre-salvamento agora destaca um "Primeiro foco" com area sugerida, motivo e link interno para o ponto mais importante a revisar antes de salvar. Isso reduz a leitura da lista inteira quando existe bloqueio ou pendencia.
+
+O foco continua local e deterministico: nao salva automaticamente, nao altera banco, nao conecta APIs e nao usa dados pessoais. Ele apenas orienta a revisao humana dentro da tela `/data`.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

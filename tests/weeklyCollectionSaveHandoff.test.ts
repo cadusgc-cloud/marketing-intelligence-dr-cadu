@@ -62,6 +62,8 @@ describe("Weekly Collection Save Handoff", () => {
     expect(handoff.status).toBe("ready_to_save");
     expect(handoff.severity).toBe("success");
     expect(handoff.manualSaveAllowed).toBe(true);
+    expect(handoff.focus.status).toBe("ready");
+    expect(handoff.focus.targetHref).toBe("#weekly-save-top");
     expect(handoff.summary).toContain("prontos");
     expect(handoff.copyText.toLocaleLowerCase("pt-BR")).toContain("pronto para salvar");
   });
@@ -75,6 +77,9 @@ describe("Weekly Collection Save Handoff", () => {
     expect(handoff.status).toBe("blocked");
     expect(handoff.severity).toBe("critical");
     expect(handoff.manualSaveAllowed).toBe(false);
+    expect(handoff.focus.status).toBe("blocked");
+    expect(handoff.focus.targetHref).toBe("#weekly-fields-identity");
+    expect(handoff.focus.title).toContain("formulario");
     expect(handoff.nextActions.join(" ")).toContain("rotulo da semana");
   });
 
@@ -86,11 +91,13 @@ describe("Weekly Collection Save Handoff", () => {
 
     expect(handoff.status).toBe("collect_first");
     expect(handoff.manualSaveAllowed).toBe(false);
+    expect(handoff.focus.status).toBe("collect");
+    expect(handoff.focus.targetHref).toBe("#weekly-collection-workspace");
     expect(handoff.nextActions.join(" ")).toContain("Completar coleta");
   });
 
   it("permite salvamento manual com cautela quando o formulario exige revisao", () => {
-    const data = makeWeek({ consultationsScheduled: null, consultationsAttended: null, surgeriesClosed: null, googleConversions: 0, instagramStories: 24 });
+    const data = makeWeek({ consultationsScheduled: null, consultationsAttended: null, surgeriesClosed: null });
     const workspace = makeWorkspace(data);
     const gate = buildWeeklyCollectionDecisionGate(workspace, stateWith(workspace, () => "done"));
     const handoff = buildWeeklyCollectionSaveHandoff(gate, buildWeeklySaveReadinessReport(data));
@@ -98,6 +105,8 @@ describe("Weekly Collection Save Handoff", () => {
     expect(handoff.status).toBe("review_before_save");
     expect(handoff.severity).toBe("warning");
     expect(handoff.manualSaveAllowed).toBe(true);
+    expect(handoff.focus.status).toBe("review");
+    expect(handoff.focus.targetHref).toBe("#weekly-fields-funnel");
     expect(handoff.nextActions.join(" ")).toContain("Funil comercial incompleto");
   });
 
@@ -109,6 +118,7 @@ describe("Weekly Collection Save Handoff", () => {
     const text = handoff.copyText.toLocaleLowerCase("pt-BR");
 
     expect(text).toContain("nao salva automaticamente");
+    expect(text).toContain("primeiro foco");
     expect(text).toContain("usar somente metricas agregadas");
     expect(text).toContain("nao usa api externa");
     expect(text).toContain("dezembro/2025");
@@ -121,16 +131,34 @@ describe("Weekly Collection Save Handoff", () => {
     const route = readFileSync(path.join(process.cwd(), "app", "data", "collection-workspace", "page.tsx"), "utf8");
     const readme = readFileSync(path.join(process.cwd(), "README.md"), "utf8");
     const docs = readFileSync(path.join(process.cwd(), "docs", "WEEKLY_COLLECTION_SAVE_HANDOFF_V3_2.md"), "utf8");
-    const text = `${readme}\n${docs}`.toLocaleLowerCase("pt-BR");
+    const focusDocs = readFileSync(path.join(process.cwd(), "docs", "WEEKLY_SAVE_BLOCKER_FOCUS_V3_3.md"), "utf8");
+    const text = `${readme}\n${docs}\n${focusDocs}`.toLocaleLowerCase("pt-BR");
 
     expect(panel).toContain("buildWeeklyCollectionSaveHandoff");
     expect(panel).toContain("Handoff pre-salvamento da semana");
+    expect(panel).toContain("Primeiro foco");
+    expect(panel).toContain("Ir para foco");
     expect(panel).toContain("Copiar handoff");
     expect(panel).not.toContain("<textarea");
     expect(dataClient).toContain("saveReadiness={saveReadiness}");
+    expect(dataClient).toContain("weekly-fields-identity");
+    expect(dataClient).toContain("weekly-fields-funnel");
     expect(route).toContain("buildWeeklySaveReadinessReport");
     expect(text).toContain("v3.2 - handoff pre-salvamento");
+    expect(text).toContain("v3.3 - primeiro foco de bloqueio");
     expect(text).toContain("nao salva automaticamente");
     expect(text).toContain("sem api externa");
+  });
+
+  it("prioriza bloqueio do workspace antes do formulario", () => {
+    const data = makeWeek({ weekLabel: "", startDate: "", endDate: "" });
+    const workspace = makeWorkspace(makeWeek());
+    const gate = buildWeeklyCollectionDecisionGate(workspace, stateWith(workspace, (item) => (item.id === workspace.items[0].id ? "blocked" : "done")));
+    const handoff = buildWeeklyCollectionSaveHandoff(gate, buildWeeklySaveReadinessReport(data));
+
+    expect(handoff.status).toBe("blocked");
+    expect(handoff.focus.status).toBe("blocked");
+    expect(handoff.focus.targetHref).toBe("#weekly-collection-workspace");
+    expect(handoff.focus.title).toContain("workspace");
   });
 });

@@ -11,6 +11,15 @@ export type WeeklyCollectionSaveHandoffItem = {
   detail: string;
 };
 
+export type WeeklyCollectionSaveHandoffFocus = {
+  status: "ready" | "review" | "collect" | "blocked";
+  title: string;
+  detail: string;
+  targetLabel: string;
+  targetHref: string;
+  action: string;
+};
+
 export type WeeklyCollectionSaveHandoff = {
   id: string;
   title: string;
@@ -18,6 +27,7 @@ export type WeeklyCollectionSaveHandoff = {
   severity: WeeklyCollectionSaveHandoffSeverity;
   manualSaveAllowed: boolean;
   summary: string;
+  focus: WeeklyCollectionSaveHandoffFocus;
   checklist: WeeklyCollectionSaveHandoffItem[];
   nextActions: string[];
   copyText: string;
@@ -35,6 +45,7 @@ export function buildWeeklyCollectionSaveHandoff(
     severity: handoffSeverity(status),
     manualSaveAllowed: gate.canRecommendSave && saveReadiness.canSave,
     summary: handoffSummary(status, gate, saveReadiness),
+    focus: buildHandoffFocus(status, gate, saveReadiness),
     checklist: buildHandoffChecklist(gate, saveReadiness),
     nextActions: buildHandoffNextActions(status, gate, saveReadiness)
   };
@@ -52,6 +63,12 @@ export function buildWeeklyCollectionSaveHandoffCopyText(handoff: Omit<WeeklyCol
     handoff.summary,
     "",
     `Salvamento manual permitido pelo painel: ${handoff.manualSaveAllowed ? "sim, com revisao humana" : "nao, resolver pendencias primeiro"}.`,
+    "",
+    "Primeiro foco:",
+    `- ${handoff.focus.title}`,
+    `- Area: ${handoff.focus.targetLabel}`,
+    `- Acao: ${handoff.focus.action}`,
+    `- Detalhe: ${handoff.focus.detail}`,
     "",
     "Checklist:",
     ...handoff.checklist.map((item) => `- [${item.status}] ${item.label}: ${item.detail}`),
@@ -137,6 +154,76 @@ function buildHandoffChecklist(gate: WeeklyCollectionDecisionGate, saveReadiness
   ];
 }
 
+function buildHandoffFocus(
+  status: WeeklyCollectionSaveHandoffStatus,
+  gate: WeeklyCollectionDecisionGate,
+  saveReadiness: WeeklySaveReadinessReport
+): WeeklyCollectionSaveHandoffFocus {
+  if (gate.status === "blocked") {
+    const blockedItem = gate.blockedItems[0] ?? "Item bloqueado no checklist.";
+    return focus(
+      "blocked",
+      "Resolver bloqueio do workspace",
+      blockedItem,
+      "Workspace local de coleta",
+      "#weekly-collection-workspace",
+      `Abrir o checklist e destravar: ${blockedItem}`
+    );
+  }
+
+  if (saveReadiness.status === "blocked") {
+    const item = firstSaveReadinessIssue(saveReadiness, "missing") ?? firstSaveReadinessIssue(saveReadiness, "review");
+    const blocker = saveReadiness.blockers[0] ?? item?.detail ?? "Campo essencial pendente.";
+    return focus(
+      "blocked",
+      "Corrigir bloqueio do formulario",
+      blocker,
+      saveReadinessTargetLabel(item?.id),
+      saveReadinessTargetHref(item?.id),
+      item ? `Corrigir: ${item.label}.` : "Corrigir o primeiro campo essencial antes de salvar."
+    );
+  }
+
+  if (status === "collect_first") {
+    const pendingItem = gate.pendingItems[0] ?? "Item de coleta pendente.";
+    return focus(
+      "collect",
+      "Completar coleta antes de salvar",
+      pendingItem,
+      "Workspace local de coleta",
+      "#weekly-collection-workspace",
+      `Completar coleta: ${pendingItem}`
+    );
+  }
+
+  if (gate.status === "review_required") {
+    const question = gate.reviewQuestions[0] ?? "Revisar gates finais.";
+    return focus("review", "Concluir revisao final da coleta", question, "Workspace local de coleta", "#weekly-collection-workspace", question);
+  }
+
+  if (saveReadiness.status === "needs-review") {
+    const item = firstSaveReadinessIssue(saveReadiness, "review");
+    const reviewNote = saveReadiness.reviewNotes[0] ?? item?.detail ?? "Revisao operacional pendente.";
+    return focus(
+      "review",
+      "Revisar qualidade da semana",
+      reviewNote,
+      saveReadinessTargetLabel(item?.id),
+      saveReadinessTargetHref(item?.id),
+      item ? `Revisar: ${item.label}.` : "Revisar pontos operacionais antes de concluir leitura forte."
+    );
+  }
+
+  return focus(
+    "ready",
+    "Salvar e revisar leitura semanal",
+    "Coleta e formulario estao prontos, mantendo decisao humana.",
+    "Botao Salvar semana",
+    "#weekly-save-top",
+    "Salvar a semana manualmente e abrir /weekly para conferir a leitura."
+  );
+}
+
 function buildHandoffNextActions(
   status: WeeklyCollectionSaveHandoffStatus,
   gate: WeeklyCollectionDecisionGate,
@@ -174,6 +261,37 @@ function buildHandoffNextActions(
 
 function item(id: string, label: string, status: WeeklyCollectionSaveHandoffItem["status"], detail: string): WeeklyCollectionSaveHandoffItem {
   return { id, label, status, detail };
+}
+
+function focus(
+  status: WeeklyCollectionSaveHandoffFocus["status"],
+  title: string,
+  detail: string,
+  targetLabel: string,
+  targetHref: string,
+  action: string
+): WeeklyCollectionSaveHandoffFocus {
+  return { status, title, detail, targetLabel, targetHref, action };
+}
+
+function firstSaveReadinessIssue(saveReadiness: WeeklySaveReadinessReport, status: WeeklySaveReadinessReport["items"][number]["status"]) {
+  return saveReadiness.items.find((item) => item.status === status);
+}
+
+function saveReadinessTargetLabel(itemId: string | undefined): string {
+  if (itemId === "week-identity" || itemId === "week-period") return "Dados da semana";
+  if (itemId === "paid-media") return "Meta Ads / Google Ads";
+  if (itemId === "organic-instagram") return "Instagram organico";
+  if (itemId === "commercial-funnel") return "Funil comercial";
+  return "Validacao antes de salvar";
+}
+
+function saveReadinessTargetHref(itemId: string | undefined): string {
+  if (itemId === "week-identity" || itemId === "week-period") return "#weekly-fields-identity";
+  if (itemId === "paid-media") return "#weekly-fields-paid-media";
+  if (itemId === "organic-instagram") return "#weekly-fields-instagram";
+  if (itemId === "commercial-funnel") return "#weekly-fields-funnel";
+  return "#weekly-save-readiness";
 }
 
 function handoffStatusLabel(status: WeeklyCollectionSaveHandoffStatus): string {

@@ -279,7 +279,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
 
   return (
     <form action={formAction} className="space-y-6">
-      <section className="panel">
+      <section id="weekly-save-top" className="panel">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="text-sm font-medium text-ocean">Dados semanais</p>
@@ -310,7 +310,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         </div>
       </section>
 
-      <section className="panel">
+      <section id="weekly-fields-identity" className="panel scroll-mt-4">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(320px,1.1fr)]">
           <div>
             <p className="text-sm font-medium text-ocean">v1.3</p>
@@ -486,11 +486,11 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
         </label>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-2">
+      <section id="weekly-fields-paid-media" className="grid scroll-mt-4 gap-6 xl:grid-cols-2">
         <InputGroup title="Meta Ads" fields={metaFields} data={data} onChange={setNumberField} />
         <InputGroup title="Google Ads" fields={googleFields} data={data} onChange={setNumberField} />
-        <InputGroup title="Instagram organico" fields={instagramFields} data={data} onChange={setNumberField} />
-        <InputGroup title="Funil comercial" fields={funnelFields} data={data} onChange={setNumberField} />
+        <InputGroup id="weekly-fields-instagram" title="Instagram organico" fields={instagramFields} data={data} onChange={setNumberField} />
+        <InputGroup id="weekly-fields-funnel" title="Funil comercial" fields={funnelFields} data={data} onChange={setNumberField} />
       </section>
 
       <section className="panel">
@@ -559,7 +559,7 @@ export function WeeklyDataInputClient({ initialData, source }: { initialData: We
 
 function WeeklySaveReadinessPanel({ report }: { report: WeeklySaveReadinessReport }) {
   return (
-    <div className={`mt-4 rounded-md border p-3 text-sm ${saveReadinessPanelClass(report.status)}`}>
+    <div id="weekly-save-readiness" className={`mt-4 scroll-mt-4 rounded-md border p-3 text-sm ${saveReadinessPanelClass(report.status)}`}>
       <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
         <div>
           <p className="font-semibold">Validacao antes de salvar</p>
@@ -1073,18 +1073,20 @@ function StatusMessage({
 }
 
 function InputGroup({
+  id,
   title,
   fields,
   data,
   onChange
 }: {
+  id?: string;
   title: string;
   fields: NumberField[];
   data: WeeklyMarketingData;
   onChange: (field: NumberField, value: string) => void;
 }) {
   return (
-    <section className="panel">
+    <section id={id} className="panel scroll-mt-4">
       <h3 className="text-lg font-semibold">{title}</h3>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {fields.map((field) => (

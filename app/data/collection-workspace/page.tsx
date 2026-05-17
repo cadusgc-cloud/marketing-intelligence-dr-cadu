@@ -15,10 +15,10 @@ export default function WeeklyCollectionWorkspacePage() {
       <section className="panel">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase text-ocean">Checklist local v3.0</p>
+            <p className="text-xs font-semibold uppercase text-ocean">Checklist local v3.1</p>
             <h1 className="mt-1 text-3xl font-semibold tracking-normal text-ink">Workspace local de coleta</h1>
             <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">
-              Acompanhe o status da coleta semanal sem banco, sem API e sem campos livres. Esta rota usa dados simulados como modelo; em `/data`, o workspace acompanha o plano calculado pelos campos atuais.
+              Acompanhe o status da coleta semanal e o gate de decisao antes do salvamento, sem banco, sem API e sem campos livres. Esta rota usa dados simulados como modelo; em `/data`, o workspace acompanha o plano calculado pelos campos atuais.
             </p>
             <p className="mt-3 rounded-md bg-cyan-50 p-3 text-sm font-medium text-ocean">
               O progresso fica apenas no navegador via localStorage e armazena somente status de tarefa. Nao insira dados pessoais ou clinicos no sistema.

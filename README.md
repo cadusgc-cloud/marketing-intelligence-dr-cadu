@@ -169,6 +169,12 @@ A tela `/data` e a rota `/data/collection-workspace` agora incluem um checklist 
 
 O progresso fica apenas no navegador via `localStorage` e armazena somente status de tarefa. Nao ha campo livre para nomes, DMs, conversas, prints, pacientes ou dados clinicos; o fluxo continua manual, interno e sem API externa.
 
+## v3.1 - Gate de decisao da coleta
+
+A tela `/data` e a rota `/data/collection-workspace` agora mostram um gate local antes do salvamento manual da semana. Ele classifica a coleta como pronta para salvar, coleta pendente, revisao final ou bloqueada.
+
+O gate usa somente o status do checklist local, gera proximas acoes e perguntas de revisao humana, e permite copiar um resumo interno. Ele nao salva automaticamente, nao conecta APIs, nao cria banco, nao envia mensagens e nao substitui decisao humana.
+
 ## Privacidade
 
 O produto não solicita, processa ou exibe dados de pacientes. Use apenas métricas agregadas de marketing, como investimento, alcance, impressões, conversas, conversões, CPL e CPA.

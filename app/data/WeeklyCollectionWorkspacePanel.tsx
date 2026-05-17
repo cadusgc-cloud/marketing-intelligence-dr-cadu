@@ -12,6 +12,7 @@ import {
   type WeeklyCollectionWorkspaceProgress,
   type WeeklyCollectionWorkspaceState
 } from "@/lib/weeklyCollectionWorkspace";
+import { buildWeeklyCollectionDecisionGate, type WeeklyCollectionDecisionGate } from "@/lib/weeklyCollectionDecisionGate";
 
 const statusOptions: Array<{ status: WeeklyCollectionWorkspaceItemStatus; label: string }> = [
   { status: "pending", label: "Pendente" },
@@ -22,8 +23,10 @@ const statusOptions: Array<{ status: WeeklyCollectionWorkspaceItemStatus; label:
 export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: WeeklyCollectionWorkspace }) {
   const [state, setState] = useState<WeeklyCollectionWorkspaceState>(() => createInitialWorkspaceState(workspace));
   const [copied, setCopied] = useState(false);
+  const [gateCopied, setGateCopied] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const progress = useMemo(() => calculateWeeklyCollectionWorkspaceProgress(workspace, state), [workspace, state]);
+  const decisionGate = useMemo(() => buildWeeklyCollectionDecisionGate(workspace, state), [workspace, state]);
 
   useEffect(() => {
     try {
@@ -46,6 +49,7 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
 
   function updateItemStatus(itemId: string, status: WeeklyCollectionWorkspaceItemStatus) {
     setCopied(false);
+    setGateCopied(false);
     setState((current) => ({
       statuses: {
         ...current.statuses,
@@ -57,6 +61,7 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
 
   function resetWorkspace() {
     setCopied(false);
+    setGateCopied(false);
     setState(createInitialWorkspaceState(workspace));
   }
 
@@ -70,11 +75,21 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
     setCopied(true);
   }
 
+  async function copyDecisionGate() {
+    if (!navigator.clipboard) {
+      setGateCopied(false);
+      return;
+    }
+
+    await navigator.clipboard.writeText(decisionGate.copyText);
+    setGateCopied(true);
+  }
+
   return (
     <section className="panel">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase text-ocean">Workspace local v3.0</p>
+          <p className="text-xs font-semibold uppercase text-ocean">Workspace local v3.1</p>
           <h2 className="mt-1 text-2xl font-semibold text-ink">{workspace.title}</h2>
           <p className="mt-2 max-w-4xl text-sm leading-6 text-slate-600">{workspace.summary}</p>
           <p className="mt-3 rounded-md bg-cyan-50 p-3 text-sm font-medium text-ocean">
@@ -90,6 +105,8 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
         <MetricCard label="Bloqueados" value={progress.blocked} detail="Nao salvar conclusao forte." />
         <MetricCard label="Total" value={progress.total} detail={workspace.weekLabel} />
       </div>
+
+      <WorkspaceDecisionGateCard gate={decisionGate} copied={gateCopied} onCopy={copyDecisionGate} />
 
       <div className="mt-5 grid gap-3">
         {workspace.items.map((item) => (
@@ -130,6 +147,50 @@ export function WeeklyCollectionWorkspacePanel({ workspace }: { workspace: Weekl
         ))}
       </div>
     </section>
+  );
+}
+
+function WorkspaceDecisionGateCard({ gate, copied, onCopy }: { gate: WeeklyCollectionDecisionGate; copied: boolean; onCopy: () => void }) {
+  return (
+    <article aria-label="Gate de decisao da coleta" className={`mt-5 rounded-md border p-4 ${gatePanelClass(gate.severity)}`}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="text-xs font-semibold uppercase text-slate-500">Gate local v3.1</p>
+            <span className={`badge ${gateBadgeClass(gate.severity)}`}>{gateStatusLabel(gate.status)}</span>
+          </div>
+          <h3 className="mt-2 text-lg font-semibold text-slate-900">{gate.title}</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">{gate.summary}</p>
+        </div>
+        <button type="button" onClick={onCopy} className="w-fit rounded-md bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-700">
+          Copiar gate
+        </button>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        <GateList title="Proximas acoes" items={gate.nextActions.slice(0, 4)} />
+        <GateList title="Perguntas de revisao" items={gate.reviewQuestions.slice(0, 4)} />
+        <GateList title="Bloqueios marcados" items={gate.blockedItems.length ? gate.blockedItems.slice(0, 4) : ["Nenhum bloqueio marcado."]} />
+      </div>
+
+      <p className="mt-4 rounded-md bg-white/80 p-3 text-xs leading-5 text-slate-600">
+        Nao salva automaticamente; decisao final continua humana. Use somente metricas agregadas e mantenha APIs, OAuth, scraping, publicacao e dados pessoais fora deste fluxo.
+      </p>
+      {copied ? <p className="mt-3 rounded-md bg-green-50 p-2 text-xs font-medium text-leaf">Gate copiado para revisao manual.</p> : null}
+    </article>
+  );
+}
+
+function GateList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-md bg-white/80 p-3 text-sm text-slate-700">
+      <p className="font-semibold">{title}</p>
+      <ul className="mt-2 space-y-1">
+        {items.map((item) => (
+          <li key={item}>- {item}</li>
+        ))}
+      </ul>
+    </div>
   );
 }
 
@@ -241,4 +302,25 @@ function priorityLabel(priority: WeeklyCollectionWorkspaceItem["priority"]): str
   if (priority === "high") return "alta";
   if (priority === "medium") return "media";
   return "baixa";
+}
+
+function gatePanelClass(severity: WeeklyCollectionDecisionGate["severity"]): string {
+  if (severity === "success") return "border-green-200 bg-green-50";
+  if (severity === "critical") return "border-red-200 bg-red-50";
+  if (severity === "warning") return "border-amber-200 bg-amber-50";
+  return "border-cyan-200 bg-cyan-50";
+}
+
+function gateBadgeClass(severity: WeeklyCollectionDecisionGate["severity"]): string {
+  if (severity === "success") return "bg-green-100 text-leaf";
+  if (severity === "critical") return "bg-red-100 text-red-700";
+  if (severity === "warning") return "bg-amber-100 text-amber";
+  return "bg-cyan-100 text-ocean";
+}
+
+function gateStatusLabel(status: WeeklyCollectionDecisionGate["status"]): string {
+  if (status === "ready_to_save") return "pronto para salvar";
+  if (status === "blocked") return "bloqueado";
+  if (status === "review_required") return "revisao final";
+  return "coleta pendente";
 }

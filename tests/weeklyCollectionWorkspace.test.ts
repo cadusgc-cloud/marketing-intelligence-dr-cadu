@@ -105,6 +105,8 @@ describe("Weekly Collection Workspace", () => {
     expect(dataClient).toContain("buildWeeklyCollectionWorkspace");
     expect(panel).toContain("localStorage");
     expect(panel).toContain("Copiar status");
+    expect(panel).toContain("Copiar gate");
+    expect(panel).toContain("Gate de decisao da coleta");
     expect(panel).not.toContain("<textarea");
     expect(route).toContain("WeeklyCollectionWorkspacePanel");
     expect(plan).toContain("/data/collection-workspace");

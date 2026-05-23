@@ -6,6 +6,7 @@ import { buildStudioDashboardPackage, buildUnifiedQualityMarkdown } from "@/lib/
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 import { auditWorkspace, buildDefaultMarketingWorkspace, buildWorkspaceExports } from "@/lib/marketing-workspace";
+import { getGuidedFlowCatalog } from "@/lib/guided-flows";
 import { safetyClassificationLabel } from "@/lib/monthly-editorial";
 
 const riskClasses = {
@@ -27,6 +28,7 @@ export default function SafetyPage() {
   const workspaceAudit = auditWorkspace(workspace);
   const workspaceExports = buildWorkspaceExports(workspace);
   const studioQualityReport = buildUnifiedQualityMarkdown(studio.packageItem.quality);
+  const flowRisks = getGuidedFlowCatalog().flatMap((flow) => flow.risks.map((risk) => ({ flow: flow.name, risk }))).slice(0, 8);
 
   return (
     <div className="space-y-6">
@@ -61,6 +63,25 @@ export default function SafetyPage() {
             </p>
           </div>
           <LocalCopyButton text={workspaceExports.integrityMarkdown} label="Copiar auditoria V8" />
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+            <h3 className="mt-1 text-lg font-semibold">Riscos dos fluxos guiados</h3>
+            <p className="mt-2 text-sm text-slate-500">Fluxos orientam execucao, mas mantem revisao humana, publicacao manual e bloqueio de dados sensiveis.</p>
+          </div>
+          <Link href="/flows" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir Fluxos</Link>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {flowRisks.map((item) => (
+            <article key={`${item.flow}-${item.risk}`} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-ink">{item.flow}</p>
+              <p className="mt-1 text-slate-600">{item.risk}</p>
+            </article>
+          ))}
         </div>
       </section>
 

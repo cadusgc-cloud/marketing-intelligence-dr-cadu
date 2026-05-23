@@ -9,6 +9,8 @@ import { buildIntelligenceDashboard } from "../lib/marketing-intelligence";
 import { parseReportImport, sampleGenericTsv } from "../lib/report-imports";
 import { buildDefaultWeeklyReview } from "../lib/weekly-review";
 import { auditWorkspace, buildDefaultMarketingWorkspace, generateWeeklyRunbook } from "../lib/marketing-workspace";
+import { buildCommandCenterDashboard, getGuidedFlowCatalog, validateGuidedFlowCatalog } from "../lib/guided-flows";
+import { buildDefaultReleaseReadinessReport } from "../lib/release-readiness";
 
 export type RouteHealthItem = {
   route: string;
@@ -41,6 +43,11 @@ const routeFiles = [
   ["/runbook", "app/runbook/page.tsx", "Runbook Semanal"],
   ["/settings", "app/settings/page.tsx", "Configuracoes Locais"],
   ["/audit-log", "app/audit-log/page.tsx", "Registro Operacional"],
+  ["/command-center", "app/command-center/page.tsx", "Command Center"],
+  ["/flows", "app/flows/page.tsx", "Fluxos Guiados"],
+  ["/flows/fechamento-semanal-completo", "app/flows/[id]/page.tsx", "Fechamento semanal completo"],
+  ["/release", "app/release/page.tsx", "Release Candidate"],
+  ["/onboarding", "app/onboarding/page.tsx", "Primeiros Passos"],
   ["/metrics", "app/metrics/page.tsx", "Metricas Manuais"],
   ["/experiments", "app/experiments/page.tsx", "Experimentos Editoriais"],
   ["/strategy", "app/strategy/page.tsx", "Estrategia"],
@@ -61,6 +68,10 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
   const workspace = buildDefaultMarketingWorkspace();
   const workspaceAudit = auditWorkspace(workspace);
   const runbook = generateWeeklyRunbook({ workspace });
+  const guidedFlows = getGuidedFlowCatalog();
+  const flowValidation = validateGuidedFlowCatalog(guidedFlows);
+  const commandCenter = buildCommandCenterDashboard();
+  const releaseReport = buildDefaultReleaseReadinessReport();
   const items: RouteHealthItem[] = routeFiles.map(([route, file]) => ({
     route,
     status: existsSync(path.join(process.cwd(), file)) ? "ok" : "falha",
@@ -106,6 +117,21 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
     route: "engine:workspace",
     status: workspace.snapshots.length >= 2 && workspaceAudit.status !== "bloquear" && runbook.days.length === 7 ? "ok" : "falha",
     message: `Workspace: ${workspace.history.length} eventos, ${workspace.snapshots.length} snapshots, ${workspaceAudit.status}`
+  });
+  items.push({
+    route: "engine:guided-flows",
+    status: guidedFlows.length >= 15 && flowValidation.ok ? "ok" : "falha",
+    message: `Guided flows: ${guidedFlows.length} fluxos, ${flowValidation.blockingIssues.length} bloqueios`
+  });
+  items.push({
+    route: "engine:command-center",
+    status: commandCenter.prioritizedFlows.length >= 6 && commandCenter.nextAction.recommendedRoute.length > 0 ? "ok" : "falha",
+    message: `Command Center: ${commandCenter.systemStatus}, proxima acao ${commandCenter.nextAction.recommendedRoute}`
+  });
+  items.push({
+    route: "engine:release-readiness",
+    status: releaseReport.status !== "bloqueado" && releaseReport.prDraft.markdown.includes("Sem API externa") ? "ok" : "falha",
+    message: `Release readiness: ${releaseReport.status}, ${releaseReport.routes.length} rotas`
   });
 
   return {

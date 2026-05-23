@@ -1,10 +1,12 @@
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { auditWorkspace, buildDefaultMarketingWorkspace, buildWorkspaceExports } from "@/lib/marketing-workspace";
+import { buildFlowHistoryEvents, createFlowRun } from "@/lib/guided-flows";
 
 export default function AuditLogPage() {
   const workspace = buildDefaultMarketingWorkspace();
   const audit = auditWorkspace(workspace);
   const exports = buildWorkspaceExports(workspace);
+  const flowEvents = buildFlowHistoryEvents(createFlowRun("auditoria-seguranca", { completedStepIds: ["abrir-safety", "abrir-qa", "revisar-bloqueios"] }));
   return (
     <div className="space-y-6">
       <section className="panel">
@@ -33,6 +35,21 @@ export default function AuditLogPage() {
               <div className="flex flex-wrap gap-2">
                 <span className="badge bg-slate-100 text-slate-700">{event.sourceModule}</span>
                 <span className="badge bg-cyan-50 text-ocean">{event.severity}</span>
+              </div>
+              <p className="mt-2 font-semibold text-ink">{event.title}</p>
+              <p className="mt-1 text-slate-600">{event.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="panel">
+        <h3 className="text-lg font-semibold">Eventos de fluxo V9</h3>
+        <div className="mt-4 space-y-3">
+          {flowEvents.map((event) => (
+            <article key={`${event.type}-${event.description}`} className="rounded-lg border border-slate-200 p-4 text-sm">
+              <div className="flex flex-wrap gap-2">
+                <span className="badge bg-slate-100 text-slate-700">guided-flows</span>
+                <span className="badge bg-cyan-50 text-ocean">{event.type}</span>
               </div>
               <p className="mt-2 font-semibold text-ink">{event.title}</p>
               <p className="mt-1 text-slate-600">{event.description}</p>

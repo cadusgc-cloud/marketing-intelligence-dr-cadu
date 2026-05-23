@@ -11,6 +11,8 @@ import { buildIntelligenceDashboard, parseManualMetrics, sampleMetricsTsv } from
 import { parseReportImport, sampleGenericTsv } from "../lib/report-imports";
 import { buildDefaultWeeklyReview } from "../lib/weekly-review";
 import { auditWorkspace, buildDefaultMarketingWorkspace, generateWeeklyRunbook } from "../lib/marketing-workspace";
+import { buildCommandCenterDashboard, createFlowRun, getGuidedFlowCatalog, validateGuidedFlowCatalog } from "../lib/guided-flows";
+import { buildDefaultReleaseReadinessReport } from "../lib/release-readiness";
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -39,6 +41,11 @@ const requiredFiles = [
   ["app/runbook/page.tsx", "rota /runbook"],
   ["app/settings/page.tsx", "rota /settings"],
   ["app/audit-log/page.tsx", "rota /audit-log"],
+  ["app/command-center/page.tsx", "rota /command-center"],
+  ["app/flows/page.tsx", "rota /flows"],
+  ["app/flows/[id]/page.tsx", "rota /flows/[id]"],
+  ["app/release/page.tsx", "rota /release"],
+  ["app/onboarding/page.tsx", "rota /onboarding"],
   ["app/storyops/page.tsx", "rota /storyops"],
   ["app/campaigns/page.tsx", "rota /campaigns"],
   ["lib/storyops/index.ts", "StoryOps"],
@@ -51,7 +58,9 @@ const requiredFiles = [
   ["lib/marketing-intelligence/index.ts", "Intelligence Loop V6"],
   ["lib/report-imports/index.ts", "Report Imports V7"],
   ["lib/weekly-review/index.ts", "Weekly Review V7"],
-  ["lib/marketing-workspace/index.ts", "Marketing Workspace V8"]
+  ["lib/marketing-workspace/index.ts", "Marketing Workspace V8"],
+  ["lib/guided-flows/index.ts", "Guided Flows V9"],
+  ["lib/release-readiness/index.ts", "Release Readiness V9"]
 ];
 
 for (const [file, label] of requiredFiles) {
@@ -133,4 +142,16 @@ assert(workspace.history.length >= 5, "V8 deve criar historico operacional.");
 assert(workspaceAudit.status !== "bloquear", "V8 workspace default nao deve bloquear.");
 assert(runbook.days.length === 7, "V8 deve gerar runbook semanal.");
 
-console.log("Smoke Marketing OS V8: OK");
+const flows = getGuidedFlowCatalog();
+const flowValidation = validateGuidedFlowCatalog(flows);
+const flowRun = createFlowRun("fechamento-semanal-completo", { completedStepIds: ["abrir-imports", "colar-relatorio"] });
+const commandCenter = buildCommandCenterDashboard();
+const release = buildDefaultReleaseReadinessReport();
+assert(flows.length >= 15, "V9 deve ter pelo menos 15 fluxos guiados.");
+assert(flowValidation.ok, "V9 deve validar catalogo de fluxos sem bloqueios.");
+assert(flowRun.progressPercent > 0 && flowRun.progressPercent < 100, "V9 flow runner deve calcular progresso parcial.");
+assert(commandCenter.nextAction.recommendedRoute.length > 0, "V9 Command Center deve gerar proxima acao.");
+assert(release.status === "aprovado", "V9 release readiness default deve aprovar.");
+assert(release.prDraft.markdown.includes("Sem API externa"), "V9 PR draft deve registrar ausencia de API externa.");
+
+console.log("Smoke Marketing OS V9: OK");

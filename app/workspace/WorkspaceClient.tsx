@@ -4,12 +4,15 @@ import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { useMarketingWorkspace } from "@/components/workspace/useMarketingWorkspace";
 import { auditWorkspace, generateWeeklyRunbook, listSnapshots } from "@/lib/marketing-workspace";
+import { createFlowRun, getGuidedFlowCatalog } from "@/lib/guided-flows";
 
 export function WorkspaceClient() {
   const { workspace, storageStatus, exports, saveWeeklyReviewSnapshot } = useMarketingWorkspace();
   const audit = auditWorkspace(workspace);
   const runbook = generateWeeklyRunbook({ workspace });
   const snapshots = listSnapshots(workspace);
+  const flows = getGuidedFlowCatalog();
+  const activeFlow = createFlowRun("fechamento-semanal-completo", { completedStepIds: ["abrir-imports", "colar-relatorio"] });
 
   return (
     <div className="space-y-6">
@@ -38,6 +41,28 @@ export function WorkspaceClient() {
         <MetricCard label="Readiness" value={`${workspace.activeCycle.readinessScore}/100`} detail={workspace.activeCycle.riskStatus} />
         <MetricCard label="Snapshots" value={snapshots.length} detail="locais e sanitizados" />
         <MetricCard label="Integridade" value={audit.status} detail={`${audit.score}/100`} />
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+            <h3 className="mt-1 text-lg font-semibold">Fluxos em andamento</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {activeFlow.progressPercent}% do fluxo semanal simulado concluido. O progresso real fica apenas neste navegador quando o fluxo e aberto.
+            </p>
+          </div>
+          <Link href="/flows" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir fluxos</Link>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {flows.slice(0, 3).map((flow) => (
+            <article key={flow.id} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-ink">{flow.name}</p>
+              <p className="mt-1 text-slate-600">{flow.steps.length} etapas | {flow.outputs.length} saidas</p>
+              <Link href={`/flows/${flow.id}`} className="mt-2 inline-block font-semibold text-ocean hover:underline">Retomar</Link>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">

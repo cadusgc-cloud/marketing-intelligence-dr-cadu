@@ -6,6 +6,8 @@ import { buildContentStudioCheckReport } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 import { auditWorkspace, buildDefaultMarketingWorkspace } from "@/lib/marketing-workspace";
+import { getGuidedFlowCatalog, validateGuidedFlowCatalog } from "@/lib/guided-flows";
+import { buildDefaultReleaseReadinessReport } from "@/lib/release-readiness";
 
 const statusClasses = {
   aprovado: "bg-green-50 text-leaf",
@@ -23,6 +25,9 @@ export default function QaPage() {
   const weeklyReview = buildDefaultWeeklyReview();
   const workspace = buildDefaultMarketingWorkspace();
   const workspaceAudit = auditWorkspace(workspace);
+  const guidedFlows = getGuidedFlowCatalog();
+  const flowValidation = validateGuidedFlowCatalog(guidedFlows);
+  const releaseReport = buildDefaultReleaseReadinessReport();
   const approvedDays = dogfood.dailyReadiness.filter((day) => day.risk === "seguro" || day.risk === "atencao").length;
   const reviewDays = dogfood.dailyReadiness.filter((day) => day.risk === "revisar_antes_de_postar").length;
   const blockedDays = dogfood.dailyReadiness.filter((day) => day.risk === "bloquear").length;
@@ -62,6 +67,25 @@ export default function QaPage() {
         <MetricCard label="Intelligence v6" value={intelligence.report.quality.status} detail={`${intelligence.intelligenceScore}/100`} />
         <MetricCard label="Weekly v7" value={weeklyReview.quality.status} detail={`${weeklyReview.quality.score}/100`} />
         <MetricCard label="Workspace v8" value={workspaceAudit.status} detail={`${workspaceAudit.score}/100`} />
+        <MetricCard label="Flows v9" value={flowValidation.ok ? "aprovado" : "revisar"} detail={`${guidedFlows.length} fluxos`} />
+        <MetricCard label="RC v9" value={releaseReport.status} detail={`${releaseReport.routes.length} rotas`} />
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+            <h3 className="mt-1 text-lg font-semibold">Flows check e RC check</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {guidedFlows.length} fluxos catalogados | bloqueios {flowValidation.blockingIssues.length} | release {releaseReport.status}. Scripts esperados: flows:check, rc:check e qa:flows.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/flows" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir Fluxos</Link>
+            <Link href="/release" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir Release</Link>
+            <LocalCopyButton text={releaseReport.reportMarkdown} label="Copiar RC" />
+          </div>
+        </div>
       </section>
 
       <section className="panel">

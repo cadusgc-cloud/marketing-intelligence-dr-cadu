@@ -425,3 +425,32 @@ Fluxo semanal recomendado:
 5. Sabado: exportar backup tecnico local e criar novo snapshot.
 
 A V8 continua sem API externa, sem backend real, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.
+
+## Marketing OS v9 - Fluxos guiados e release candidate local
+
+A V9 transforma o Marketing OS em uma experiencia operacional guiada. O usuario pode comecar por `/command-center`, escolher um fluxo em `/flows`, executar etapas em `/flows/[id]`, revisar prontidao em `/release` e aprender o uso do zero em `/onboarding`.
+
+Rotas novas:
+
+- `/command-center` - status geral, proxima acao, alertas, atalhos e release resumido.
+- `/flows` - catalogo com pelo menos 15 fluxos guiados.
+- `/flows/[id]` - runner local com progresso, pre-requisitos, etapas e exportacao.
+- `/release` - Release Candidate local, checklist e PR draft.
+- `/onboarding` - primeiros passos para usar o OS sem depender de memoria.
+
+Scripts novos:
+
+```bash
+npm run flows:check
+npm run rc:check
+npm run qa:flows
+```
+
+Fluxo recomendado:
+
+1. Abrir `/command-center`.
+2. Seguir a proxima acao.
+3. Abrir `/flows` e executar o fluxo certo para a rotina.
+4. Usar `/release` antes de preparar push/PR.
+
+A V9 continua sem API externa, sem backend real, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.

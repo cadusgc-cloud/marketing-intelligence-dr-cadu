@@ -1,9 +1,12 @@
+import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildDefaultMarketingWorkspace, generateWeeklyRunbook } from "@/lib/marketing-workspace";
+import { getGuidedFlowCatalog } from "@/lib/guided-flows";
 
 export default function RunbookPage() {
   const workspace = buildDefaultMarketingWorkspace();
   const runbook = generateWeeklyRunbook({ workspace });
+  const flows = getGuidedFlowCatalog();
   return (
     <div className="space-y-6">
       <section className="panel">
@@ -23,6 +26,19 @@ export default function RunbookPage() {
         <MetricCard label="Dias" value={runbook.days.length} />
         <MetricCard label="Tempo estimado" value={`${runbook.totalEstimatedMinutes} min`} />
         <MetricCard label="Status" value={runbook.status} />
+      </section>
+      <section className="panel">
+        <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+        <h3 className="mt-1 text-lg font-semibold">Runbook conectado aos fluxos guiados</h3>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {flows.filter((flow) => ["fechamento-semanal-completo", "produzir-conteudo-semana", "backup-local"].includes(flow.id)).map((flow) => (
+            <article key={flow.id} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-ink">{flow.name}</p>
+              <p className="mt-1 text-slate-600">{flow.estimatedMinutes} min | {flow.complexity}</p>
+              <Link href={`/flows/${flow.id}`} className="mt-2 inline-block font-semibold text-ocean hover:underline">Executar fluxo</Link>
+            </article>
+          ))}
+        </div>
       </section>
       <section className="grid gap-6 xl:grid-cols-2">
         {runbook.days.map((day) => (

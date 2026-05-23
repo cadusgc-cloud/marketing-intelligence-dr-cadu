@@ -6,6 +6,8 @@ import { buildStudioDashboardPackage } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 import { buildDefaultMarketingWorkspace, buildWorkspaceExports } from "@/lib/marketing-workspace";
+import { buildFlowExportBundle, createFlowRun, getGuidedFlowById } from "@/lib/guided-flows";
+import { buildDefaultReleaseReadinessReport } from "@/lib/release-readiness";
 
 export default function ExportsPage() {
   const state = buildMarketingOpsState();
@@ -16,6 +18,10 @@ export default function ExportsPage() {
   const weeklyReview = buildDefaultWeeklyReview();
   const workspace = buildDefaultMarketingWorkspace();
   const workspaceExports = buildWorkspaceExports(workspace);
+  const weeklyFlow = getGuidedFlowById("fechamento-semanal-completo");
+  const flowRun = createFlowRun("fechamento-semanal-completo", { completedStepIds: ["abrir-imports", "colar-relatorio", "validar-importacao"] });
+  const flowExports = weeklyFlow ? buildFlowExportBundle(weeklyFlow, flowRun) : undefined;
+  const releaseReport = buildDefaultReleaseReadinessReport();
 
   return (
     <div className="space-y-6">
@@ -39,6 +45,26 @@ export default function ExportsPage() {
         <MetricCard label="Pacotes de usuario" value={packages.filter((pkg) => pkg.userFacing).length} detail="texto copiavel" />
         <MetricCard label="Dias" value={state.dashboard.days.length} detail={state.dashboard.month.name} />
         <MetricCard label="Readiness mes" value={`${state.dashboard.readiness.month.score}/100`} detail={state.dashboard.readiness.month.status} />
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes de fluxos e release</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Resumo do fluxo guiado, checklist, outputs TSV, release readiness e rascunho de PR. Push continua sendo apenas comando sugerido.
+            </p>
+          </div>
+          <LocalCopyButton text={releaseReport.prDraft.markdown} label="Copiar PR draft" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {flowExports ? <PilotExportBlock title="Resumo do fluxo" text={flowExports.flowSummaryMarkdown} /> : null}
+          {flowExports ? <PilotExportBlock title="Checklist do fluxo" text={flowExports.flowChecklistMarkdown} /> : null}
+          {flowExports ? <PilotExportBlock title="Outputs TSV" text={flowExports.flowOutputsTsv} /> : null}
+          <PilotExportBlock title="Release readiness" text={releaseReport.reportMarkdown} />
+          <PilotExportBlock title="PR draft" text={releaseReport.prDraft.markdown} />
+        </div>
       </section>
 
       <section className="panel">

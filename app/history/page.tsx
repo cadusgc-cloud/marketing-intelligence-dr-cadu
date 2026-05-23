@@ -1,10 +1,13 @@
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildDefaultMarketingWorkspace, exportHistoryMarkdown, exportHistoryTSV, filterHistoryEvents, summarizeHistory } from "@/lib/marketing-workspace";
+import { buildFlowHistoryEvents, createFlowRun } from "@/lib/guided-flows";
 
 export default function HistoryPage() {
   const workspace = buildDefaultMarketingWorkspace();
   const summary = summarizeHistory(workspace.history);
   const reviewEvents = filterHistoryEvents(workspace.history, { relatedRoute: "/weekly-review" });
+  const flowRun = createFlowRun("fechamento-semanal-completo", { completedStepIds: ["abrir-imports", "colar-relatorio", "validar-importacao"] });
+  const flowEvents = buildFlowHistoryEvents(flowRun);
 
   return (
     <div className="space-y-6">
@@ -30,6 +33,19 @@ export default function HistoryPage() {
       <section className="grid gap-6 xl:grid-cols-2">
         <Timeline title="Todos os eventos" events={workspace.history} />
         <Timeline title="Fechamentos e decisoes" events={reviewEvents} />
+      </section>
+      <section className="panel">
+        <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+        <h3 className="mt-1 text-lg font-semibold">Eventos de fluxo guiado</h3>
+        <div className="mt-4 space-y-3">
+          {flowEvents.map((event) => (
+            <article key={`${event.type}-${event.description}`} className="rounded-lg border border-slate-200 p-4 text-sm">
+              <span className="badge bg-cyan-50 text-ocean">{event.type}</span>
+              <p className="mt-2 font-semibold text-ink">{event.title}</p>
+              <p className="mt-1 text-slate-600">{event.description}</p>
+            </article>
+          ))}
+        </div>
       </section>
     </div>
   );

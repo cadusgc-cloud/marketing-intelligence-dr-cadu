@@ -21,6 +21,8 @@ import { buildStudioDashboardPackage } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 import { auditWorkspace, buildDefaultMarketingWorkspace, generateWeeklyRunbook } from "@/lib/marketing-workspace";
+import { buildCommandCenterDashboard, getGuidedFlowCatalog } from "@/lib/guided-flows";
+import { buildDefaultReleaseReadinessReport } from "@/lib/release-readiness";
 import { safetyClassificationLabel, type SafetyClassification } from "@/lib/monthly-editorial";
 
 const LOCAL_STATE_KEY = "marketing-os-v3-local-state";
@@ -94,6 +96,9 @@ export function OperationsClient() {
   const workspace = useMemo(() => buildDefaultMarketingWorkspace(), []);
   const workspaceAudit = useMemo(() => auditWorkspace(workspace), [workspace]);
   const runbook = useMemo(() => generateWeeklyRunbook({ workspace }), [workspace]);
+  const commandCenter = useMemo(() => buildCommandCenterDashboard(), []);
+  const guidedFlows = useMemo(() => getGuidedFlowCatalog(), []);
+  const releaseReport = useMemo(() => buildDefaultReleaseReadinessReport(), []);
   const dashboard = state.dashboard;
   const [localState, setLocalState] = useState<OpsLocalState>(() => getDefaultOpsLocalState());
   const [hydrated, setHydrated] = useState(false);
@@ -160,7 +165,7 @@ export function OperationsClient() {
       <section className="panel">
         <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-ocean">Marketing OS v3 + v4 + v5 + v6</p>
+            <p className="text-sm font-medium text-ocean">Marketing OS v3 + v4 + v5 + v6 + v7 + v8 + v9</p>
             <h2 className="mt-1 text-3xl font-semibold tracking-normal">Central Operacional de Execucao Editorial</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Painel interno para transformar o plano mensal em tarefas do dia, stories copiaveis, midia natural, safety, readiness e exportacao manual. Nada aqui publica, conecta API, envia mensagem ou usa dados de paciente.
@@ -174,6 +179,8 @@ export function OperationsClient() {
         <div className="mt-5 flex flex-wrap gap-2">
           {[
             ["/storyops", "StoryOps"],
+            ["/command-center", "Command Center"],
+            ["/flows", "Fluxos"],
             ["/campaigns", "Campanhas"],
             ["/studio", "Content Studio"],
             ["/library", "Biblioteca"],
@@ -183,6 +190,8 @@ export function OperationsClient() {
             ["/history", "Historico"],
             ["/runbook", "Runbook"],
             ["/audit-log", "Registro"],
+            ["/release", "Release"],
+            ["/onboarding", "Primeiros Passos"],
             ["/weekly-review", "Fechamento v7"],
             ["/imports", "Importacoes"],
             ["/performance", "Performance"],
@@ -218,6 +227,35 @@ export function OperationsClient() {
         <MetricCard label="Intelligence v6" value={`${intelligence.intelligenceScore}/100`} detail={`${intelligence.report.recommendations.length} proximas acoes`} />
         <MetricCard label="Fechamento v7" value={weeklyReview.quality.confidence} detail={`${weeklyReview.tasks.length} tarefas semanais`} />
         <MetricCard label="Workspace v8" value={workspaceAudit.status} detail={`${workspace.snapshots.length} snapshots | runbook ${runbook.days.length} dias`} />
+        <MetricCard label="Command Center v9" value={commandCenter.systemStatus} detail={commandCenter.nextAction.title} />
+        <MetricCard label="Fluxos guiados" value={guidedFlows.length} detail={`release ${releaseReport.status}`} />
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+            <h3 className="mt-1 text-lg font-semibold">Proxima acao operacional</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {commandCenter.nextAction.title} | {commandCenter.nextAction.estimatedMinutes} min | risco {commandCenter.nextAction.risk}. {commandCenter.nextAction.reason}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/command-center" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Command Center</Link>
+            <Link href={commandCenter.nextAction.recommendedRoute} className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir acao</Link>
+            <Link href="/flows" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Fluxos</Link>
+            <Link href="/release" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Release</Link>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {commandCenter.prioritizedFlows.slice(0, 3).map((flow) => (
+            <article key={flow.id} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-ink">{flow.name}</p>
+              <p className="mt-1 text-slate-600">{flow.steps.length} etapas | {flow.estimatedMinutes} min | {flow.status}</p>
+              <Link href={`/flows/${flow.id}`} className="mt-2 inline-block text-sm font-semibold text-ocean hover:underline">Executar fluxo</Link>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="panel">
@@ -384,11 +422,11 @@ export function OperationsClient() {
             <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-2">
               <div className="rounded-md bg-slate-50 p-3">
                 <p className="font-semibold text-ink">Temas</p>
-                <ul className="mt-2 space-y-1">{dashboard.week.themes.slice(0, 7).map((theme) => <li key={theme}>- {theme}</li>)}</ul>
+                <ul className="mt-2 space-y-1">{dashboard.week.themes.slice(0, 7).map((theme, index) => <li key={`${theme}-${index}`}>- {theme}</li>)}</ul>
               </div>
               <div className="rounded-md bg-slate-50 p-3">
                 <p className="font-semibold text-ink">Checklist</p>
-                <ul className="mt-2 space-y-1">{dashboard.week.checklist.map((item) => <li key={item}>- {item}</li>)}</ul>
+                <ul className="mt-2 space-y-1">{dashboard.week.checklist.map((item, index) => <li key={`${item}-${index}`}>- {item}</li>)}</ul>
               </div>
             </div>
           </section>
@@ -547,7 +585,7 @@ export function OperationsClient() {
           <h3 className="mt-1 text-lg font-semibold">Captura de midia natural</h3>
           <div className="mt-4 rounded-md bg-slate-50 p-3 text-sm">
             <p className="font-semibold text-ink">Lacunas</p>
-            <ul className="mt-2 space-y-1 text-slate-600">{dashboard.media.gaps.map((gap) => <li key={gap}>- {gap}</li>)}</ul>
+            <ul className="mt-2 space-y-1 text-slate-600">{dashboard.media.gaps.map((gap, index) => <li key={`${gap}-${index}`}>- {gap}</li>)}</ul>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {getMediaOpsCategories().slice(0, 10).map((category) => <span key={category} className="badge bg-slate-100 text-slate-700">{category}</span>)}
@@ -571,7 +609,7 @@ export function OperationsClient() {
             <MetricCard label="Seguros" value={dashboard.safety.safeContent} />
           </div>
           <ul className="mt-4 space-y-2 text-sm text-slate-600">
-            {dashboard.readiness.bottlenecks.map((item) => <li key={item}>- {item}</li>)}
+            {dashboard.readiness.bottlenecks.map((item, index) => <li key={`${item}-${index}`}>- {item}</li>)}
           </ul>
         </div>
 

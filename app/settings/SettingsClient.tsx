@@ -4,10 +4,12 @@ import { useState } from "react";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { useMarketingWorkspace } from "@/components/workspace/useMarketingWorkspace";
 import { normalizeWorkspaceSettings } from "@/lib/marketing-workspace";
+import { getGuidedFlowCatalog } from "@/lib/guided-flows";
 
 export function SettingsClient() {
   const { workspace, exports, persist, resetLocalWorkspace, storageStatus } = useMarketingWorkspace();
   const [confirmReset, setConfirmReset] = useState(false);
+  const flows = getGuidedFlowCatalog();
 
   function updateWeekStartsOn(value: "domingo" | "segunda") {
     persist({ ...workspace, settings: normalizeWorkspaceSettings({ ...workspace.settings, weekStartsOn: value }) });
@@ -72,6 +74,28 @@ export function SettingsClient() {
             </button>
           </div>
         </section>
+      </section>
+
+      <section className="panel">
+        <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+        <h3 className="mt-1 text-lg font-semibold">Preferencias dos fluxos guiados</h3>
+        <p className="mt-2 text-sm text-slate-600">
+          {flows.length} fluxos usam progresso local opcional, modo seguro ativo por padrao e nenhum dado sensivel. O reset local nao apaga codigo, banco ou arquivos do projeto.
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <div className="rounded-md bg-slate-50 p-3 text-sm">
+            <p className="font-semibold text-ink">Progresso local</p>
+            <p className="mt-1 text-slate-600">Client-only via localStorage quando disponivel.</p>
+          </div>
+          <div className="rounded-md bg-slate-50 p-3 text-sm">
+            <p className="font-semibold text-ink">Publicacao</p>
+            <p className="mt-1 text-slate-600">Sempre manual, fora do sistema.</p>
+          </div>
+          <div className="rounded-md bg-slate-50 p-3 text-sm">
+            <p className="font-semibold text-ink">Backup</p>
+            <p className="mt-1 text-slate-600">Somente JSON tecnico exportado pelo usuario.</p>
+          </div>
+        </div>
       </section>
     </div>
   );

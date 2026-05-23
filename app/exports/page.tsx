@@ -5,6 +5,7 @@ import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 import { buildStudioDashboardPackage } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
+import { buildDefaultMarketingWorkspace, buildWorkspaceExports } from "@/lib/marketing-workspace";
 
 export default function ExportsPage() {
   const state = buildMarketingOpsState();
@@ -13,6 +14,8 @@ export default function ExportsPage() {
   const studio = buildStudioDashboardPackage();
   const intelligence = buildIntelligenceDashboard();
   const weeklyReview = buildDefaultWeeklyReview();
+  const workspace = buildDefaultMarketingWorkspace();
+  const workspaceExports = buildWorkspaceExports(workspace);
 
   return (
     <div className="space-y-6">
@@ -54,6 +57,27 @@ export default function ExportsPage() {
           <PilotExportBlock title="Etus/manual" text={pilot.exports.etusManual} />
           <PilotExportBlock title="Google Sheets TSV" text={pilot.exports.googleSheetsTsv} />
           <PilotExportBlock title="Google Agenda" text={pilot.exports.googleAgendaText} />
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v8</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes do Workspace Local</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Backup tecnico JSON, historico Markdown/TSV, runbook, snapshots e integridade local. Nada e enviado para servidor.
+            </p>
+          </div>
+          <LocalCopyButton text={workspaceExports.backupJson} label="Copiar backup v8" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <PilotExportBlock title="Backup tecnico" text={workspaceExports.backupJson} />
+          <PilotExportBlock title="Historico Markdown" text={workspaceExports.historyMarkdown} />
+          <PilotExportBlock title="Historico TSV" text={workspaceExports.historyTsv} />
+          <PilotExportBlock title="Runbook" text={workspaceExports.runbookMarkdown} />
+          <PilotExportBlock title="Snapshots" text={workspaceExports.snapshotsMarkdown} />
+          <PilotExportBlock title="Integridade" text={workspaceExports.integrityMarkdown} />
         </div>
       </section>
 

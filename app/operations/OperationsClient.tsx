@@ -20,6 +20,7 @@ import { runMarketingDogfoodingScenario } from "@/lib/marketing-dogfooding";
 import { buildStudioDashboardPackage } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
+import { auditWorkspace, buildDefaultMarketingWorkspace, generateWeeklyRunbook } from "@/lib/marketing-workspace";
 import { safetyClassificationLabel, type SafetyClassification } from "@/lib/monthly-editorial";
 
 const LOCAL_STATE_KEY = "marketing-os-v3-local-state";
@@ -90,6 +91,9 @@ export function OperationsClient() {
   const studio = useMemo(() => buildStudioDashboardPackage(), []);
   const intelligence = useMemo(() => buildIntelligenceDashboard(), []);
   const weeklyReview = useMemo(() => buildDefaultWeeklyReview(), []);
+  const workspace = useMemo(() => buildDefaultMarketingWorkspace(), []);
+  const workspaceAudit = useMemo(() => auditWorkspace(workspace), [workspace]);
+  const runbook = useMemo(() => generateWeeklyRunbook({ workspace }), [workspace]);
   const dashboard = state.dashboard;
   const [localState, setLocalState] = useState<OpsLocalState>(() => getDefaultOpsLocalState());
   const [hydrated, setHydrated] = useState(false);
@@ -175,6 +179,10 @@ export function OperationsClient() {
             ["/library", "Biblioteca"],
             ["/recording", "Gravacao"],
             ["/review", "Revisao"],
+            ["/workspace", "Workspace"],
+            ["/history", "Historico"],
+            ["/runbook", "Runbook"],
+            ["/audit-log", "Registro"],
             ["/weekly-review", "Fechamento v7"],
             ["/imports", "Importacoes"],
             ["/performance", "Performance"],
@@ -209,6 +217,7 @@ export function OperationsClient() {
         <MetricCard label="Studio v5" value={`${studio.averageReadiness}/100`} detail={`${studio.productionQueue.length} itens de producao`} />
         <MetricCard label="Intelligence v6" value={`${intelligence.intelligenceScore}/100`} detail={`${intelligence.report.recommendations.length} proximas acoes`} />
         <MetricCard label="Fechamento v7" value={weeklyReview.quality.confidence} detail={`${weeklyReview.tasks.length} tarefas semanais`} />
+        <MetricCard label="Workspace v8" value={workspaceAudit.status} detail={`${workspace.snapshots.length} snapshots | runbook ${runbook.days.length} dias`} />
       </section>
 
       <section className="panel">
@@ -224,6 +233,31 @@ export function OperationsClient() {
             <Link href="/qa" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir QA</Link>
             <LocalCopyButton text={dogfood.scenario.exports.weeklyMarkdown} label="Copiar semana piloto" />
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v8</p>
+            <h3 className="mt-1 text-lg font-semibold">Workspace, historico e runbook</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {workspace.metadata.name} | integridade {workspaceAudit.status} {workspaceAudit.score}/100 | {workspace.history.length} eventos | {workspace.snapshots.length} snapshots.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/workspace" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Workspace</Link>
+            <Link href="/runbook" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Runbook</Link>
+            <Link href="/history" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Historico</Link>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {runbook.days.slice(0, 3).map((day) => (
+            <article key={day.date} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-ink">{day.weekday} - {day.objective}</p>
+              <p className="mt-1 text-slate-600">{day.tasks.length} tarefas | {day.tasks.reduce((sum, task) => sum + task.estimatedMinutes, 0)} min</p>
+            </article>
+          ))}
         </div>
       </section>
 

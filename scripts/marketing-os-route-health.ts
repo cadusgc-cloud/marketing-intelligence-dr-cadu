@@ -8,6 +8,7 @@ import { buildContentStudioCheckReport, generateContentStudioPackage } from "../
 import { buildIntelligenceDashboard } from "../lib/marketing-intelligence";
 import { parseReportImport, sampleGenericTsv } from "../lib/report-imports";
 import { buildDefaultWeeklyReview } from "../lib/weekly-review";
+import { auditWorkspace, buildDefaultMarketingWorkspace, generateWeeklyRunbook } from "../lib/marketing-workspace";
 
 export type RouteHealthItem = {
   route: string;
@@ -35,6 +36,11 @@ const routeFiles = [
   ["/library", "app/library/page.tsx", "Biblioteca Editorial"],
   ["/recording", "app/recording/page.tsx", "Planejamento de Gravacao"],
   ["/review", "app/review/page.tsx", "Fila de Revisao"],
+  ["/workspace", "app/workspace/page.tsx", "Workspace"],
+  ["/history", "app/history/page.tsx", "Historico"],
+  ["/runbook", "app/runbook/page.tsx", "Runbook Semanal"],
+  ["/settings", "app/settings/page.tsx", "Configuracoes Locais"],
+  ["/audit-log", "app/audit-log/page.tsx", "Registro Operacional"],
   ["/metrics", "app/metrics/page.tsx", "Metricas Manuais"],
   ["/experiments", "app/experiments/page.tsx", "Experimentos Editoriais"],
   ["/strategy", "app/strategy/page.tsx", "Estrategia"],
@@ -52,6 +58,9 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
   const intelligence = buildIntelligenceDashboard();
   const reportImport = parseReportImport({ source: "generic", text: sampleGenericTsv, periodStart: "2026-05-17", periodEnd: "2026-05-30" });
   const weeklyReview = buildDefaultWeeklyReview();
+  const workspace = buildDefaultMarketingWorkspace();
+  const workspaceAudit = auditWorkspace(workspace);
+  const runbook = generateWeeklyRunbook({ workspace });
   const items: RouteHealthItem[] = routeFiles.map(([route, file]) => ({
     route,
     status: existsSync(path.join(process.cwd(), file)) ? "ok" : "falha",
@@ -92,6 +101,11 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
     route: "engine:weekly-review",
     status: weeklyReview.nextWeekPlan.days.length === 7 && weeklyReview.currentRecords.length >= 35 ? "ok" : "falha",
     message: `Weekly review: ${weeklyReview.currentRecords.length} registros, ${weeklyReview.nextWeekPlan.days.length} dias`
+  });
+  items.push({
+    route: "engine:workspace",
+    status: workspace.snapshots.length >= 2 && workspaceAudit.status !== "bloquear" && runbook.days.length === 7 ? "ok" : "falha",
+    message: `Workspace: ${workspace.history.length} eventos, ${workspace.snapshots.length} snapshots, ${workspaceAudit.status}`
   });
 
   return {

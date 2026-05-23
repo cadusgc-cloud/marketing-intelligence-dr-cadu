@@ -397,3 +397,31 @@ Fluxo semanal recomendado:
 6. Abrir `/performance` para revisar sinais e priorizar a proxima semana.
 
 A V7 nao conecta APIs, nao publica, nao faz upload, nao altera banco, nao salva credenciais e nao deve receber dados identificaveis.
+
+## Marketing OS v8 - Workspace local e historico operacional
+
+A V8 adiciona uma camada de continuidade local para o Marketing OS:
+
+- `/workspace`: estado local, semana ativa, snapshots, backup, restore e integridade.
+- `/history`: historico operacional sanitizado.
+- `/runbook`: checklist semanal por dia.
+- `/settings`: configuracoes locais sem backend.
+- `/audit-log`: eventos de auditoria e severidade.
+
+Scripts novos:
+
+```bash
+npm run workspace:check
+npm run backup:check
+npm run qa:workspace
+```
+
+Fluxo semanal recomendado:
+
+1. Domingo: abrir `/weekly-review`, importar metricas manuais e fechar a semana.
+2. Criar snapshot em `/workspace`.
+3. Seguir o checklist em `/runbook`.
+4. Usar `/operations`, `/studio`, `/review` e `/exports` para execucao manual.
+5. Sabado: exportar backup tecnico local e criar novo snapshot.
+
+A V8 continua sem API externa, sem backend real, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.

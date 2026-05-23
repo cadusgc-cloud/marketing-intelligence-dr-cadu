@@ -3,10 +3,12 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
+import { useMarketingWorkspace } from "@/components/workspace/useMarketingWorkspace";
 import { getSampleReportImportText, parseReportImport, type ReportSource } from "@/lib/report-imports";
 import { buildWeekPeriod, generateWeeklyReview } from "@/lib/weekly-review";
 
 export function WeeklyReviewClient() {
+  const { saveWeeklyReviewSnapshot, storageStatus } = useMarketingWorkspace();
   const [source, setSource] = useState<ReportSource>("generic");
   const [periodStart, setPeriodStart] = useState("2026-05-24");
   const [objective, setObjective] = useState("Fechar desempenho semanal e planejar a proxima semana.");
@@ -45,7 +47,9 @@ export function WeeklyReviewClient() {
           </div>
           <div className="flex flex-wrap gap-2">
             <LocalCopyButton text={review.exports.weeklyMarkdown} label="Copiar relatorio" />
+            <button type="button" onClick={saveWeeklyReviewSnapshot} className="rounded-md bg-ink px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">Salvar no workspace</button>
             <Link href="/imports" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Importacoes</Link>
+            <Link href="/workspace" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Workspace</Link>
           </div>
         </div>
       </section>
@@ -57,6 +61,7 @@ export function WeeklyReviewClient() {
         <MetricCard label="Registros" value={review.currentRecords.length} detail={`${review.previousRecords.length} anteriores`} />
         <MetricCard label="Alcance" value={review.summary.totals.reach} detail="semana atual" />
         <MetricCard label="Tarefas" value={review.tasks.length} detail="proxima semana" />
+        <MetricCard label="Workspace" value={storageStatus} detail="persistencia local opcional" />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-7">

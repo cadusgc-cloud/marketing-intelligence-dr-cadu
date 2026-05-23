@@ -5,6 +5,7 @@ import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 import { buildStudioDashboardPackage, buildUnifiedQualityMarkdown } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
+import { auditWorkspace, buildDefaultMarketingWorkspace, buildWorkspaceExports } from "@/lib/marketing-workspace";
 import { safetyClassificationLabel } from "@/lib/monthly-editorial";
 
 const riskClasses = {
@@ -22,6 +23,9 @@ export default function SafetyPage() {
   const studio = buildStudioDashboardPackage();
   const intelligence = buildIntelligenceDashboard();
   const weeklyReview = buildDefaultWeeklyReview();
+  const workspace = buildDefaultMarketingWorkspace();
+  const workspaceAudit = auditWorkspace(workspace);
+  const workspaceExports = buildWorkspaceExports(workspace);
   const studioQualityReport = buildUnifiedQualityMarkdown(studio.packageItem.quality);
 
   return (
@@ -44,6 +48,19 @@ export default function SafetyPage() {
               Operacoes
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v8</p>
+            <h3 className="mt-1 text-lg font-semibold">Auditoria local do workspace</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Status {workspaceAudit.status} | score {workspaceAudit.score}/100 | snapshots e backup tecnico sanitizados.
+            </p>
+          </div>
+          <LocalCopyButton text={workspaceExports.integrityMarkdown} label="Copiar auditoria V8" />
         </div>
       </section>
 

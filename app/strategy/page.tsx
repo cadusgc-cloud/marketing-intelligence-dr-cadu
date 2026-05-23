@@ -22,6 +22,7 @@ export default function StrategyPage() {
           <div className="flex flex-wrap gap-2">
             <LocalCopyButton text={roadmap.exportText} label="Copiar roadmap" />
             <Link href="/weekly-review" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Fechamento v7</Link>
+            <Link href="/workspace" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Workspace</Link>
             <Link href="/studio" className="rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Abrir Studio</Link>
           </div>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { getSampleReportImportText, parseReportImport, type ReportSource } from "@/lib/report-imports";
 
@@ -35,7 +36,10 @@ export function ImportsClient() {
               Cole CSV/TSV exportado manualmente, escolha a origem, valide colunas, normalize dados e bloqueie qualquer conteudo sensivel. Nada e enviado para API ou servidor externo.
             </p>
           </div>
-          <LocalCopyButton text={result.exports.normalizedTsv} label="Copiar normalizado" />
+          <div className="flex flex-wrap gap-2">
+            <LocalCopyButton text={result.exports.normalizedTsv} label="Copiar normalizado" />
+            <Link href="/workspace" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Workspace</Link>
+          </div>
         </div>
       </section>
 

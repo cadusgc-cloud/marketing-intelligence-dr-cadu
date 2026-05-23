@@ -4,6 +4,7 @@ import { buildDogfoodingReportMarkdown, buildPrReadinessMarkdown, runMarketingDo
 import { buildQualityReportMarkdown } from "@/lib/marketing-quality";
 import { buildContentStudioCheckReport } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
+import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 
 const statusClasses = {
   aprovado: "bg-green-50 text-leaf",
@@ -18,6 +19,7 @@ export default function QaPage() {
   const prMarkdown = buildPrReadinessMarkdown(dogfood);
   const studioCheck = buildContentStudioCheckReport();
   const intelligence = buildIntelligenceDashboard();
+  const weeklyReview = buildDefaultWeeklyReview();
   const approvedDays = dogfood.dailyReadiness.filter((day) => day.risk === "seguro" || day.risk === "atencao").length;
   const reviewDays = dogfood.dailyReadiness.filter((day) => day.risk === "revisar_antes_de_postar").length;
   const blockedDays = dogfood.dailyReadiness.filter((day) => day.risk === "bloquear").length;
@@ -55,6 +57,23 @@ export default function QaPage() {
         <MetricCard label="Exports" value={dogfood.exportsGenerated.length} detail="pacotes locais" />
         <MetricCard label="Studio v5" value={studioCheck.status} detail={`${studioCheck.generatedPackages} pacotes`} />
         <MetricCard label="Intelligence v6" value={intelligence.report.quality.status} detail={`${intelligence.intelligenceScore}/100`} />
+        <MetricCard label="Weekly v7" value={weeklyReview.quality.status} detail={`${weeklyReview.quality.score}/100`} />
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v7</p>
+            <h3 className="mt-1 text-lg font-semibold">Import check e weekly check</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {weeklyReview.currentRecords.length} registros no fechamento | {weeklyReview.nextWeekPlan.days.length} dias na proxima semana | confianca {weeklyReview.quality.confidence}.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/weekly-review" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir V7</Link>
+            <LocalCopyButton text={weeklyReview.exports.importQualityMarkdown} label="Copiar QA V7" />
+          </div>
+        </div>
       </section>
 
       <section className="panel">

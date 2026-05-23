@@ -4,6 +4,7 @@ import { buildMarketingOpsState, exportSafetyReport } from "@/lib/marketing-ops"
 import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 import { buildStudioDashboardPackage, buildUnifiedQualityMarkdown } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
+import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 import { safetyClassificationLabel } from "@/lib/monthly-editorial";
 
 const riskClasses = {
@@ -20,6 +21,7 @@ export default function SafetyPage() {
   const pilot = buildPilotWeekScenario();
   const studio = buildStudioDashboardPackage();
   const intelligence = buildIntelligenceDashboard();
+  const weeklyReview = buildDefaultWeeklyReview();
   const studioQualityReport = buildUnifiedQualityMarkdown(studio.packageItem.quality);
 
   return (
@@ -51,6 +53,20 @@ export default function SafetyPage() {
         <MetricCard label="Bloqueados" value={safety.blockedContent} />
         <MetricCard label="Revisar" value={safety.needsReview} />
         <MetricCard label="Seguros" value={safety.safeContent} />
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v7</p>
+            <h3 className="mt-1 text-lg font-semibold">Auditoria de importacao semanal</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              O fechamento semanal bloqueia imports com CPF, telefone, prontuario, token, antes/depois ou bastidor especifico. O exemplo padrao permanece agregado e ficticio.
+            </p>
+          </div>
+          <LocalCopyButton text={weeklyReview.exports.sensitiveAuditMarkdown} label="Copiar auditoria V7" />
+        </div>
+        <pre className="mt-4 max-h-72 overflow-auto whitespace-pre-wrap rounded-md bg-slate-950 p-3 text-xs leading-5 text-slate-50">{weeklyReview.exports.sensitiveAuditMarkdown}</pre>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">

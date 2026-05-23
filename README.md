@@ -368,3 +368,32 @@ npm run health:routes
 ```
 
 A V6 continua sem API externa, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.
+
+## Marketing OS v7 - Coleta Semanal Guiada
+
+A V7 adiciona a rotina semanal para importar relatorios manuais, validar qualidade, fechar desempenho e gerar o plano da proxima semana.
+
+Rotas principais da V7:
+
+- `/imports` - colagem de CSV/TSV, origem do relatorio, mapeamento de colunas, validacao e normalizacao.
+- `/weekly-review` - assistente de fechamento semanal em sete etapas.
+- `/performance` - comparacao semanal, ranking de conteudos, pilares, formatos, oportunidades e Ads manual.
+
+Scripts da V7:
+
+```bash
+npm run import:check
+npm run weekly:check
+npm run qa:weekly
+```
+
+Fluxo semanal recomendado:
+
+1. Exportar os relatorios agregados manualmente.
+2. Colar em `/imports`.
+3. Conferir qualidade, duplicidades, datas e dados sensiveis.
+4. Abrir `/weekly-review`.
+5. Copiar relatorio semanal, TSV, Agenda, Etus/manual e tarefas.
+6. Abrir `/performance` para revisar sinais e priorizar a proxima semana.
+
+A V7 nao conecta APIs, nao publica, nao faz upload, nao altera banco, nao salva credenciais e nao deve receber dados identificaveis.

@@ -4,6 +4,7 @@ import { buildMarketingOpsState } from "@/lib/marketing-ops";
 import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 import { buildStudioDashboardPackage } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
+import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 
 export default function ExportsPage() {
   const state = buildMarketingOpsState();
@@ -11,6 +12,7 @@ export default function ExportsPage() {
   const pilot = buildPilotWeekScenario();
   const studio = buildStudioDashboardPackage();
   const intelligence = buildIntelligenceDashboard();
+  const weeklyReview = buildDefaultWeeklyReview();
 
   return (
     <div className="space-y-6">
@@ -52,6 +54,27 @@ export default function ExportsPage() {
           <PilotExportBlock title="Etus/manual" text={pilot.exports.etusManual} />
           <PilotExportBlock title="Google Sheets TSV" text={pilot.exports.googleSheetsTsv} />
           <PilotExportBlock title="Google Agenda" text={pilot.exports.googleAgendaText} />
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v7</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes do Fechamento Semanal</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Relatorio semanal, resumo executivo, TSV, Google Agenda, Etus/manual, tarefas, plano de gravacao, Ads manual e checklist da proxima coleta.
+            </p>
+          </div>
+          <LocalCopyButton text={weeklyReview.exports.weeklyMarkdown} label="Copiar V7" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <PilotExportBlock title="Relatorio semanal" text={weeklyReview.exports.weeklyMarkdown} />
+          <PilotExportBlock title="Resumo executivo" text={weeklyReview.exports.executiveSummary} />
+          <PilotExportBlock title="Google Sheets TSV v7" text={weeklyReview.exports.googleSheetsTsv} />
+          <PilotExportBlock title="Google Agenda v7" text={weeklyReview.exports.googleAgenda} />
+          <PilotExportBlock title="Etus/manual v7" text={weeklyReview.exports.etusManual} />
+          <PilotExportBlock title="Checklist de coleta" text={weeklyReview.exports.nextCollectionChecklist} />
         </div>
       </section>
 

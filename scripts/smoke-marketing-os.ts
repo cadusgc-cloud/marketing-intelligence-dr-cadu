@@ -8,6 +8,8 @@ import { generateMonthlyEditorialPlan, runMonthlySafetyGate } from "../lib/month
 import { buildStoryOpsSequence } from "../lib/storyops";
 import { buildContentStudioCheckReport, generateContentStudioPackage, generateRecordingSession, getContentLibraryInventory } from "../lib/content-studio";
 import { buildIntelligenceDashboard, parseManualMetrics, sampleMetricsTsv } from "../lib/marketing-intelligence";
+import { parseReportImport, sampleGenericTsv } from "../lib/report-imports";
+import { buildDefaultWeeklyReview } from "../lib/weekly-review";
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -28,6 +30,9 @@ const requiredFiles = [
   ["app/experiments/page.tsx", "rota /experiments"],
   ["app/strategy/page.tsx", "rota /strategy"],
   ["app/insights/page.tsx", "rota /insights"],
+  ["app/weekly-review/page.tsx", "rota /weekly-review"],
+  ["app/imports/page.tsx", "rota /imports"],
+  ["app/performance/page.tsx", "rota /performance"],
   ["app/storyops/page.tsx", "rota /storyops"],
   ["app/campaigns/page.tsx", "rota /campaigns"],
   ["lib/storyops/index.ts", "StoryOps"],
@@ -37,7 +42,9 @@ const requiredFiles = [
   ["lib/marketing-quality/index.ts", "QA V4"],
   ["lib/marketing-dogfooding/index.ts", "Dogfooding V4"],
   ["lib/content-studio/index.ts", "Content Studio V5"],
-  ["lib/marketing-intelligence/index.ts", "Intelligence Loop V6"]
+  ["lib/marketing-intelligence/index.ts", "Intelligence Loop V6"],
+  ["lib/report-imports/index.ts", "Report Imports V7"],
+  ["lib/weekly-review/index.ts", "Weekly Review V7"]
 ];
 
 for (const [file, label] of requiredFiles) {
@@ -102,4 +109,13 @@ assert(intelligence.experiments.length >= 7, "V6 deve gerar experimentos editori
 assert(intelligence.roadmap.adaptiveCalendar.length === 7, "V6 deve gerar calendario adaptativo de 7 dias.");
 assert(intelligence.exports.etusManual.startsWith("Data\tCanal"), "V6 deve exportar Etus/manual TSV.");
 
-console.log("Smoke Marketing OS V6: OK");
+const reportImport = parseReportImport({ source: "generic", text: sampleGenericTsv, periodStart: "2026-05-17", periodEnd: "2026-05-30" });
+assert(!reportImport.blocked, "V7 importacao generica padrao nao deve bloquear.");
+assert(reportImport.normalizedRows.length >= 80, "V7 deve ter dataset ficticio com pelo menos 80 registros.");
+const weeklyReview = buildDefaultWeeklyReview();
+assert(weeklyReview.currentRecords.length >= 35, "V7 deve consolidar semana atual.");
+assert(weeklyReview.previousRecords.length >= 35, "V7 deve comparar com semana anterior.");
+assert(weeklyReview.nextWeekPlan.days.length === 7, "V7 deve gerar plano de 7 dias.");
+assert(weeklyReview.exports.etusManual.startsWith("Data\tCanal\tFormato"), "V7 deve exportar Etus/manual.");
+
+console.log("Smoke Marketing OS V7: OK");

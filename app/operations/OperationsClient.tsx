@@ -19,6 +19,7 @@ import {
 import { runMarketingDogfoodingScenario } from "@/lib/marketing-dogfooding";
 import { buildStudioDashboardPackage } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
+import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 import { safetyClassificationLabel, type SafetyClassification } from "@/lib/monthly-editorial";
 
 const LOCAL_STATE_KEY = "marketing-os-v3-local-state";
@@ -88,6 +89,7 @@ export function OperationsClient() {
   const dogfood = useMemo(() => runMarketingDogfoodingScenario(), []);
   const studio = useMemo(() => buildStudioDashboardPackage(), []);
   const intelligence = useMemo(() => buildIntelligenceDashboard(), []);
+  const weeklyReview = useMemo(() => buildDefaultWeeklyReview(), []);
   const dashboard = state.dashboard;
   const [localState, setLocalState] = useState<OpsLocalState>(() => getDefaultOpsLocalState());
   const [hydrated, setHydrated] = useState(false);
@@ -173,6 +175,9 @@ export function OperationsClient() {
             ["/library", "Biblioteca"],
             ["/recording", "Gravacao"],
             ["/review", "Revisao"],
+            ["/weekly-review", "Fechamento v7"],
+            ["/imports", "Importacoes"],
+            ["/performance", "Performance"],
             ["/insights", "Insights"],
             ["/metrics", "Metricas"],
             ["/experiments", "Experimentos"],
@@ -203,6 +208,7 @@ export function OperationsClient() {
         <MetricCard label="Dogfooding v4" value={dogfood.finalStatus} detail={`${dogfood.weeklyReadiness}/100 na semana piloto`} />
         <MetricCard label="Studio v5" value={`${studio.averageReadiness}/100`} detail={`${studio.productionQueue.length} itens de producao`} />
         <MetricCard label="Intelligence v6" value={`${intelligence.intelligenceScore}/100`} detail={`${intelligence.report.recommendations.length} proximas acoes`} />
+        <MetricCard label="Fechamento v7" value={weeklyReview.quality.confidence} detail={`${weeklyReview.tasks.length} tarefas semanais`} />
       </section>
 
       <section className="panel">
@@ -218,6 +224,32 @@ export function OperationsClient() {
             <Link href="/qa" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir QA</Link>
             <LocalCopyButton text={dogfood.scenario.exports.weeklyMarkdown} label="Copiar semana piloto" />
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v7</p>
+            <h3 className="mt-1 text-lg font-semibold">Fechamento semanal e plano operacional</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {weeklyReview.period.label} | {weeklyReview.currentRecords.length} registros | confianca {weeklyReview.quality.confidence} | {weeklyReview.nextWeekPlan.days.length} dias planejados.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/weekly-review" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Fechamento</Link>
+            <Link href="/imports" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Importar relatorio</Link>
+            <Link href="/performance" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Performance</Link>
+            <LocalCopyButton text={weeklyReview.exports.weeklyMarkdown} label="Copiar V7" />
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {weeklyReview.nextWeekPlan.days.slice(0, 4).map((day) => (
+            <article key={day.date} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-ink">{day.date} - {day.theme}</p>
+              <p className="mt-1 text-slate-600">{day.format} | readiness {day.readiness}/100</p>
+            </article>
+          ))}
         </div>
       </section>
 

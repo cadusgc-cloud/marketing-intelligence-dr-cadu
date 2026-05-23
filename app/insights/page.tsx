@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildIntelligenceDashboard, formatLabels, pillarLabels } from "@/lib/marketing-intelligence";
+import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 
 export default function InsightsPage() {
   const dashboard = buildIntelligenceDashboard();
   const report = dashboard.report;
+  const weekly = buildDefaultWeeklyReview();
 
   return (
     <div className="space-y-6">
@@ -20,8 +22,26 @@ export default function InsightsPage() {
           <div className="flex flex-wrap gap-2">
             <LocalCopyButton text={dashboard.exports.insightsMarkdown} label="Copiar insights" />
             <Link href="/metrics" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Metricas</Link>
+            <Link href="/weekly-review" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Fechamento v7</Link>
             <Link href="/strategy" className="rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Estrategia</Link>
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <p className="text-sm font-medium text-ocean">Marketing OS v7</p>
+        <h3 className="mt-1 text-lg font-semibold">Aprendizado semanal integrado</h3>
+        <p className="mt-2 text-sm text-slate-600">
+          O fechamento semanal atual usa {weekly.currentRecords.length} registros agregados, confianca {weekly.quality.confidence} e gera {weekly.tasks.length} tarefas para a proxima semana.
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {weekly.recommendations.slice(0, 3).map((item) => (
+            <article key={item.title} className="rounded-lg border border-slate-200 p-4">
+              <span className="badge bg-cyan-50 text-ocean">{item.type}</span>
+              <h4 className="mt-3 font-semibold">{item.title}</h4>
+              <p className="mt-2 text-sm text-slate-600">{item.action}</p>
+            </article>
+          ))}
         </div>
       </section>
 

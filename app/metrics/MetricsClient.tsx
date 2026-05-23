@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildMetricsExportBundle, generateExperimentPlans, generateLearningLoopReport, generateStrategyRoadmap, parseManualMetrics, sampleMetricsTsv } from "@/lib/marketing-intelligence";
 
@@ -23,7 +24,11 @@ export function MetricsClient() {
               Cole TSV/CSV exportado manualmente, valide colunas e gere score editorial local. Nada conecta API, nada publica e nada deve conter dado sensivel.
             </p>
           </div>
-          <LocalCopyButton text={sampleMetricsTsv} label="Copiar exemplo TSV" />
+          <div className="flex flex-wrap gap-2">
+            <LocalCopyButton text={sampleMetricsTsv} label="Copiar exemplo TSV" />
+            <Link href="/imports" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Importacoes v7</Link>
+            <Link href="/weekly-review" className="rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Fechamento</Link>
+          </div>
         </div>
       </section>
 

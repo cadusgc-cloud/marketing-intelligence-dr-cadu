@@ -1,0 +1,7 @@
+- 2026-05-31: naturalidade tambem e planejamento (reel) - Tema liderou o score semanal (28/100), principalmente por salvamentos, compartilhamentos ou conversa.
+- 2026-06-01: estetica natural (carrossel) - Pilar com melhor combinacao de alcance e utilidade editorial.
+- 2026-06-02: consulta nao e venda (post) - Formato ficou acima dos demais no score consolidado.
+- 2026-06-03: cirurgia plastica nao combina com pressa (reel) - Tema teve baixo retorno relativo ou esforco alto para pouco sinal.
+- 2026-06-04: naturalidade tambem e planejamento (carrossel) - Tema liderou o score semanal (28/100), principalmente por salvamentos, compartilhamentos ou conversa.
+- 2026-06-05: estetica natural (carrossel) - Pilar com melhor combinacao de alcance e utilidade editorial.
+- 2026-06-06: organizacao da semana sem improviso (reel) - Formato ficou acima dos demais no score consolidado.

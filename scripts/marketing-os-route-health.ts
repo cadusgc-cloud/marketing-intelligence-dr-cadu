@@ -6,6 +6,8 @@ import { buildPilotWeekScenario } from "../lib/marketing-scenarios";
 import { runMarketingQualityAudit } from "../lib/marketing-quality";
 import { buildContentStudioCheckReport, generateContentStudioPackage } from "../lib/content-studio";
 import { buildIntelligenceDashboard } from "../lib/marketing-intelligence";
+import { parseReportImport, sampleGenericTsv } from "../lib/report-imports";
+import { buildDefaultWeeklyReview } from "../lib/weekly-review";
 
 export type RouteHealthItem = {
   route: string;
@@ -35,7 +37,10 @@ const routeFiles = [
   ["/review", "app/review/page.tsx", "Fila de Revisao"],
   ["/metrics", "app/metrics/page.tsx", "Metricas Manuais"],
   ["/experiments", "app/experiments/page.tsx", "Experimentos Editoriais"],
-  ["/strategy", "app/strategy/page.tsx", "Estrategia"]
+  ["/strategy", "app/strategy/page.tsx", "Estrategia"],
+  ["/weekly-review", "app/weekly-review/page.tsx", "Fechamento Semanal"],
+  ["/imports", "app/imports/page.tsx", "Importacoes Manuais"],
+  ["/performance", "app/performance/page.tsx", "Performance"]
 ] as const;
 
 export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport> {
@@ -45,6 +50,8 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
   const studioPackage = generateContentStudioPackage();
   const studioCheck = buildContentStudioCheckReport();
   const intelligence = buildIntelligenceDashboard();
+  const reportImport = parseReportImport({ source: "generic", text: sampleGenericTsv, periodStart: "2026-05-17", periodEnd: "2026-05-30" });
+  const weeklyReview = buildDefaultWeeklyReview();
   const items: RouteHealthItem[] = routeFiles.map(([route, file]) => ({
     route,
     status: existsSync(path.join(process.cwd(), file)) ? "ok" : "falha",
@@ -75,6 +82,16 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
     route: "engine:intelligence",
     status: intelligence.recordCount >= 45 && intelligence.roadmap.adaptiveCalendar.length === 7 ? "ok" : "falha",
     message: `Intelligence: ${intelligence.recordCount} registros, score ${intelligence.intelligenceScore}/100`
+  });
+  items.push({
+    route: "engine:report-imports",
+    status: !reportImport.blocked && reportImport.normalizedRows.length >= 80 ? "ok" : "falha",
+    message: `Report imports: ${reportImport.normalizedRows.length} registros, quality ${reportImport.quality.overallQualityScore}/100`
+  });
+  items.push({
+    route: "engine:weekly-review",
+    status: weeklyReview.nextWeekPlan.days.length === 7 && weeklyReview.currentRecords.length >= 35 ? "ok" : "falha",
+    message: `Weekly review: ${weeklyReview.currentRecords.length} registros, ${weeklyReview.nextWeekPlan.days.length} dias`
   });
 
   return {

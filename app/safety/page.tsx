@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildMarketingOpsState, exportSafetyReport } from "@/lib/marketing-ops";
 import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
+import { buildStudioDashboardPackage, buildUnifiedQualityMarkdown } from "@/lib/content-studio";
 import { safetyClassificationLabel } from "@/lib/monthly-editorial";
 
 const riskClasses = {
@@ -16,6 +17,8 @@ export default function SafetyPage() {
   const safety = state.dashboard.safety;
   const report = exportSafetyReport(safety);
   const pilot = buildPilotWeekScenario();
+  const studio = buildStudioDashboardPackage();
+  const studioQualityReport = buildUnifiedQualityMarkdown(studio.packageItem.quality);
 
   return (
     <div className="space-y-6">
@@ -120,6 +123,24 @@ export default function SafetyPage() {
               <p className="mt-2 text-xs text-slate-500">{day.safetyGate.classification} | {day.safetyGate.score}/100</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v5</p>
+            <h3 className="mt-1 text-lg font-semibold">Quality unificado do Content Studio</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Voice {studio.packageItem.quality.voiceScore}/100 | Safety {studio.packageItem.quality.safetyScore}/100 | Readiness {studio.packageItem.quality.readinessScore}/100 | status {studio.packageItem.quality.status}
+            </p>
+          </div>
+          <LocalCopyButton text={studioQualityReport} label="Copiar quality v5" />
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <MetricCard label="Voice" value={`${studio.packageItem.quality.voiceScore}/100`} />
+          <MetricCard label="Safety" value={`${studio.packageItem.quality.safetyScore}/100`} />
+          <MetricCard label="Readiness" value={`${studio.packageItem.quality.readinessScore}/100`} />
         </div>
       </section>
 

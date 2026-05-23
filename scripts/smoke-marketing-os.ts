@@ -6,6 +6,7 @@ import { runMarketingQualityAudit } from "../lib/marketing-quality";
 import { buildPilotWeekScenario } from "../lib/marketing-scenarios";
 import { generateMonthlyEditorialPlan, runMonthlySafetyGate } from "../lib/monthly-editorial";
 import { buildStoryOpsSequence } from "../lib/storyops";
+import { buildContentStudioCheckReport, generateContentStudioPackage, generateRecordingSession, getContentLibraryInventory } from "../lib/content-studio";
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -18,6 +19,10 @@ const requiredFiles = [
   ["app/exports/page.tsx", "rota /exports"],
   ["app/safety/page.tsx", "rota /safety"],
   ["app/qa/page.tsx", "rota /qa"],
+  ["app/studio/page.tsx", "rota /studio"],
+  ["app/library/page.tsx", "rota /library"],
+  ["app/recording/page.tsx", "rota /recording"],
+  ["app/review/page.tsx", "rota /review"],
   ["app/storyops/page.tsx", "rota /storyops"],
   ["app/campaigns/page.tsx", "rota /campaigns"],
   ["lib/storyops/index.ts", "StoryOps"],
@@ -25,7 +30,8 @@ const requiredFiles = [
   ["lib/marketing-ops/index.ts", "Marketing Ops V3"],
   ["lib/marketing-scenarios/index.ts", "Semana piloto V4"],
   ["lib/marketing-quality/index.ts", "QA V4"],
-  ["lib/marketing-dogfooding/index.ts", "Dogfooding V4"]
+  ["lib/marketing-dogfooding/index.ts", "Dogfooding V4"],
+  ["lib/content-studio/index.ts", "Content Studio V5"]
 ];
 
 for (const [file, label] of requiredFiles) {
@@ -68,4 +74,17 @@ assert(quality.status === "aprovado", "QA V4 deve aprovar o cenario padrao.");
 const dogfood = runMarketingDogfoodingScenario();
 assert(dogfood.finalStatus === "aprovado", "Dogfooding V4 deve aprovar o cenario padrao.");
 
-console.log("Smoke Marketing OS V4: OK");
+const inventory = getContentLibraryInventory();
+assert(inventory.themes.length >= 60, "Biblioteca V5 deve ter pelo menos 60 temas.");
+assert(inventory.hooks.length >= 80, "Biblioteca V5 deve ter pelo menos 80 hooks.");
+const studio = generateContentStudioPackage();
+assert(studio.storySequence.items.length === 6, "Content Studio deve gerar 6 stories.");
+assert(studio.reel.exportText.includes("# Reel"), "Content Studio deve gerar reel.");
+assert(studio.carousel.cards.length >= 5, "Content Studio deve gerar carrossel.");
+assert(studio.exports.fullPackage.includes("Publicacao sempre manual"), "Content Studio deve reforcar publicacao manual.");
+const recording = generateRecordingSession();
+assert(recording.topics.length >= 8 && recording.topics.length <= 10, "Recording planner deve gerar 8 a 10 videos.");
+const studioCheck = buildContentStudioCheckReport();
+assert(studioCheck.status === "aprovado", "Studio check V5 deve aprovar cenario padrao.");
+
+console.log("Smoke Marketing OS V5: OK");

@@ -2,11 +2,13 @@ import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildMarketingOpsState } from "@/lib/marketing-ops";
 import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
+import { buildStudioDashboardPackage } from "@/lib/content-studio";
 
 export default function ExportsPage() {
   const state = buildMarketingOpsState();
   const packages = state.dashboard.exports;
   const pilot = buildPilotWeekScenario();
+  const studio = buildStudioDashboardPackage();
 
   return (
     <div className="space-y-6">
@@ -48,6 +50,27 @@ export default function ExportsPage() {
           <PilotExportBlock title="Etus/manual" text={pilot.exports.etusManual} />
           <PilotExportBlock title="Google Sheets TSV" text={pilot.exports.googleSheetsTsv} />
           <PilotExportBlock title="Google Agenda" text={pilot.exports.googleAgendaText} />
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v5</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes do Content Studio</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Pacote completo, gravacao, briefing de editor, TSV, Google Agenda, Etus/manual, stories, reels, carrossel e checklist.
+            </p>
+          </div>
+          <LocalCopyButton text={studio.packageItem.exports.fullPackage} label="Copiar pacote v5" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <PilotExportBlock title="Pacote completo do tema" text={studio.packageItem.exports.fullPackage} />
+          <PilotExportBlock title="Briefing para editor" text={studio.packageItem.exports.editorBriefing} />
+          <PilotExportBlock title="Google Sheets TSV v5" text={studio.packageItem.exports.googleSheetsTsv} />
+          <PilotExportBlock title="Etus/manual v5" text={studio.packageItem.exports.etusManual} />
+          <PilotExportBlock title="Sessao de gravacao" text={studio.recordingSession.exportText} />
+          <PilotExportBlock title="Relatorio de QA do pacote" text={studio.packageItem.exports.qualityReport} />
         </div>
       </section>
 

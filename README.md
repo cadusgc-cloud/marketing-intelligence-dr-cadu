@@ -34,6 +34,11 @@ Acesse `http://localhost:3000`.
 npm run dev       # servidor local
 npm run build     # build Next.js com Prisma generate
 npm test          # testes unitários com Vitest
+npm run smoke:marketing     # smoke test do Marketing OS
+npm run dogfood:marketing   # dogfooding da semana piloto V4
+npm run studio:check        # QA do Content Studio V5 e relatorios
+npm run health:routes       # route health estatico
+npm run health:routes:local # route health contra localhost:3010
 npx prisma migrate dev     # aplica migrações no banco local/dev
 npx prisma migrate deploy  # aplica migrações em produção
 npm run db:seed   # recria benchmarks e relatórios iniciais
@@ -49,6 +54,10 @@ npm run db:seed   # recria benchmarks e relatórios iniciais
 - `/operations` central operacional V3 para Hoje/Semana/Mes, tarefas, readiness, MediaOps, Safety e exportacoes
 - `/exports` pacotes copiaveis da operacao mensal, semanal e diaria
 - `/safety` centro de seguranca medico-publicitaria da operacao editorial
+- `/studio` Content Studio V5 para gerar pacote completo de tema
+- `/library` biblioteca editorial com pilares, temas, hooks, frases e templates
+- `/recording` planejamento de gravacao em lote com 8 a 10 videos
+- `/review` fila local de revisao e producao
 - `/campaigns` maquina editorial de 30 dias para campanhas mensais internas
 - `/storyops` planejamento diario de 6 stories naturais, seguros e copiaveis
 - `/reports` lista de relatórios
@@ -160,6 +169,28 @@ npm run health:routes:local
 Relatorios versionados ficam em `reports/marketing-os-v4/`.
 
 Como nas fases anteriores, a V4 nao conecta APIs externas, nao publica automaticamente, nao faz upload, nao usa dados de pacientes, nao altera banco e nao mexe em `.env`.
+
+## Marketing OS v5 - Content Studio, Biblioteca e Gravacao
+
+A V5 adiciona uma fabrica editorial local em `/studio`. O Content Studio transforma um tema em pacote completo: 6 stories, reel, carrossel, post estatico, legendas, briefing para editor, checklist de midia, variacoes seguras, fila de revisao e fila de producao.
+
+Rotas novas:
+
+- `/studio`: gera e exporta pacotes completos de tema.
+- `/library`: inventario de pilares, temas, hooks, frases e templates.
+- `/recording`: planejamento de gravacao com 8 a 10 videos curtos.
+- `/review`: fila local de revisao e producao.
+
+Scripts novos:
+
+```bash
+npm run studio:check
+npm run qa:studio
+```
+
+Relatorios versionados ficam em `reports/marketing-os-v5/`.
+
+A V5 continua sem API externa, sem publicacao automatica, sem upload, sem dado de paciente, sem banco real novo e sem alteracao de `.env`.
 
 ## v2.0 - Tela de resultado do Weekly Command Center
 

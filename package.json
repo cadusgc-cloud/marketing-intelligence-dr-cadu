@@ -11,6 +11,8 @@
     "smoke:marketing": "node scripts/smoke-marketing-os.mjs",
     "dogfood:marketing": "node scripts/marketing-os-v4-dogfood.mjs",
     "qa:marketing": "node scripts/marketing-os-v4-dogfood.mjs --qa",
+    "studio:check": "node scripts/content-studio-v5-check.mjs",
+    "qa:studio": "node scripts/content-studio-v5-check.mjs",
     "health:routes": "node scripts/marketing-os-route-health.mjs",
     "health:routes:local": "node scripts/marketing-os-route-health.mjs --base http://localhost:3010",
     "db:generate": "prisma generate",

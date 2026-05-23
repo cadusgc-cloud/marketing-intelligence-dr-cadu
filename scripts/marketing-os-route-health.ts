@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 import { runMarketingDogfoodingScenario } from "../lib/marketing-dogfooding";
 import { buildPilotWeekScenario } from "../lib/marketing-scenarios";
 import { runMarketingQualityAudit } from "../lib/marketing-quality";
+import { buildContentStudioCheckReport, generateContentStudioPackage } from "../lib/content-studio";
 
 export type RouteHealthItem = {
   route: string;
@@ -25,13 +26,19 @@ const routeFiles = [
   ["/operations", "app/operations/page.tsx", "Central Operacional"],
   ["/exports", "app/exports/page.tsx", "Export Center"],
   ["/safety", "app/safety/page.tsx", "Safety Center"],
-  ["/qa", "app/qa/page.tsx", "QA"]
+  ["/qa", "app/qa/page.tsx", "QA"],
+  ["/studio", "app/studio/page.tsx", "Content Studio"],
+  ["/library", "app/library/page.tsx", "Biblioteca Editorial"],
+  ["/recording", "app/recording/page.tsx", "Planejamento de Gravacao"],
+  ["/review", "app/review/page.tsx", "Fila de Revisao"]
 ] as const;
 
 export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport> {
   const scenario = buildPilotWeekScenario();
   const dogfood = runMarketingDogfoodingScenario();
   const quality = runMarketingQualityAudit({ scenario });
+  const studioPackage = generateContentStudioPackage();
+  const studioCheck = buildContentStudioCheckReport();
   const items: RouteHealthItem[] = routeFiles.map(([route, file]) => ({
     route,
     status: existsSync(path.join(process.cwd(), file)) ? "ok" : "falha",
@@ -52,6 +59,11 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
     route: "engine:quality",
     status: quality.status !== "bloqueado" ? "ok" : "falha",
     message: `QA: ${quality.score}/100`
+  });
+  items.push({
+    route: "engine:content-studio",
+    status: studioPackage.storySequence.items.length === 6 && studioCheck.status === "aprovado" ? "ok" : "falha",
+    message: `Studio: ${studioCheck.generatedPackages} pacotes, readiness ${studioCheck.averageReadiness}/100`
   });
 
   return {

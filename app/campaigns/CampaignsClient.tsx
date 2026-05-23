@@ -261,6 +261,7 @@ export function CampaignsClient() {
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link href="/storyops" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">StoryOps</Link>
+                <Link href="/studio" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Studio v5</Link>
                 <Link href="/calendar" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Calendario</Link>
                 <Link href="/content" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Content Studio</Link>
                 <Link href="/media" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Midias</Link>

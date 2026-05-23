@@ -18,6 +18,7 @@ import {
 } from "@/lib/marketing-ops";
 import { runMarketingDogfoodingScenario } from "@/lib/marketing-dogfooding";
 import { buildStudioDashboardPackage } from "@/lib/content-studio";
+import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { safetyClassificationLabel, type SafetyClassification } from "@/lib/monthly-editorial";
 
 const LOCAL_STATE_KEY = "marketing-os-v3-local-state";
@@ -86,6 +87,7 @@ export function OperationsClient() {
   const state = useMemo(() => buildMarketingOpsState(), []);
   const dogfood = useMemo(() => runMarketingDogfoodingScenario(), []);
   const studio = useMemo(() => buildStudioDashboardPackage(), []);
+  const intelligence = useMemo(() => buildIntelligenceDashboard(), []);
   const dashboard = state.dashboard;
   const [localState, setLocalState] = useState<OpsLocalState>(() => getDefaultOpsLocalState());
   const [hydrated, setHydrated] = useState(false);
@@ -152,7 +154,7 @@ export function OperationsClient() {
       <section className="panel">
         <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-ocean">Marketing OS v3 + v4 + v5</p>
+            <p className="text-sm font-medium text-ocean">Marketing OS v3 + v4 + v5 + v6</p>
             <h2 className="mt-1 text-3xl font-semibold tracking-normal">Central Operacional de Execucao Editorial</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Painel interno para transformar o plano mensal em tarefas do dia, stories copiaveis, midia natural, safety, readiness e exportacao manual. Nada aqui publica, conecta API, envia mensagem ou usa dados de paciente.
@@ -171,6 +173,10 @@ export function OperationsClient() {
             ["/library", "Biblioteca"],
             ["/recording", "Gravacao"],
             ["/review", "Revisao"],
+            ["/insights", "Insights"],
+            ["/metrics", "Metricas"],
+            ["/experiments", "Experimentos"],
+            ["/strategy", "Estrategia"],
             ["/exports", "Export Center"],
             ["/safety", "Safety Center"],
             ["/qa", "QA v4"],
@@ -196,6 +202,7 @@ export function OperationsClient() {
         <MetricCard label="Riscos detectados" value={dashboard.safety.totalIssues} detail={safetyClassificationLabel(dashboard.safety.safetyGate.classification)} />
         <MetricCard label="Dogfooding v4" value={dogfood.finalStatus} detail={`${dogfood.weeklyReadiness}/100 na semana piloto`} />
         <MetricCard label="Studio v5" value={`${studio.averageReadiness}/100`} detail={`${studio.productionQueue.length} itens de producao`} />
+        <MetricCard label="Intelligence v6" value={`${intelligence.intelligenceScore}/100`} detail={`${intelligence.report.recommendations.length} proximas acoes`} />
       </section>
 
       <section className="panel">
@@ -211,6 +218,32 @@ export function OperationsClient() {
             <Link href="/qa" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir QA</Link>
             <LocalCopyButton text={dogfood.scenario.exports.weeklyMarkdown} label="Copiar semana piloto" />
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v6</p>
+            <h3 className="mt-1 text-lg font-semibold">Intelligence Loop e calendario adaptativo</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {intelligence.recordCount} registros ficticios agregados | score {intelligence.intelligenceScore}/100 | {intelligence.experiments.length} experimentos | {intelligence.roadmap.adaptiveCalendar.length} dias recomendados.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/insights" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir Insights</Link>
+            <Link href="/metrics" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Metricas</Link>
+            <Link href="/strategy" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Estrategia</Link>
+            <LocalCopyButton text={intelligence.exports.nextActionsMarkdown} label="Copiar acoes v6" />
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {intelligence.roadmap.adaptiveCalendar.slice(0, 4).map((day) => (
+            <article key={day.date} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-ink">{day.date} - {day.theme}</p>
+              <p className="mt-1 text-slate-600">{day.format} | {day.rationale}</p>
+            </article>
+          ))}
         </div>
       </section>
 

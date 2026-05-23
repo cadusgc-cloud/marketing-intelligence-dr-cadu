@@ -3,6 +3,7 @@ import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildDogfoodingReportMarkdown, buildPrReadinessMarkdown, runMarketingDogfoodingScenario } from "@/lib/marketing-dogfooding";
 import { buildQualityReportMarkdown } from "@/lib/marketing-quality";
 import { buildContentStudioCheckReport } from "@/lib/content-studio";
+import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 
 const statusClasses = {
   aprovado: "bg-green-50 text-leaf",
@@ -16,6 +17,7 @@ export default function QaPage() {
   const dogfoodMarkdown = buildDogfoodingReportMarkdown(dogfood);
   const prMarkdown = buildPrReadinessMarkdown(dogfood);
   const studioCheck = buildContentStudioCheckReport();
+  const intelligence = buildIntelligenceDashboard();
   const approvedDays = dogfood.dailyReadiness.filter((day) => day.risk === "seguro" || day.risk === "atencao").length;
   const reviewDays = dogfood.dailyReadiness.filter((day) => day.risk === "revisar_antes_de_postar").length;
   const blockedDays = dogfood.dailyReadiness.filter((day) => day.risk === "bloquear").length;
@@ -52,6 +54,7 @@ export default function QaPage() {
         <MetricCard label="Stories" value={dogfood.totalStories} detail="6 por dia" />
         <MetricCard label="Exports" value={dogfood.exportsGenerated.length} detail="pacotes locais" />
         <MetricCard label="Studio v5" value={studioCheck.status} detail={`${studioCheck.generatedPackages} pacotes`} />
+        <MetricCard label="Intelligence v6" value={intelligence.report.quality.status} detail={`${intelligence.intelligenceScore}/100`} />
       </section>
 
       <section className="panel">
@@ -69,6 +72,28 @@ export default function QaPage() {
           <p className="font-semibold text-ink">Falhas bloqueantes</p>
           <ul className="mt-2 space-y-1">
             {studioCheck.blockingFailures.length ? studioCheck.blockingFailures.map((failure) => <li key={failure}>- {failure}</li>) : <li>- nenhuma falha bloqueante</li>}
+          </ul>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v6</p>
+            <h3 className="mt-1 text-lg font-semibold">Intelligence check</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {intelligence.recordCount} registros | {intelligence.experiments.length} experimentos | {intelligence.roadmap.adaptiveCalendar.length} dias adaptativos | QA {intelligence.report.quality.score}/100.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/insights" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir Insights</Link>
+            <LocalCopyButton text={intelligence.exports.nextActionsMarkdown} label="Copiar V6" />
+          </div>
+        </div>
+        <div className="mt-4 rounded-md bg-slate-50 p-3 text-sm text-slate-600">
+          <p className="font-semibold text-ink">Falhas bloqueantes V6</p>
+          <ul className="mt-2 space-y-1">
+            {intelligence.report.quality.blockingIssues.length ? intelligence.report.quality.blockingIssues.map((failure) => <li key={failure}>- {failure}</li>) : <li>- nenhuma falha bloqueante</li>}
           </ul>
         </div>
       </section>

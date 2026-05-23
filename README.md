@@ -348,3 +348,23 @@ Não persistir esse diagnóstico agora evita que ele fique obsoleto quando bench
 - Essas métricas são preservadas em `CreativePerformance` quando pertencem a conteúdos ou criativos específicos.
 - O alinhamento do schema deve ser retomado quando o dashboard precisar comparar interações agregadas por período, quando o `recommendationEngine` passar a usar interações agregadas do canal ou quando houver necessidade de relatórios orgânicos consolidados mais completos.
 - Esta decisão mantém o MVP enxuto e evita uma migração Prisma desnecessária neste momento.
+## Marketing OS v6 - Intelligence Loop
+
+A V6 fecha o ciclo estrategico local: metricas manuais agregadas entram em `/metrics`, viram aprendizado em `/insights`, experimentos em `/experiments` e roadmap adaptativo em `/strategy`.
+
+Rotas principais da V6:
+
+- `/insights` - aprendizado editorial, top conteudos, pilares, formatos, oportunidades e proximas melhores acoes.
+- `/metrics` - colagem manual de TSV/CSV, validacao, normalizacao e relatorio.
+- `/experiments` - testes editoriais seguros, sem automacao de publicacao.
+- `/strategy` - plano 30/60/90 dias e calendario adaptativo de 7 dias.
+
+Scripts da V6:
+
+```bash
+npm run intelligence:check
+npm run qa:intelligence
+npm run health:routes
+```
+
+A V6 continua sem API externa, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.

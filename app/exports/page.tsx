@@ -3,12 +3,14 @@ import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildMarketingOpsState } from "@/lib/marketing-ops";
 import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 import { buildStudioDashboardPackage } from "@/lib/content-studio";
+import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 
 export default function ExportsPage() {
   const state = buildMarketingOpsState();
   const packages = state.dashboard.exports;
   const pilot = buildPilotWeekScenario();
   const studio = buildStudioDashboardPackage();
+  const intelligence = buildIntelligenceDashboard();
 
   return (
     <div className="space-y-6">
@@ -71,6 +73,27 @@ export default function ExportsPage() {
           <PilotExportBlock title="Etus/manual v5" text={studio.packageItem.exports.etusManual} />
           <PilotExportBlock title="Sessao de gravacao" text={studio.recordingSession.exportText} />
           <PilotExportBlock title="Relatorio de QA do pacote" text={studio.packageItem.exports.qualityReport} />
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v6</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes do Intelligence Loop</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Insights, metricas TSV, Google Agenda, Etus/manual, experimentos, roadmap e backup JSON tecnico.
+            </p>
+          </div>
+          <LocalCopyButton text={intelligence.exports.insightsMarkdown} label="Copiar insights v6" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <PilotExportBlock title="Insights" text={intelligence.exports.insightsMarkdown} />
+          <PilotExportBlock title="Metricas TSV" text={intelligence.exports.metricsTsv} />
+          <PilotExportBlock title="Google Agenda v6" text={intelligence.exports.googleAgenda} />
+          <PilotExportBlock title="Etus/manual v6" text={intelligence.exports.etusManual} />
+          <PilotExportBlock title="Experimentos" text={intelligence.exports.experimentMarkdown} />
+          <PilotExportBlock title="Roadmap" text={intelligence.exports.roadmapMarkdown} />
         </div>
       </section>
 

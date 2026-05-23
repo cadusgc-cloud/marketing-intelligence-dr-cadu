@@ -3,6 +3,7 @@ import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildMarketingOpsState, exportSafetyReport } from "@/lib/marketing-ops";
 import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 import { buildStudioDashboardPackage, buildUnifiedQualityMarkdown } from "@/lib/content-studio";
+import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
 import { safetyClassificationLabel } from "@/lib/monthly-editorial";
 
 const riskClasses = {
@@ -18,6 +19,7 @@ export default function SafetyPage() {
   const report = exportSafetyReport(safety);
   const pilot = buildPilotWeekScenario();
   const studio = buildStudioDashboardPackage();
+  const intelligence = buildIntelligenceDashboard();
   const studioQualityReport = buildUnifiedQualityMarkdown(studio.packageItem.quality);
 
   return (
@@ -123,6 +125,33 @@ export default function SafetyPage() {
               <p className="mt-2 text-xs text-slate-500">{day.safetyGate.classification} | {day.safetyGate.score}/100</p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v6</p>
+            <h3 className="mt-1 text-lg font-semibold">QA de metricas e insights</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Score {intelligence.report.quality.score}/100 | status {intelligence.report.quality.status} | {intelligence.report.quality.blockingIssues.length} falhas bloqueantes.
+            </p>
+          </div>
+          <LocalCopyButton text={intelligence.exports.insightsMarkdown} label="Copiar QA v6" />
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <div className="rounded-md bg-slate-50 p-3 text-sm">
+            <p className="font-semibold text-ink">Checks executados</p>
+            <ul className="mt-2 space-y-1 text-slate-600">
+              {intelligence.report.quality.checks.map((check) => <li key={check}>- {check}</li>)}
+            </ul>
+          </div>
+          <div className="rounded-md bg-slate-50 p-3 text-sm">
+            <p className="font-semibold text-ink">Avisos</p>
+            <ul className="mt-2 space-y-1 text-slate-600">
+              {intelligence.report.quality.warnings.length ? intelligence.report.quality.warnings.map((warning) => <li key={warning}>- {warning}</li>) : <li>- nenhum aviso no dataset ficticio padrao</li>}
+            </ul>
+          </div>
         </div>
       </section>
 

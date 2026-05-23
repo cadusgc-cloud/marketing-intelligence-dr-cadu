@@ -5,6 +5,7 @@ import { runMarketingDogfoodingScenario } from "../lib/marketing-dogfooding";
 import { buildPilotWeekScenario } from "../lib/marketing-scenarios";
 import { runMarketingQualityAudit } from "../lib/marketing-quality";
 import { buildContentStudioCheckReport, generateContentStudioPackage } from "../lib/content-studio";
+import { buildIntelligenceDashboard } from "../lib/marketing-intelligence";
 
 export type RouteHealthItem = {
   route: string;
@@ -27,10 +28,14 @@ const routeFiles = [
   ["/exports", "app/exports/page.tsx", "Export Center"],
   ["/safety", "app/safety/page.tsx", "Safety Center"],
   ["/qa", "app/qa/page.tsx", "QA"],
+  ["/insights", "app/insights/page.tsx", "Insights"],
   ["/studio", "app/studio/page.tsx", "Content Studio"],
   ["/library", "app/library/page.tsx", "Biblioteca Editorial"],
   ["/recording", "app/recording/page.tsx", "Planejamento de Gravacao"],
-  ["/review", "app/review/page.tsx", "Fila de Revisao"]
+  ["/review", "app/review/page.tsx", "Fila de Revisao"],
+  ["/metrics", "app/metrics/page.tsx", "Metricas Manuais"],
+  ["/experiments", "app/experiments/page.tsx", "Experimentos Editoriais"],
+  ["/strategy", "app/strategy/page.tsx", "Estrategia"]
 ] as const;
 
 export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport> {
@@ -39,6 +44,7 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
   const quality = runMarketingQualityAudit({ scenario });
   const studioPackage = generateContentStudioPackage();
   const studioCheck = buildContentStudioCheckReport();
+  const intelligence = buildIntelligenceDashboard();
   const items: RouteHealthItem[] = routeFiles.map(([route, file]) => ({
     route,
     status: existsSync(path.join(process.cwd(), file)) ? "ok" : "falha",
@@ -64,6 +70,11 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
     route: "engine:content-studio",
     status: studioPackage.storySequence.items.length === 6 && studioCheck.status === "aprovado" ? "ok" : "falha",
     message: `Studio: ${studioCheck.generatedPackages} pacotes, readiness ${studioCheck.averageReadiness}/100`
+  });
+  items.push({
+    route: "engine:intelligence",
+    status: intelligence.recordCount >= 45 && intelligence.roadmap.adaptiveCalendar.length === 7 ? "ok" : "falha",
+    message: `Intelligence: ${intelligence.recordCount} registros, score ${intelligence.intelligenceScore}/100`
   });
 
   return {

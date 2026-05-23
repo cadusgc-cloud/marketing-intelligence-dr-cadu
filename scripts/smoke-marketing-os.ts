@@ -7,6 +7,7 @@ import { buildPilotWeekScenario } from "../lib/marketing-scenarios";
 import { generateMonthlyEditorialPlan, runMonthlySafetyGate } from "../lib/monthly-editorial";
 import { buildStoryOpsSequence } from "../lib/storyops";
 import { buildContentStudioCheckReport, generateContentStudioPackage, generateRecordingSession, getContentLibraryInventory } from "../lib/content-studio";
+import { buildIntelligenceDashboard, parseManualMetrics, sampleMetricsTsv } from "../lib/marketing-intelligence";
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -23,6 +24,10 @@ const requiredFiles = [
   ["app/library/page.tsx", "rota /library"],
   ["app/recording/page.tsx", "rota /recording"],
   ["app/review/page.tsx", "rota /review"],
+  ["app/metrics/page.tsx", "rota /metrics"],
+  ["app/experiments/page.tsx", "rota /experiments"],
+  ["app/strategy/page.tsx", "rota /strategy"],
+  ["app/insights/page.tsx", "rota /insights"],
   ["app/storyops/page.tsx", "rota /storyops"],
   ["app/campaigns/page.tsx", "rota /campaigns"],
   ["lib/storyops/index.ts", "StoryOps"],
@@ -31,7 +36,8 @@ const requiredFiles = [
   ["lib/marketing-scenarios/index.ts", "Semana piloto V4"],
   ["lib/marketing-quality/index.ts", "QA V4"],
   ["lib/marketing-dogfooding/index.ts", "Dogfooding V4"],
-  ["lib/content-studio/index.ts", "Content Studio V5"]
+  ["lib/content-studio/index.ts", "Content Studio V5"],
+  ["lib/marketing-intelligence/index.ts", "Intelligence Loop V6"]
 ];
 
 for (const [file, label] of requiredFiles) {
@@ -87,4 +93,13 @@ assert(recording.topics.length >= 8 && recording.topics.length <= 10, "Recording
 const studioCheck = buildContentStudioCheckReport();
 assert(studioCheck.status === "aprovado", "Studio check V5 deve aprovar cenario padrao.");
 
-console.log("Smoke Marketing OS V5: OK");
+const metricImport = parseManualMetrics(sampleMetricsTsv);
+assert(metricImport.ok, "Importador de metricas V6 deve aceitar TSV manual de exemplo.");
+const intelligence = buildIntelligenceDashboard();
+assert(intelligence.recordCount >= 45, "V6 deve ter dataset ficticio com pelo menos 45 registros.");
+assert(intelligence.report.recommendations.length >= 10, "V6 deve gerar proximas melhores acoes.");
+assert(intelligence.experiments.length >= 7, "V6 deve gerar experimentos editoriais.");
+assert(intelligence.roadmap.adaptiveCalendar.length === 7, "V6 deve gerar calendario adaptativo de 7 dias.");
+assert(intelligence.exports.etusManual.startsWith("Data\tCanal"), "V6 deve exportar Etus/manual TSV.");
+
+console.log("Smoke Marketing OS V6: OK");

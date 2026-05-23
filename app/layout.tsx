@@ -11,6 +11,7 @@ const links = [
   ["/", "Dashboard"],
   ["/reports", "Relatórios"],
   ["/reports/new", "Importar"],
+  ["/campaigns", "Campanhas"],
   ["/plan", "Plano semanal"],
   ["/insights", "Insights"],
   ["/content", "Content Studio"],

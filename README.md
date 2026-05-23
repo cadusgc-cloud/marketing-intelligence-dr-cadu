@@ -46,6 +46,7 @@ npm run db:seed   # recria benchmarks e relatórios iniciais
 - `/content/[id]` pacote completo de conteudo, legenda, stories, videos, prompts e checklist etico
 - `/prompts` biblioteca de prompts copiaveis para uso manual
 - `/export` exportacao local em Markdown, JSON e CSV
+- `/campaigns` maquina editorial de 30 dias para campanhas mensais internas
 - `/storyops` planejamento diario de 6 stories naturais, seguros e copiaveis
 - `/reports` lista de relatórios
 - `/reports/new` importação por texto colado
@@ -119,6 +120,12 @@ O painel separa fila de publicacao manual, fila de revisao, prioridades do dia, 
 A rota `/storyops` gera uma sequencia diaria de 6 stories com linguagem curta, natural e editavel, pensada para parecer story nativo do Instagram e nao uma arte montada.
 
 O modulo inclui temas iniciais, linhas editoriais, sugestoes de midia natural, frases seguras, frases de risco, gate editorial, status de seguranca e exportacao copiavel. Ele nao conecta Instagram, Meta, WhatsApp ou APIs externas, nao publica automaticamente, nao usa dados de pacientes e exige revisao humana antes de qualquer postagem manual.
+
+## Marketing Intelligence OS v2.0 - Maquina Editorial de 30 dias
+
+A rota `/campaigns` cria uma central mensal interna para planejar 30 dias de conteudo organico. Ela gera dias, semanas, pilares editoriais, temas, stories via StoryOps, reels, posts/carrosseis, sugestoes MediaOps, safety gate medico-publicitario e exportacoes copiaveis em Markdown, TSV, Google Agenda e briefing para editor.
+
+O modulo e deterministico e local. Ele nao conecta APIs externas, nao publica automaticamente, nao agenda posts reais, nao faz upload de midia, nao usa dados de pacientes, nao altera banco e nao altera schema Prisma.
 
 ## v2.0 - Tela de resultado do Weekly Command Center
 

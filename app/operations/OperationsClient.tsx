@@ -248,8 +248,8 @@ export function OperationsClient() {
           </div>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {commandCenter.prioritizedFlows.slice(0, 3).map((flow) => (
-            <article key={flow.id} className="rounded-md bg-slate-50 p-3 text-sm">
+          {commandCenter.prioritizedFlows.slice(0, 3).map((flow, index) => (
+            <article key={`${flow.id}-${index}`} className="rounded-md bg-slate-50 p-3 text-sm">
               <p className="font-semibold text-ink">{flow.name}</p>
               <p className="mt-1 text-slate-600">{flow.steps.length} etapas | {flow.estimatedMinutes} min | {flow.status}</p>
               <Link href={`/flows/${flow.id}`} className="mt-2 inline-block text-sm font-semibold text-ocean hover:underline">Executar fluxo</Link>
@@ -290,8 +290,8 @@ export function OperationsClient() {
           </div>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-3">
-          {runbook.days.slice(0, 3).map((day) => (
-            <article key={day.date} className="rounded-md bg-slate-50 p-3 text-sm">
+          {runbook.days.slice(0, 3).map((day, index) => (
+            <article key={`${day.date}-${index}`} className="rounded-md bg-slate-50 p-3 text-sm">
               <p className="font-semibold text-ink">{day.weekday} - {day.objective}</p>
               <p className="mt-1 text-slate-600">{day.tasks.length} tarefas | {day.tasks.reduce((sum, task) => sum + task.estimatedMinutes, 0)} min</p>
             </article>
@@ -316,8 +316,8 @@ export function OperationsClient() {
           </div>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {weeklyReview.nextWeekPlan.days.slice(0, 4).map((day) => (
-            <article key={day.date} className="rounded-md bg-slate-50 p-3 text-sm">
+          {weeklyReview.nextWeekPlan.days.slice(0, 4).map((day, index) => (
+            <article key={`${day.date}-${index}`} className="rounded-md bg-slate-50 p-3 text-sm">
               <p className="font-semibold text-ink">{day.date} - {day.theme}</p>
               <p className="mt-1 text-slate-600">{day.format} | readiness {day.readiness}/100</p>
             </article>
@@ -342,8 +342,8 @@ export function OperationsClient() {
           </div>
         </div>
         <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {intelligence.roadmap.adaptiveCalendar.slice(0, 4).map((day) => (
-            <article key={day.date} className="rounded-md bg-slate-50 p-3 text-sm">
+          {intelligence.roadmap.adaptiveCalendar.slice(0, 4).map((day, index) => (
+            <article key={`${day.date}-${index}`} className="rounded-md bg-slate-50 p-3 text-sm">
               <p className="font-semibold text-ink">{day.date} - {day.theme}</p>
               <p className="mt-1 text-slate-600">{day.format} | {day.rationale}</p>
             </article>
@@ -383,8 +383,8 @@ export function OperationsClient() {
             <div className="rounded-lg bg-slate-50 p-4">
               <p className="text-sm font-semibold text-ink">O que fazer agora</p>
               <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                {todayTasks.slice(0, 6).map((task) => (
-                  <li key={task.id} className="flex gap-2">
+                {todayTasks.slice(0, 6).map((task, index) => (
+                  <li key={`${task.id}-${index}`} className="flex gap-2">
                     <span className={`badge ${priorityClasses[task.priority]}`}>{task.priority}</span>
                     <span>{task.title}</span>
                   </li>
@@ -394,8 +394,8 @@ export function OperationsClient() {
             <div className="rounded-lg bg-slate-50 p-4">
               <p className="text-sm font-semibold text-ink">Midia de hoje</p>
               <ul className="mt-3 space-y-2 text-sm text-slate-600">
-                {dashboard.today.mediaNeeds.slice(0, 5).map((need) => (
-                  <li key={need.id}>- {need.label}: {need.reason}</li>
+                {dashboard.today.mediaNeeds.slice(0, 5).map((need, index) => (
+                  <li key={`${need.id}-${index}`}>- {need.label}: {need.reason}</li>
                 ))}
               </ul>
             </div>
@@ -441,8 +441,8 @@ export function OperationsClient() {
               <ReadinessBadge readiness={dashboard.readiness.month} />
             </div>
             <div className="mt-4 grid gap-3 text-sm text-slate-600">
-              {dashboard.operations.map((operation) => (
-                <div key={operation.id} className="flex flex-col justify-between gap-2 rounded-md bg-slate-50 p-3 sm:flex-row sm:items-center">
+              {dashboard.operations.map((operation, index) => (
+                <div key={`${operation.id}-${index}`} className="flex flex-col justify-between gap-2 rounded-md bg-slate-50 p-3 sm:flex-row sm:items-center">
                   <span className="font-semibold text-ink">{operation.label}</span>
                   <span className={`badge ${readinessClasses[operation.readiness.status]}`}>{operation.readiness.score}/100 - {operation.status}</span>
                 </div>
@@ -471,8 +471,8 @@ export function OperationsClient() {
           </div>
         </div>
         <div className="mt-5 grid gap-3">
-          {filteredTasks.slice(0, 24).map((task) => (
-            <article key={task.id} className="grid gap-3 rounded-lg border border-slate-200 p-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
+          {filteredTasks.slice(0, 24).map((task, index) => (
+            <article key={`${task.id}-${index}`} className="grid gap-3 rounded-lg border border-slate-200 p-4 lg:grid-cols-[minmax(0,1fr)_220px] lg:items-center">
               <div>
                 <div className="flex flex-wrap gap-2">
                   <span className={`badge ${statusClasses[task.status]}`}>{task.status}</span>
@@ -500,9 +500,9 @@ export function OperationsClient() {
           <p className="text-sm font-medium text-ocean">Visao do dia</p>
           <h3 className="mt-1 text-lg font-semibold">Selecionar pacote diario</h3>
           <div className="mt-4 grid max-h-[520px] gap-3 overflow-auto md:grid-cols-2">
-            {dashboard.days.map((day) => (
+            {dashboard.days.map((day, index) => (
               <button
-                key={day.date}
+                key={`${day.date}-${day.dayNumber}-${index}`}
                 type="button"
                 onClick={() => setSelectedDayNumber(day.dayNumber)}
                 className={`rounded-lg border p-3 text-left transition ${selectedDay.dayNumber === day.dayNumber ? "border-ocean bg-cyan-50" : "border-slate-200 hover:bg-slate-50"}`}
@@ -530,11 +530,11 @@ export function OperationsClient() {
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             <div className="rounded-md bg-slate-50 p-3 text-sm">
               <p className="font-semibold text-ink">Tarefas do dia</p>
-              <ul className="mt-2 space-y-1 text-slate-600">{selectedDayTasks.map((task) => <li key={task.id}>- {task.title}</li>)}</ul>
+              <ul className="mt-2 space-y-1 text-slate-600">{selectedDayTasks.map((task, index) => <li key={`${task.id}-${index}`}>- {task.title}</li>)}</ul>
             </div>
             <div className="rounded-md bg-slate-50 p-3 text-sm">
               <p className="font-semibold text-ink">Midia</p>
-              <ul className="mt-2 space-y-1 text-slate-600">{selectedDay.mediaNeeds.map((need) => <li key={need.id}>- {need.label}</li>)}</ul>
+              <ul className="mt-2 space-y-1 text-slate-600">{selectedDay.mediaNeeds.map((need, index) => <li key={`${need.id}-${index}`}>- {need.label}</li>)}</ul>
             </div>
           </div>
           <pre className="mt-4 max-h-80 overflow-auto whitespace-pre-wrap rounded-md bg-slate-950 p-3 text-xs leading-5 text-slate-50">{selectedDay.quickExport.slice(0, 4200)}</pre>
@@ -551,8 +551,8 @@ export function OperationsClient() {
             <span className="badge bg-slate-100 text-slate-700">{dashboard.backlog.length} itens</span>
           </div>
           <div className="mt-4 space-y-3">
-            {dashboard.backlog.slice(0, 8).map((item) => (
-              <article key={item.id} className="rounded-md bg-slate-50 p-3 text-sm">
+            {dashboard.backlog.slice(0, 8).map((item, index) => (
+              <article key={`${item.id}-${index}`} className="rounded-md bg-slate-50 p-3 text-sm">
                 <div className="flex flex-wrap gap-2">
                   <span className={`badge ${priorityClasses[item.priority]}`}>{item.priority}</span>
                   <span className={`badge ${riskClasses[item.editorialRisk]}`}>{safetyClassificationLabel(item.editorialRisk)}</span>
@@ -568,8 +568,8 @@ export function OperationsClient() {
           <p className="text-sm font-medium text-ocean">Repurposing Engine</p>
           <h3 className="mt-1 text-lg font-semibold">Um tema em varios formatos</h3>
           <div className="mt-4 space-y-3">
-            {dashboard.repurposing.slice(0, 3).map((plan) => (
-              <article key={plan.id} className="rounded-md border border-slate-200 p-3 text-sm">
+            {dashboard.repurposing.slice(0, 3).map((plan, index) => (
+              <article key={`${plan.id}-${index}`} className="rounded-md border border-slate-200 p-3 text-sm">
                 <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
                   <p className="font-semibold text-ink">{plan.theme}</p>
                   <LocalCopyButton text={[plan.storySequence, plan.reelScript, plan.carousel, plan.shortCaption, plan.editorBriefing].join("\n\n---\n\n")} label="Copiar pacote" />
@@ -588,7 +588,7 @@ export function OperationsClient() {
             <ul className="mt-2 space-y-1 text-slate-600">{dashboard.media.gaps.map((gap, index) => <li key={`${gap}-${index}`}>- {gap}</li>)}</ul>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
-            {getMediaOpsCategories().slice(0, 10).map((category) => <span key={category} className="badge bg-slate-100 text-slate-700">{category}</span>)}
+            {getMediaOpsCategories().slice(0, 10).map((category, index) => <span key={`${category}-${index}`} className="badge bg-slate-100 text-slate-700">{category}</span>)}
           </div>
         </div>
       </section>
@@ -623,7 +623,7 @@ export function OperationsClient() {
             <Link href="/exports" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir exports</Link>
           </div>
           <div className="mt-4 space-y-3">
-            {dashboard.exports.filter((pkg) => pkg.userFacing).slice(0, 3).map((pkg) => <ExportPreview key={pkg.id} pkg={pkg} />)}
+            {dashboard.exports.filter((pkg) => pkg.userFacing).slice(0, 3).map((pkg, index) => <ExportPreview key={`${pkg.id}-${index}`} pkg={pkg} />)}
           </div>
         </div>
       </section>

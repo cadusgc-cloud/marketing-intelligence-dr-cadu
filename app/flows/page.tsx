@@ -1,17 +1,21 @@
 import Link from "next/link";
+import { AppShell, EmptyState, PageHeader } from "@/components/product";
 import { getGuidedFlowCatalog } from "@/lib/guided-flows";
 
 export default function FlowsPage() {
   const flows = getGuidedFlowCatalog();
   return (
-    <div className="space-y-6">
-      <section className="panel">
-        <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
-        <h2 className="mt-1 text-3xl font-semibold tracking-normal">Fluxos Guiados</h2>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
-          Catalogo de rotinas passo a passo para fechamento semanal, importacao manual, producao, gravacao, safety, backup e release local.
-        </p>
-      </section>
+    <AppShell>
+      <PageHeader
+        eyebrow="Marketing OS v10"
+        title="Fluxos Guiados"
+        description="Catalogo de rotinas passo a passo para fechamento semanal, importacao manual, producao, gravacao, safety, backup e release local."
+        actions={[{ href: "/command-center", label: "Voltar ao Command Center" }]}
+      />
+
+      {flows.length === 0 ? (
+        <EmptyState title="Catalogo de fluxos vazio" description="O sistema precisa de fluxos guiados para orientar a operacao. Rode flows:check para diagnosticar." actionHref="/release" actionLabel="Ver release" />
+      ) : null}
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {flows.map((flow) => (
@@ -21,7 +25,7 @@ export default function FlowsPage() {
               <span className="badge bg-slate-100 text-slate-700">{flow.estimatedMinutes} min</span>
               <span className="badge bg-slate-100 text-slate-700">{flow.steps.length} etapas</span>
             </div>
-            <h3 className="mt-3 text-lg font-semibold">{flow.name}</h3>
+            <h2 className="mt-3 text-lg font-semibold">{flow.name}</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">{flow.description}</p>
             <div className="mt-3 text-xs text-slate-500">
               <p>Pre-requisitos: {flow.prerequisites.length}</p>
@@ -36,6 +40,6 @@ export default function FlowsPage() {
           </article>
         ))}
       </section>
-    </div>
+    </AppShell>
   );
 }

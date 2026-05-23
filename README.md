@@ -454,3 +454,34 @@ Fluxo recomendado:
 4. Usar `/release` antes de preparar push/PR.
 
 A V9 continua sem API externa, sem backend real, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.
+
+## Marketing OS v10 - Product Hardening e Release Polish
+
+A V10 melhora o Marketing OS como produto local: Product Shell, manifesto de rotas, navegacao agrupada, home direcionando para `/command-center`, estados de erro, QA de UI, acessibilidade basica, visual QA leve, release polish e hub de documentacao.
+
+Rotas principais:
+
+- `/command-center` - entrada operacional principal.
+- `/flows` e `/flows/[id]` - fluxos guiados e runner local.
+- `/release` - release score, readiness e PR draft.
+- `/onboarding` - guia de uso semanal/mensal.
+- `/documentation` - docs, relatorios, scripts e troubleshooting.
+
+Scripts novos:
+
+```bash
+npm run ui:a11y
+npm run ui:content
+npm run visual:check
+npm run product:check
+```
+
+Fluxo recomendado de validacao:
+
+1. Abrir `/command-center`.
+2. Rodar `npm run product:check`.
+3. Rodar `npm run health:routes`.
+4. Rodar `npm run build`.
+5. Com o servidor em `http://localhost:3010`, rodar `npm run health:routes:local`.
+
+A V10 continua sem API externa, sem backend real, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.

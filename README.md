@@ -46,6 +46,9 @@ npm run db:seed   # recria benchmarks e relatórios iniciais
 - `/content/[id]` pacote completo de conteudo, legenda, stories, videos, prompts e checklist etico
 - `/prompts` biblioteca de prompts copiaveis para uso manual
 - `/export` exportacao local em Markdown, JSON e CSV
+- `/operations` central operacional V3 para Hoje/Semana/Mes, tarefas, readiness, MediaOps, Safety e exportacoes
+- `/exports` pacotes copiaveis da operacao mensal, semanal e diaria
+- `/safety` centro de seguranca medico-publicitaria da operacao editorial
 - `/campaigns` maquina editorial de 30 dias para campanhas mensais internas
 - `/storyops` planejamento diario de 6 stories naturais, seguros e copiaveis
 - `/reports` lista de relatórios
@@ -126,6 +129,18 @@ O modulo inclui temas iniciais, linhas editoriais, sugestoes de midia natural, f
 A rota `/campaigns` cria uma central mensal interna para planejar 30 dias de conteudo organico. Ela gera dias, semanas, pilares editoriais, temas, stories via StoryOps, reels, posts/carrosseis, sugestoes MediaOps, safety gate medico-publicitario e exportacoes copiaveis em Markdown, TSV, Google Agenda e briefing para editor.
 
 O modulo e deterministico e local. Ele nao conecta APIs externas, nao publica automaticamente, nao agenda posts reais, nao faz upload de midia, nao usa dados de pacientes, nao altera banco e nao altera schema Prisma.
+
+## Marketing OS v3 - Central Operacional de Execucao Editorial
+
+A rota `/operations` consolida a execucao diaria, semanal e mensal: pacote do dia, tarefas editoriais, status local via `localStorage`, readiness, backlog, reaproveitamento de temas, MediaOps V3, Safety Center e Export Center.
+
+As rotas `/exports` e `/safety` separam pacotes copiaveis e revisao medico-publicitaria. A V3 continua local e deterministica: nao conecta APIs externas, nao publica, nao envia mensagens, nao altera banco, nao usa dados de pacientes e exige revisao humana antes de qualquer publicacao manual.
+
+Validacao rapida:
+
+```bash
+npm run smoke:marketing
+```
 
 ## v2.0 - Tela de resultado do Weekly Command Center
 

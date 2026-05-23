@@ -9,6 +9,7 @@ export const metadata: Metadata = {
 
 const links = [
   ["/", "Dashboard"],
+  ["/operations", "Operacoes"],
   ["/reports", "Relatórios"],
   ["/reports/new", "Importar"],
   ["/campaigns", "Campanhas"],
@@ -17,6 +18,8 @@ const links = [
   ["/content", "Content Studio"],
   ["/prompts", "Prompts"],
   ["/export", "Exportar"],
+  ["/exports", "Export Center"],
+  ["/safety", "Safety"],
   ["/calendar", "Calendário"],
   ["/audit", "Auditoria"],
   ["/signals", "Sinais"],

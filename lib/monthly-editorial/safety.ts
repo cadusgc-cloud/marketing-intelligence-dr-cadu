@@ -15,6 +15,7 @@ const criticalTerms: RiskTerm[] = [
   term("sem cicatriz", "promessa_resultado", "critical", "Remover promessa sobre cicatriz."),
   term("recuperacao rapida garantida", "promessa_resultado", "critical", "Usar linguagem de variabilidade e acompanhamento."),
   term("antes e depois", "antes_depois", "critical", "Nao usar antes/depois como promessa ou prova visual."),
+  term("antes/depois", "antes_depois", "critical", "Nao usar antes/depois como promessa ou prova visual."),
   term("paciente de hoje", "paciente", "critical", "Remover qualquer referencia a paciente real."),
   term("paciente visivel", "paciente", "critical", "Remover qualquer pessoa identificavel."),
   term("cirurgia de hoje", "bastidor_inventado", "critical", "Nao afirmar cirurgia ou bastidor especifico sem contexto seguro e revisao humana."),

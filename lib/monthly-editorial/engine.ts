@@ -104,7 +104,7 @@ export function generateMonthlyEditorialPlan(input: CampaignInput = {}): Campaig
       storySequence,
       reelText: reelPlan?.exportText,
       postText: contentPlan.postPlan?.exportText ?? contentPlan.carouselPlan?.exportText,
-      mediaText: mediaSuggestions.map((media) => `${media.label} ${media.description} ${media.privacyNote}`).join(" ")
+      mediaText: mediaSuggestions.map((media) => `${media.label} ${media.description}`).join(" ")
     });
     const editorialStatus = getEditorialStatus(safetyGate);
     const dayDraft: Omit<EditorialDay, "exportText"> = {

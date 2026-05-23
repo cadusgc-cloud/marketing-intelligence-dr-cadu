@@ -46,6 +46,7 @@ npm run db:seed   # recria benchmarks e relatórios iniciais
 - `/content/[id]` pacote completo de conteudo, legenda, stories, videos, prompts e checklist etico
 - `/prompts` biblioteca de prompts copiaveis para uso manual
 - `/export` exportacao local em Markdown, JSON e CSV
+- `/storyops` planejamento diario de 6 stories naturais, seguros e copiaveis
 - `/reports` lista de relatórios
 - `/reports/new` importação por texto colado
 - `/reports/[id]` detalhe analisado
@@ -112,6 +113,12 @@ Quando ha bloqueio, o botao de salvar fica desativado. Quando ha apenas revisao,
 A rota `/stories/today` cria um briefing operacional do dia para conectar planejamento semanal, exportacao, execucao manual e registro de resultados dos Stories.
 
 O painel separa fila de publicacao manual, fila de revisao, prioridades do dia, metricas agregadas a registrar e guardrails de privacidade. Ele nao conecta Instagram, Meta, WhatsApp ou APIs externas, nao publica automaticamente e nao usa dados pessoais ou clinicos.
+
+## StoryOps Diario v2.0
+
+A rota `/storyops` gera uma sequencia diaria de 6 stories com linguagem curta, natural e editavel, pensada para parecer story nativo do Instagram e nao uma arte montada.
+
+O modulo inclui temas iniciais, linhas editoriais, sugestoes de midia natural, frases seguras, frases de risco, gate editorial, status de seguranca e exportacao copiavel. Ele nao conecta Instagram, Meta, WhatsApp ou APIs externas, nao publica automaticamente, nao usa dados de pacientes e exige revisao humana antes de qualquer postagem manual.
 
 ## v2.0 - Tela de resultado do Weekly Command Center
 

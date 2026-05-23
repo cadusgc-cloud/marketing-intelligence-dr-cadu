@@ -1,0 +1,32 @@
+# Production queue snapshot
+
+- pendente | alta | pacote_completo | revisar pacote editorial | cirurgia plastica nao combina com pressa
+- pronto | alta | reel | gravar video curto | cirurgia plastica nao combina com pressa
+- pronto | media | stories | copiar stories do dia | cirurgia plastica nao combina com pressa
+- pronto | media | carrossel | preparar carrossel simples | cirurgia plastica nao combina com pressa
+- pendente | media | briefing_editor | enviar briefing ao editor manualmente | cirurgia plastica nao combina com pressa
+- pendente | alta | pacote_completo | revisar pacote editorial | naturalidade tambem e planejamento
+- pronto | alta | reel | gravar video curto | naturalidade tambem e planejamento
+- pronto | media | stories | copiar stories do dia | naturalidade tambem e planejamento
+- pronto | media | carrossel | preparar carrossel simples | naturalidade tambem e planejamento
+- pendente | media | briefing_editor | enviar briefing ao editor manualmente | naturalidade tambem e planejamento
+- pendente | alta | pacote_completo | revisar pacote editorial | expectativa realista evita frustracao
+- pronto | alta | reel | gravar video curto | expectativa realista evita frustracao
+- pronto | media | stories | copiar stories do dia | expectativa realista evita frustracao
+- pronto | media | carrossel | preparar carrossel simples | expectativa realista evita frustracao
+- pendente | media | briefing_editor | enviar briefing ao editor manualmente | expectativa realista evita frustracao
+- pendente | alta | pacote_completo | revisar pacote editorial | consulta nao e venda
+- pronto | alta | reel | gravar video curto | consulta nao e venda
+- pronto | media | stories | copiar stories do dia | consulta nao e venda
+- pronto | media | carrossel | preparar carrossel simples | consulta nao e venda
+- pendente | media | briefing_editor | enviar briefing ao editor manualmente | consulta nao e venda
+- pendente | alta | pacote_completo | revisar pacote editorial | cicatrizacao exige paciencia
+- pronto | alta | reel | gravar video curto | cicatrizacao exige paciencia
+- pronto | media | stories | copiar stories do dia | cicatrizacao exige paciencia
+- pronto | media | carrossel | preparar carrossel simples | cicatrizacao exige paciencia
+- pendente | media | briefing_editor | enviar briefing ao editor manualmente | cicatrizacao exige paciencia
+- pendente | alta | pacote_completo | revisar pacote editorial | recuperacao nao e competicao
+- pronto | alta | reel | gravar video curto | recuperacao nao e competicao
+- pronto | media | stories | copiar stories do dia | recuperacao nao e competicao
+- pronto | media | carrossel | preparar carrossel simples | recuperacao nao e competicao
+- pendente | media | briefing_editor | enviar briefing ao editor manualmente | recuperacao nao e competicao

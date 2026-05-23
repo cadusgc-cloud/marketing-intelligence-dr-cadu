@@ -1,5 +1,6 @@
 import type { WeeklyMarketingWeek } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { isInsideDecember2025 } from "@/lib/utils/dates";
 import { normalizeWeeklyMarketingData, type WeeklyMarketingData } from "@/lib/weeklyDataInput";
 
 export type WeeklyMarketingWeekInput = Pick<
@@ -96,18 +97,25 @@ export async function getWeeklyMarketingDataById(id: string): Promise<WeeklyMark
 }
 
 export async function getPreviousWeeklyMarketingData(selectedWeek: WeeklyMarketingData): Promise<WeeklyMarketingData | null> {
-  const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
-  if (!isValidIsoDate(referenceDate)) return null;
+  const records = await getPreviousValidWeeklyMarketingData(selectedWeek, 1);
+  return records[0] ?? null;
+}
 
-  const record = await prisma.weeklyMarketingWeek.findFirst({
+export async function getPreviousValidWeeklyMarketingData(selectedWeek: WeeklyMarketingData, limit = 4): Promise<WeeklyMarketingData[]> {
+  const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
+  if (!isValidIsoDate(referenceDate)) return [];
+  const safeLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 12) : 4;
+
+  const records = await prisma.weeklyMarketingWeek.findMany({
     where: {
       id: { not: selectedWeek.id },
       endDate: { lt: referenceDate }
     },
-    orderBy: [{ endDate: "desc" }, { updatedAt: "desc" }]
+    orderBy: [{ endDate: "desc" }, { updatedAt: "desc" }],
+    take: Math.min(safeLimit * 4, 52)
   });
 
-  return record ? mapWeeklyMarketingWeekToData(record) : null;
+  return selectPreviousValidWeeklyMarketingWeekRecords(records, selectedWeek, safeLimit).map(mapWeeklyMarketingWeekToData);
 }
 
 export async function getWeeklyMarketingWeekSummaries(limit = 12): Promise<WeeklyMarketingWeekSummary[]> {
@@ -124,14 +132,26 @@ export function selectPreviousWeeklyMarketingWeekRecord(
   records: WeeklyMarketingWeek[],
   selectedWeek: Pick<WeeklyMarketingData, "id" | "startDate" | "endDate">
 ): WeeklyMarketingWeek | null {
-  const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
-  if (!isValidIsoDate(referenceDate)) return null;
+  return selectPreviousValidWeeklyMarketingWeekRecords(records, selectedWeek, 1)[0] ?? null;
+}
 
-  return (
-    records
-      .filter((record) => record.id !== selectedWeek.id && record.endDate < referenceDate)
-      .sort((a, b) => b.endDate.localeCompare(a.endDate) || b.updatedAt.getTime() - a.updatedAt.getTime())[0] ?? null
-  );
+export function selectPreviousValidWeeklyMarketingWeekRecords(
+  records: WeeklyMarketingWeek[],
+  selectedWeek: Pick<WeeklyMarketingData, "id" | "startDate" | "endDate">,
+  limit = 4
+): WeeklyMarketingWeek[] {
+  const referenceDate = selectedWeek.startDate || selectedWeek.endDate;
+  if (!isValidIsoDate(referenceDate)) return [];
+  const safeLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 12) : 4;
+
+  return records
+    .filter((record) => record.id !== selectedWeek.id && record.endDate < referenceDate && !isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(record))
+    .sort((a, b) => b.endDate.localeCompare(a.endDate) || b.updatedAt.getTime() - a.updatedAt.getTime())
+    .slice(0, safeLimit);
+}
+
+export function isWeeklyMarketingWeekRecordExcludedFromNormalAnalysis(record: Pick<WeeklyMarketingWeek, "startDate" | "endDate">): boolean {
+  return isInsideDecember2025(parseIsoDate(record.startDate), parseIsoDate(record.endDate));
 }
 
 export async function upsertWeeklyMarketingData(input: WeeklyMarketingWeekInput): Promise<WeeklyMarketingData> {
@@ -253,6 +273,11 @@ function isValidIsoDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const parsed = new Date(`${value}T00:00:00.000Z`);
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+
+function parseIsoDate(value: string): Date | null {
+  if (!isValidIsoDate(value)) return null;
+  return new Date(`${value}T12:00:00.000Z`);
 }
 
 function unique(values: string[]): string[] {

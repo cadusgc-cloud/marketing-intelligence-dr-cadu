@@ -137,16 +137,76 @@ describe("Weekly Command Center", () => {
 
   it("integra o painel de leitura estrategica na pagina semanal", () => {
     const page = readFileSync(path.join(process.cwd(), "app", "weekly", "page.tsx"), "utf8");
+    const resultScreen = readFileSync(path.join(process.cwd(), "app", "weekly", "WeeklyCommandResultScreen.tsx"), "utf8");
     const panel = readFileSync(path.join(process.cwd(), "app", "weekly", "WeeklyStrategicDecisionPanel.tsx"), "utf8");
     const decisionLayer = readFileSync(path.join(process.cwd(), "lib", "weeklyStrategicDecision.ts"), "utf8");
+    const commandResult = readFileSync(path.join(process.cwd(), "lib", "weeklyCommandResult.ts"), "utf8");
 
-    expect(page).toContain("getPreviousWeeklyMarketingData");
+    expect(page).toContain("getPreviousValidWeeklyMarketingData");
     expect(page).toContain("buildWeeklyStrategicDecisionReport");
+    expect(page).toContain("buildWeeklyCommandResult");
+    expect(page).toContain("buildWeeklyExecutionBoard");
+    expect(page).toContain("WeeklyCommandResultScreen");
+    expect(page).toContain("WeeklyExecutionBoardPanel");
     expect(page).toContain("WeeklyStrategicDecisionPanel");
+    expect(resultScreen).toContain("Prioridades da proxima semana");
+    expect(resultScreen).toContain("priorityLevers");
+    expect(commandResult).toContain("Pacote pos-salvamento");
     expect(panel).toContain("Leitura Estrat");
     expect(panel).toContain("Principais sinais");
     expect(panel).toContain("Recomenda");
     expect(panel).toContain("report.caution");
     expect(decisionLayer).toContain("revisada por uma pessoa");
+  });
+
+  it("integra o board de execucao semanal como rota e painel interno", () => {
+    const page = readFileSync(path.join(process.cwd(), "app", "weekly", "page.tsx"), "utf8");
+    const executionPage = readFileSync(path.join(process.cwd(), "app", "weekly", "execution", "page.tsx"), "utf8");
+    const executionPanel = readFileSync(path.join(process.cwd(), "app", "weekly", "WeeklyExecutionBoardPanel.tsx"), "utf8");
+    const executionLayer = readFileSync(path.join(process.cwd(), "lib", "weeklyExecutionBoard.ts"), "utf8");
+
+    expect(page).toContain("WeeklyExecutionBoardPanel");
+    expect(page).toContain("buildWeeklyExecutionBoard");
+    expect(executionPage).toContain("getPreviousValidWeeklyMarketingData");
+    expect(executionPage).toContain("buildWeeklyCommandResult");
+    expect(executionPage).toContain("WeeklyExecutionBoardPanel");
+    expect(executionPanel).toContain("Board de Execucao Semanal");
+    expect(executionPanel).toContain("Agenda sugerida");
+    expect(executionPanel).toContain("Diario de decisoes");
+    expect(executionLayer).toContain("Team Audit Mode permanece interno");
+    expect(executionLayer).toContain("nao publica");
+  });
+
+  it("integra o pacote manual de execucao semanal como rota interna", () => {
+    const executionPage = readFileSync(path.join(process.cwd(), "app", "weekly", "execution", "page.tsx"), "utf8");
+    const packetPage = readFileSync(path.join(process.cwd(), "app", "weekly", "execution", "packet", "page.tsx"), "utf8");
+    const packetPanel = readFileSync(path.join(process.cwd(), "app", "weekly", "execution", "WeeklyManualExecutionPacketPanel.tsx"), "utf8");
+    const packetLayer = readFileSync(path.join(process.cwd(), "lib", "weeklyManualExecutionPacket.ts"), "utf8");
+
+    expect(executionPage).toContain("/weekly/execution/packet");
+    expect(packetPage).toContain("buildWeeklyManualExecutionPacket");
+    expect(packetPage).toContain("WeeklyManualExecutionPacketPanel");
+    expect(packetPanel).toContain("Pacote de Execucao Manual");
+    expect(packetPanel).toContain("Gates antes de executar");
+    expect(packetPanel).toContain("Plano de coleta da proxima semana");
+    expect(packetLayer).toContain("Nao publicar conteudo automaticamente");
+    expect(packetLayer).toContain("Dezembro/2025");
+  });
+
+  it("integra o guia de coleta manual ao fluxo semanal", () => {
+    const dataPage = readFileSync(path.join(process.cwd(), "app", "data", "page.tsx"), "utf8");
+    const guidePage = readFileSync(path.join(process.cwd(), "app", "data", "collection-guide", "page.tsx"), "utf8");
+    const packetPage = readFileSync(path.join(process.cwd(), "app", "data", "collection-packet", "page.tsx"), "utf8");
+    const commandResult = readFileSync(path.join(process.cwd(), "lib", "weeklyCommandResult.ts"), "utf8");
+
+    expect(dataPage).toContain("Abrir guia de coleta");
+    expect(dataPage).toContain("/data/collection-packet");
+    expect(guidePage).toContain("buildWeeklyDataCollectionGuide");
+    expect(guidePage).toContain("/data/collection-packet");
+    expect(packetPage).toContain("buildWeeklyCollectionPacket");
+    expect(packetPage).toContain("Copiar, preencher e revisar");
+    expect(guidePage).toContain("De onde tirar cada dado");
+    expect(commandResult).toContain("/data/collection-guide");
+    expect(commandResult).toContain("/data/collection-packet");
   });
 });

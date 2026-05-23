@@ -138,6 +138,7 @@ export default function StoryExecutionClient() {
         <aside className="panel">
           <h3 className="text-lg font-semibold">Links contextuais</h3>
           <div className="mt-3 grid gap-2 text-sm">
+            <Link href="/stories/today" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Briefing de hoje</Link>
             <Link href="/stories/export" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Exportação da semana</Link>
             <Link href="/stories/results" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Registrar resultados</Link>
             <Link href="/stories" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Planejador de Stories</Link>

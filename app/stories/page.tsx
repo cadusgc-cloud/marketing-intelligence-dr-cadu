@@ -123,6 +123,9 @@ export default function StoriesPage() {
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
+            <Link href="/stories/today" className="inline-flex w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+              Briefing de hoje
+            </Link>
             <Link href="/stories/export" className="inline-flex w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
               Exportar semana de stories
             </Link>
@@ -138,17 +141,22 @@ export default function StoriesPage() {
             <Link href="/stories/next-week" className="inline-flex w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
               Próxima semana
             </Link>
+            <Link href="/storyops" className="inline-flex w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+              StoryOps Diario
+            </Link>
           </div>
         </div>
 
         <aside className="panel">
           <h3 className="text-lg font-semibold">Links contextuais</h3>
           <div className="mt-3 grid gap-2 text-sm">
+            <Link href="/stories/today" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Briefing de hoje</Link>
             <Link href="/stories/execution" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Executar stories do dia</Link>
             <Link href="/stories/export" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Exportar semana</Link>
             <Link href="/stories/results" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Registrar resultados dos stories</Link>
             <Link href="/stories/learning" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Aprendizado da semana</Link>
             <Link href="/stories/next-week" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Planejar próxima semana</Link>
+            <Link href="/storyops" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">StoryOps Diario</Link>
             <Link href="/media/import" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Catalogar acervo</Link>
             <Link href="/media" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Ver biblioteca de mídias</Link>
             <Link href="/publishing" className="rounded-md border border-slate-200 px-3 py-2 font-medium text-slate-700 hover:bg-slate-50">Central de Publicação</Link>

@@ -11,6 +11,7 @@ import {
   getContentIdeaById,
   suggestedPlatformLabel
 } from "@/lib/contentStudio";
+import { getWeeklyContentPlan } from "@/lib/drCaduContentPlan";
 
 type ContentPageSearchParams = {
   pillar?: string;
@@ -92,6 +93,7 @@ export default function ContentStudioPage({ searchParams }: { searchParams: Cont
   };
   const filteredIdeas = filterContentIdeas(CONTENT_IDEAS, filters);
   const selectedIdea = getContentIdeaById(searchParams.selected, filteredIdeas) ?? filteredIdeas[0] ?? null;
+  const weeklyPlan = getWeeklyContentPlan();
 
   return (
     <div className="space-y-6">
@@ -99,6 +101,29 @@ export default function ContentStudioPage({ searchParams }: { searchParams: Cont
         <p className="text-sm font-medium text-ocean">Content Studio</p>
         <h2 className="mt-1 text-2xl font-semibold">Content Studio</h2>
         <p className="mt-2 text-sm text-slate-500">Planejamento de stories, shorts e TikTok para o perfil @drcadugazzinelli.</p>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+          <div>
+            <p className="text-sm font-medium text-ocean">Pacotes prontos da semana</p>
+            <h3 className="mt-1 text-lg font-semibold">Conteudos completos para uso interno local</h3>
+            <p className="mt-2 text-sm text-slate-500">Cada pacote inclui estrategia, legenda, carrossel, stories, video curto, YouTube, prompts, reaproveitamento e checklist etico.</p>
+          </div>
+          <Link href="/plan" className="text-sm font-semibold text-ocean hover:underline">Ver plano semanal</Link>
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {weeklyPlan.packages.map((pkg) => (
+            <Link key={pkg.id} href={`/content/${pkg.id}`} className="rounded-lg border border-slate-200 p-4 hover:bg-slate-50">
+              <div className="flex flex-wrap gap-2">
+                <span className="badge bg-slate-100 text-slate-700">{pkg.day}</span>
+                <span className="badge bg-cyan-50 text-ocean">{pkg.primaryChannel}</span>
+              </div>
+              <p className="mt-3 font-semibold">{pkg.title}</p>
+              <p className="mt-1 text-sm text-slate-500">{pkg.objective}</p>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-3 md:grid-cols-4">

@@ -9,10 +9,25 @@ export const metadata: Metadata = {
 
 const links = [
   ["/", "Dashboard"],
+  ["/operations", "Operacoes"],
   ["/reports", "Relatórios"],
   ["/reports/new", "Importar"],
+  ["/campaigns", "Campanhas"],
+  ["/studio", "Studio v5"],
+  ["/library", "Biblioteca"],
+  ["/recording", "Gravacao"],
+  ["/review", "Revisao"],
+  ["/metrics", "Metricas"],
+  ["/experiments", "Experimentos"],
+  ["/strategy", "Estrategia"],
+  ["/plan", "Plano semanal"],
   ["/insights", "Insights"],
   ["/content", "Content Studio"],
+  ["/prompts", "Prompts"],
+  ["/export", "Exportar"],
+  ["/exports", "Export Center"],
+  ["/safety", "Safety"],
+  ["/qa", "QA"],
   ["/calendar", "Calendário"],
   ["/audit", "Auditoria"],
   ["/signals", "Sinais"],
@@ -22,6 +37,7 @@ const links = [
   ["/integrations", "Integrações"],
   ["/media", "Mídias"],
   ["/stories", "Stories"],
+  ["/storyops", "StoryOps"],
   ["/benchmarks", "Benchmarks"],
   ["/settings", "Configurações"]
 ];

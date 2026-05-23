@@ -17,6 +17,7 @@ import {
   type EditorialStatus,
   type SafetyClassification
 } from "@/lib/monthly-editorial";
+import { PILOT_WEEK_CAMPAIGN_INPUT } from "@/lib/marketing-scenarios";
 
 type CampaignDraft = {
   name: string;
@@ -123,6 +124,23 @@ export function CampaignsClient() {
     setSelectedDayNumber(1);
   }
 
+  function loadPilotWeek() {
+    const pilotDraft: CampaignDraft = {
+      name: PILOT_WEEK_CAMPAIGN_INPUT.name ?? initialDraft.name,
+      startDate: PILOT_WEEK_CAMPAIGN_INPUT.startDate ?? initialDraft.startDate,
+      durationDays: PILOT_WEEK_CAMPAIGN_INPUT.durationDays ?? 7,
+      objective: String(PILOT_WEEK_CAMPAIGN_INPUT.objective ?? initialDraft.objective),
+      targetAudience: PILOT_WEEK_CAMPAIGN_INPUT.targetAudience ?? initialDraft.targetAudience,
+      tone: PILOT_WEEK_CAMPAIGN_INPUT.tone ?? initialDraft.tone,
+      intensity: PILOT_WEEK_CAMPAIGN_INPUT.intensity ?? initialDraft.intensity,
+      priorityPillars: PILOT_WEEK_CAMPAIGN_INPUT.priorityPillars ?? initialDraft.priorityPillars,
+      neutralNotes: PILOT_WEEK_CAMPAIGN_INPUT.neutralNotes ?? initialDraft.neutralNotes
+    };
+    setDraft(pilotDraft);
+    setGeneratedDraft(pilotDraft);
+    setSelectedDayNumber(1);
+  }
+
   return (
     <div className="space-y-6">
       <section className="panel">
@@ -199,9 +217,14 @@ export function CampaignsClient() {
                 ))}
               </div>
             </div>
-            <button type="button" onClick={generatePlan} className="w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
-              Gerar plano editorial
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={generatePlan} className="w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">
+                Gerar plano editorial
+              </button>
+              <button type="button" onClick={loadPilotWeek} className="w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                Carregar Semana Piloto
+              </button>
+            </div>
           </div>
         </div>
 

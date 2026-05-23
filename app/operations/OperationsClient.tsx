@@ -16,6 +16,7 @@ import {
   type PublishingReadiness,
   type TaskStatus
 } from "@/lib/marketing-ops";
+import { runMarketingDogfoodingScenario } from "@/lib/marketing-dogfooding";
 import { safetyClassificationLabel, type SafetyClassification } from "@/lib/monthly-editorial";
 
 const LOCAL_STATE_KEY = "marketing-os-v3-local-state";
@@ -82,6 +83,7 @@ function ExportPreview({ pkg }: { pkg: ExportPackage }) {
 
 export function OperationsClient() {
   const state = useMemo(() => buildMarketingOpsState(), []);
+  const dogfood = useMemo(() => runMarketingDogfoodingScenario(), []);
   const dashboard = state.dashboard;
   const [localState, setLocalState] = useState<OpsLocalState>(() => getDefaultOpsLocalState());
   const [hydrated, setHydrated] = useState(false);
@@ -148,7 +150,7 @@ export function OperationsClient() {
       <section className="panel">
         <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-start">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-ocean">Marketing OS v3</p>
+            <p className="text-sm font-medium text-ocean">Marketing OS v3 + v4</p>
             <h2 className="mt-1 text-3xl font-semibold tracking-normal">Central Operacional de Execucao Editorial</h2>
             <p className="mt-3 text-sm leading-6 text-slate-600">
               Painel interno para transformar o plano mensal em tarefas do dia, stories copiaveis, midia natural, safety, readiness e exportacao manual. Nada aqui publica, conecta API, envia mensagem ou usa dados de paciente.
@@ -165,6 +167,7 @@ export function OperationsClient() {
             ["/campaigns", "Campanhas"],
             ["/exports", "Export Center"],
             ["/safety", "Safety Center"],
+            ["/qa", "QA v4"],
             ["/media", "Midias"],
             ["/calendar", "Calendario"],
             ["/data", "Dados"]
@@ -185,6 +188,23 @@ export function OperationsClient() {
         <MetricCard label="Stories do mes" value={dashboard.days.length * 6} detail="StoryOps integrado" />
         <MetricCard label="Reels a gravar" value={dashboard.week.reelsToRecord.length} detail="na semana atual" />
         <MetricCard label="Riscos detectados" value={dashboard.safety.totalIssues} detail={safetyClassificationLabel(dashboard.safety.safetyGate.classification)} />
+        <MetricCard label="Dogfooding v4" value={dogfood.finalStatus} detail={`${dogfood.weeklyReadiness}/100 na semana piloto`} />
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Semana piloto validada</p>
+            <h3 className="mt-1 text-lg font-semibold">{dogfood.scenario.summary.campaignName}</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {dogfood.scenario.summary.period} | {dogfood.totalStories} stories | {dogfood.totalReels} reels | {dogfood.totalPostsAndCarousels} posts/carrosseis | QA {dogfood.quality.score}/100
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/qa" className="rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Abrir QA</Link>
+            <LocalCopyButton text={dogfood.scenario.exports.weeklyMarkdown} label="Copiar semana piloto" />
+          </div>
+        </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">

@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildMarketingOpsState } from "@/lib/marketing-ops";
+import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 
 export default function ExportsPage() {
   const state = buildMarketingOpsState();
   const packages = state.dashboard.exports;
+  const pilot = buildPilotWeekScenario();
 
   return (
     <div className="space-y-6">
@@ -30,6 +32,25 @@ export default function ExportsPage() {
         <MetricCard label="Readiness mes" value={`${state.dashboard.readiness.month.score}/100`} detail={state.dashboard.readiness.month.status} />
       </section>
 
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v4</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes da semana piloto</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {pilot.summary.period} | Google Sheets, Google Agenda, Etus/manual, stories, reels, posts e safety audit.
+            </p>
+          </div>
+          <LocalCopyButton text={pilot.exports.weeklyMarkdown} label="Copiar resumo v4" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <PilotExportBlock title="Semana piloto" text={pilot.exports.weeklyMarkdown} />
+          <PilotExportBlock title="Etus/manual" text={pilot.exports.etusManual} />
+          <PilotExportBlock title="Google Sheets TSV" text={pilot.exports.googleSheetsTsv} />
+          <PilotExportBlock title="Google Agenda" text={pilot.exports.googleAgendaText} />
+        </div>
+      </section>
+
       <section className="grid gap-4">
         {packages.map((pkg) => (
           <article key={pkg.id} className="panel">
@@ -48,6 +69,18 @@ export default function ExportsPage() {
           </article>
         ))}
       </section>
+    </div>
+  );
+}
+
+function PilotExportBlock({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-lg border border-slate-200 p-4">
+      <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+        <h4 className="font-semibold">{title}</h4>
+        <LocalCopyButton text={text} label="Copiar" />
+      </div>
+      <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-md bg-slate-950 p-3 text-xs leading-5 text-slate-50">{text}</pre>
     </div>
   );
 }

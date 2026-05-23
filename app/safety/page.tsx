@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildMarketingOpsState, exportSafetyReport } from "@/lib/marketing-ops";
+import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 import { safetyClassificationLabel } from "@/lib/monthly-editorial";
 
 const riskClasses = {
@@ -14,6 +15,7 @@ export default function SafetyPage() {
   const state = buildMarketingOpsState();
   const safety = state.dashboard.safety;
   const report = exportSafetyReport(safety);
+  const pilot = buildPilotWeekScenario();
 
   return (
     <div className="space-y-6">
@@ -96,6 +98,28 @@ export default function SafetyPage() {
               </article>
             )) : <p className="text-sm text-slate-500">Nenhum conteudo em revisao no plano padrao.</p>}
           </div>
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v4</p>
+            <h3 className="mt-1 text-lg font-semibold">Safety audit da semana piloto</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              {pilot.summary.period} | {pilot.summary.totalSafetyAlerts} alertas | {pilot.summary.totalBlockedItems} bloqueios | status {pilot.summary.status}
+            </p>
+          </div>
+          <LocalCopyButton text={pilot.exports.safetyReport} label="Copiar safety v4" />
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          {pilot.days.map((day) => (
+            <article key={day.editorialDay.date} className="rounded-md bg-slate-50 p-3 text-sm">
+              <p className="font-semibold text-ink">{day.editorialDay.date}</p>
+              <p className="mt-1 text-slate-600">{day.editorialDay.theme}</p>
+              <p className="mt-2 text-xs text-slate-500">{day.safetyGate.classification} | {day.safetyGate.score}/100</p>
+            </article>
+          ))}
         </div>
       </section>
 

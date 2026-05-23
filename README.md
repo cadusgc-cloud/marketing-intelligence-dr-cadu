@@ -142,6 +142,25 @@ Validacao rapida:
 npm run smoke:marketing
 ```
 
+## Marketing OS v4 - QA, dogfooding e PR readiness
+
+A rota `/qa` valida automaticamente uma semana piloto realista, de 2026-05-24 a 2026-05-30, chamada "Semana Piloto - Cirurgia Plastica Sem Promessa".
+
+A V4 gera a semana com StoryOps, campanhas, Marketing Ops, MediaOps, safety gate, exports copiaveis e readiness. Depois roda dogfooding e QA automatico para provar que o sistema consegue produzir uma semana segura sem depender de integracao externa ou revisao manual inicial extensa.
+
+Scripts novos:
+
+```bash
+npm run dogfood:marketing
+npm run qa:marketing
+npm run health:routes
+npm run health:routes:local
+```
+
+Relatorios versionados ficam em `reports/marketing-os-v4/`.
+
+Como nas fases anteriores, a V4 nao conecta APIs externas, nao publica automaticamente, nao faz upload, nao usa dados de pacientes, nao altera banco e nao mexe em `.env`.
+
 ## v2.0 - Tela de resultado do Weekly Command Center
 
 A rota `/weekly` agora abre com uma tela de resultado operacional chamada Weekly Command Center. Ela resume a semana selecionada, compara com a semana anterior valida, separa cadencia de qualidade, lista sinais, organiza aprendizado por funcao de conteudo, mostra Stories/presenca diaria e monta um plano interno para a proxima semana.

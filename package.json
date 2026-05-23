@@ -9,6 +9,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke:marketing": "node scripts/smoke-marketing-os.mjs",
+    "dogfood:marketing": "node scripts/marketing-os-v4-dogfood.mjs",
+    "qa:marketing": "node scripts/marketing-os-v4-dogfood.mjs --qa",
+    "health:routes": "node scripts/marketing-os-route-health.mjs",
+    "health:routes:local": "node scripts/marketing-os-route-health.mjs --base http://localhost:3010",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts"

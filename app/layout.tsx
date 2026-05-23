@@ -20,6 +20,7 @@ const links = [
   ["/export", "Exportar"],
   ["/exports", "Export Center"],
   ["/safety", "Safety"],
+  ["/qa", "QA"],
   ["/calendar", "Calendário"],
   ["/audit", "Auditoria"],
   ["/signals", "Sinais"],

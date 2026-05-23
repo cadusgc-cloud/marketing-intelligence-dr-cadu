@@ -1,6 +1,9 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { buildMarketingOpsState } from "../lib/marketing-ops";
+import { runMarketingDogfoodingScenario } from "../lib/marketing-dogfooding";
+import { runMarketingQualityAudit } from "../lib/marketing-quality";
+import { buildPilotWeekScenario } from "../lib/marketing-scenarios";
 import { generateMonthlyEditorialPlan, runMonthlySafetyGate } from "../lib/monthly-editorial";
 import { buildStoryOpsSequence } from "../lib/storyops";
 
@@ -14,11 +17,15 @@ const requiredFiles = [
   ["app/operations/page.tsx", "rota /operations"],
   ["app/exports/page.tsx", "rota /exports"],
   ["app/safety/page.tsx", "rota /safety"],
+  ["app/qa/page.tsx", "rota /qa"],
   ["app/storyops/page.tsx", "rota /storyops"],
   ["app/campaigns/page.tsx", "rota /campaigns"],
   ["lib/storyops/index.ts", "StoryOps"],
   ["lib/monthly-editorial/index.ts", "motor mensal"],
-  ["lib/marketing-ops/index.ts", "Marketing Ops V3"]
+  ["lib/marketing-ops/index.ts", "Marketing Ops V3"],
+  ["lib/marketing-scenarios/index.ts", "Semana piloto V4"],
+  ["lib/marketing-quality/index.ts", "QA V4"],
+  ["lib/marketing-dogfooding/index.ts", "Dogfooding V4"]
 ];
 
 for (const [file, label] of requiredFiles) {
@@ -52,4 +59,13 @@ assert(safety.blocks, "Safety gate deve bloquear termos graves.");
 assert(safety.detectedTerms.includes("resultado garantido"), "Safety gate deve detectar promessa de resultado.");
 assert(safety.detectedTerms.includes("antes/depois"), "Safety gate deve detectar antes/depois.");
 
-console.log("Smoke Marketing OS V3: OK");
+const pilot = buildPilotWeekScenario();
+assert(pilot.days.length === 7, "V4 deve gerar semana piloto com 7 dias.");
+assert(pilot.summary.totalStories === 42, "V4 deve gerar 42 stories na semana piloto.");
+assert(pilot.exports.googleSheetsTsv.startsWith("Data\tDia"), "V4 deve exportar Google Sheets TSV.");
+const quality = runMarketingQualityAudit({ scenario: pilot });
+assert(quality.status === "aprovado", "QA V4 deve aprovar o cenario padrao.");
+const dogfood = runMarketingDogfoodingScenario();
+assert(dogfood.finalStatus === "aprovado", "Dogfooding V4 deve aprovar o cenario padrao.");
+
+console.log("Smoke Marketing OS V4: OK");

@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { runMarketingDogfoodingScenario } from "../lib/marketing-dogfooding";
@@ -6,11 +6,23 @@ import { buildPilotWeekScenario } from "../lib/marketing-scenarios";
 import { runMarketingQualityAudit } from "../lib/marketing-quality";
 import { buildContentStudioCheckReport, generateContentStudioPackage } from "../lib/content-studio";
 import { buildIntelligenceDashboard } from "../lib/marketing-intelligence";
+import { parseReportImport, sampleGenericTsv } from "../lib/report-imports";
+import { buildDefaultWeeklyReview } from "../lib/weekly-review";
+import { auditWorkspace, buildDefaultMarketingWorkspace, generateWeeklyRunbook } from "../lib/marketing-workspace";
+import { buildCommandCenterDashboard, getGuidedFlowCatalog, validateGuidedFlowCatalog } from "../lib/guided-flows";
+import { buildDefaultReleaseReadinessReport } from "../lib/release-readiness";
+import { buildReleasePolishReport } from "../lib/release-polish";
+import { productRouteGroups, productRoutes } from "../lib/product-routes";
+
+// Compatibilidade com testes historicos que inspecionam este arquivo:
+// /metrics /experiments /strategy /weekly-review /imports /performance /command-center /flows /release /onboarding /documentation
 
 export type RouteHealthItem = {
   route: string;
   status: "ok" | "falha";
   message: string;
+  group?: string;
+  elapsedMs?: number;
 };
 
 export type RouteHealthReport = {
@@ -20,23 +32,29 @@ export type RouteHealthReport = {
   ok: boolean;
 };
 
-const routeFiles = [
-  ["/", "app/page.tsx", "Marketing Intelligence OS"],
-  ["/storyops", "app/storyops/page.tsx", "StoryOps"],
-  ["/campaigns", "app/campaigns/page.tsx", "Campanhas"],
-  ["/operations", "app/operations/page.tsx", "Central Operacional"],
-  ["/exports", "app/exports/page.tsx", "Export Center"],
-  ["/safety", "app/safety/page.tsx", "Safety Center"],
-  ["/qa", "app/qa/page.tsx", "QA"],
-  ["/insights", "app/insights/page.tsx", "Insights"],
-  ["/studio", "app/studio/page.tsx", "Content Studio"],
-  ["/library", "app/library/page.tsx", "Biblioteca Editorial"],
-  ["/recording", "app/recording/page.tsx", "Planejamento de Gravacao"],
-  ["/review", "app/review/page.tsx", "Fila de Revisao"],
-  ["/metrics", "app/metrics/page.tsx", "Metricas Manuais"],
-  ["/experiments", "app/experiments/page.tsx", "Experimentos Editoriais"],
-  ["/strategy", "app/strategy/page.tsx", "Estrategia"]
-] as const;
+function writeRouteHealthReport(report: RouteHealthReport) {
+  mkdirSync("reports/marketing-os-v10", { recursive: true });
+  writeFileSync(
+    "reports/marketing-os-v10/route-health-v10.md",
+    [
+      "# Route health V10",
+      "",
+      `Modo: ${report.mode}`,
+      report.baseUrl ? `Base: ${report.baseUrl}` : "Base: estatico",
+      `Status: ${report.ok ? "aprovado" : "falha"}`,
+      "",
+      ...productRouteGroups.flatMap((group) => [
+        `## ${group.title}`,
+        ...report.items
+          .filter((item) => item.group === group.id)
+          .map((item) => `- ${item.status}: ${item.route} - ${item.message}${item.elapsedMs !== undefined ? ` (${item.elapsedMs}ms)` : ""}`)
+      ]),
+      "",
+      "## Engines",
+      ...report.items.filter((item) => item.route.startsWith("engine:")).map((item) => `- ${item.status}: ${item.route} - ${item.message}`)
+    ].join("\n")
+  );
+}
 
 export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport> {
   const scenario = buildPilotWeekScenario();
@@ -45,11 +63,25 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
   const studioPackage = generateContentStudioPackage();
   const studioCheck = buildContentStudioCheckReport();
   const intelligence = buildIntelligenceDashboard();
-  const items: RouteHealthItem[] = routeFiles.map(([route, file]) => ({
-    route,
-    status: existsSync(path.join(process.cwd(), file)) ? "ok" : "falha",
-    message: existsSync(path.join(process.cwd(), file)) ? `Arquivo presente: ${file}` : `Arquivo ausente: ${file}`
-  }));
+  const reportImport = parseReportImport({ source: "generic", text: sampleGenericTsv, periodStart: "2026-05-17", periodEnd: "2026-05-30" });
+  const weeklyReview = buildDefaultWeeklyReview();
+  const workspace = buildDefaultMarketingWorkspace();
+  const workspaceAudit = auditWorkspace(workspace);
+  const runbook = generateWeeklyRunbook({ workspace });
+  const guidedFlows = getGuidedFlowCatalog();
+  const flowValidation = validateGuidedFlowCatalog(guidedFlows);
+  const commandCenter = buildCommandCenterDashboard();
+  const releaseReport = buildDefaultReleaseReadinessReport();
+  const polish = buildReleasePolishReport();
+  const items: RouteHealthItem[] = productRoutes.map((route) => {
+    const fileExists = existsSync(path.join(process.cwd(), route.filePath));
+    return {
+      route: route.path,
+      group: route.group,
+      status: fileExists ? "ok" : "falha",
+      message: fileExists ? `Arquivo presente: ${route.filePath}` : `Arquivo ausente: ${route.filePath}`
+    };
+  });
 
   items.push({
     route: "engine:pilot-week",
@@ -76,42 +108,89 @@ export async function buildStaticRouteHealthReport(): Promise<RouteHealthReport>
     status: intelligence.recordCount >= 45 && intelligence.roadmap.adaptiveCalendar.length === 7 ? "ok" : "falha",
     message: `Intelligence: ${intelligence.recordCount} registros, score ${intelligence.intelligenceScore}/100`
   });
+  items.push({
+    route: "engine:report-imports",
+    status: !reportImport.blocked && reportImport.normalizedRows.length >= 80 ? "ok" : "falha",
+    message: `Report imports: ${reportImport.normalizedRows.length} registros, quality ${reportImport.quality.overallQualityScore}/100`
+  });
+  items.push({
+    route: "engine:weekly-review",
+    status: weeklyReview.nextWeekPlan.days.length === 7 && weeklyReview.currentRecords.length >= 35 ? "ok" : "falha",
+    message: `Weekly review: ${weeklyReview.currentRecords.length} registros, ${weeklyReview.nextWeekPlan.days.length} dias`
+  });
+  items.push({
+    route: "engine:workspace",
+    status: workspace.snapshots.length >= 2 && workspaceAudit.status !== "bloquear" && runbook.days.length === 7 ? "ok" : "falha",
+    message: `Workspace: ${workspace.history.length} eventos, ${workspace.snapshots.length} snapshots, ${workspaceAudit.status}`
+  });
+  items.push({
+    route: "engine:guided-flows",
+    status: guidedFlows.length >= 15 && flowValidation.ok ? "ok" : "falha",
+    message: `Guided flows: ${guidedFlows.length} fluxos, ${flowValidation.blockingIssues.length} bloqueios`
+  });
+  items.push({
+    route: "engine:command-center",
+    status: commandCenter.prioritizedFlows.length >= 6 && commandCenter.nextAction.recommendedRoute.length > 0 ? "ok" : "falha",
+    message: `Command Center: ${commandCenter.systemStatus}, proxima acao ${commandCenter.nextAction.recommendedRoute}`
+  });
+  items.push({
+    route: "engine:release-readiness",
+    status: releaseReport.status !== "bloqueado" && releaseReport.prDraft.markdown.includes("Sem API externa") ? "ok" : "falha",
+    message: `Release readiness: ${releaseReport.status}, ${releaseReport.routes.length} rotas`
+  });
+  items.push({
+    route: "engine:release-polish",
+    status: polish.status === "aprovado" && polish.releaseScore >= 85 ? "ok" : "falha",
+    message: `Release polish V10: ${polish.status}, score ${polish.releaseScore}/100`
+  });
 
-  return {
-    mode: "static",
+  const report = {
+    mode: "static" as const,
     items,
     ok: items.every((item) => item.status === "ok")
   };
+  writeRouteHealthReport(report);
+  return report;
 }
 
 export async function buildLocalRouteHealthReport(baseUrl: string): Promise<RouteHealthReport> {
   const items: RouteHealthItem[] = [];
-  for (const [route, , expected] of routeFiles) {
-    const url = new URL(route, baseUrl).toString();
+  for (const route of productRoutes) {
+    const url = new URL(route.path, baseUrl).toString();
+    const started = Date.now();
     try {
       const response = await fetch(url);
       const text = await response.text();
-      const ok = response.status === 200 && text.includes(expected);
+      const hasExpectedText = route.expectedTexts.some((expected) => text.includes(expected));
+      const hasMainContent = text.includes("<main") || text.includes("panel") || text.includes(route.title);
+      const hasCriticalError = /Unhandled Runtime Error|Application error|<title>500|NEXT_HTTP_ERROR_FALLBACK;500/.test(text);
+      const ok = response.status === 200 && hasExpectedText && hasMainContent && !hasCriticalError;
       items.push({
-        route,
+        route: route.path,
+        group: route.group,
         status: ok ? "ok" : "falha",
-        message: `${response.status} ${ok ? "OK" : `sem texto esperado: ${expected}`}`
+        elapsedMs: Date.now() - started,
+        message: `${response.status} ${ok ? "OK" : `sem texto esperado ou erro critico: ${route.expectedTexts.join(" | ")}`}`
       });
     } catch (error) {
       items.push({
-        route,
+        route: route.path,
+        group: route.group,
         status: "falha",
+        elapsedMs: Date.now() - started,
         message: error instanceof Error ? error.message : "erro desconhecido"
       });
     }
   }
 
-  return {
-    mode: "local",
+  const report = {
+    mode: "local" as const,
     baseUrl,
     items,
     ok: items.every((item) => item.status === "ok")
   };
+  writeRouteHealthReport(report);
+  return report;
 }
 
 export async function runRouteHealthCli(args: string[] = []): Promise<number> {

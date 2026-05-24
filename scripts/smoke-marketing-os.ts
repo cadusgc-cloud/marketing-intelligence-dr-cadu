@@ -8,6 +8,11 @@ import { generateMonthlyEditorialPlan, runMonthlySafetyGate } from "../lib/month
 import { buildStoryOpsSequence } from "../lib/storyops";
 import { buildContentStudioCheckReport, generateContentStudioPackage, generateRecordingSession, getContentLibraryInventory } from "../lib/content-studio";
 import { buildIntelligenceDashboard, parseManualMetrics, sampleMetricsTsv } from "../lib/marketing-intelligence";
+import { parseReportImport, sampleGenericTsv } from "../lib/report-imports";
+import { buildDefaultWeeklyReview } from "../lib/weekly-review";
+import { auditWorkspace, buildDefaultMarketingWorkspace, generateWeeklyRunbook } from "../lib/marketing-workspace";
+import { buildCommandCenterDashboard, createFlowRun, getGuidedFlowCatalog, validateGuidedFlowCatalog } from "../lib/guided-flows";
+import { buildDefaultReleaseReadinessReport } from "../lib/release-readiness";
 
 function assert(condition: unknown, message: string) {
   if (!condition) {
@@ -28,6 +33,19 @@ const requiredFiles = [
   ["app/experiments/page.tsx", "rota /experiments"],
   ["app/strategy/page.tsx", "rota /strategy"],
   ["app/insights/page.tsx", "rota /insights"],
+  ["app/weekly-review/page.tsx", "rota /weekly-review"],
+  ["app/imports/page.tsx", "rota /imports"],
+  ["app/performance/page.tsx", "rota /performance"],
+  ["app/workspace/page.tsx", "rota /workspace"],
+  ["app/history/page.tsx", "rota /history"],
+  ["app/runbook/page.tsx", "rota /runbook"],
+  ["app/settings/page.tsx", "rota /settings"],
+  ["app/audit-log/page.tsx", "rota /audit-log"],
+  ["app/command-center/page.tsx", "rota /command-center"],
+  ["app/flows/page.tsx", "rota /flows"],
+  ["app/flows/[id]/page.tsx", "rota /flows/[id]"],
+  ["app/release/page.tsx", "rota /release"],
+  ["app/onboarding/page.tsx", "rota /onboarding"],
   ["app/storyops/page.tsx", "rota /storyops"],
   ["app/campaigns/page.tsx", "rota /campaigns"],
   ["lib/storyops/index.ts", "StoryOps"],
@@ -37,7 +55,12 @@ const requiredFiles = [
   ["lib/marketing-quality/index.ts", "QA V4"],
   ["lib/marketing-dogfooding/index.ts", "Dogfooding V4"],
   ["lib/content-studio/index.ts", "Content Studio V5"],
-  ["lib/marketing-intelligence/index.ts", "Intelligence Loop V6"]
+  ["lib/marketing-intelligence/index.ts", "Intelligence Loop V6"],
+  ["lib/report-imports/index.ts", "Report Imports V7"],
+  ["lib/weekly-review/index.ts", "Weekly Review V7"],
+  ["lib/marketing-workspace/index.ts", "Marketing Workspace V8"],
+  ["lib/guided-flows/index.ts", "Guided Flows V9"],
+  ["lib/release-readiness/index.ts", "Release Readiness V9"]
 ];
 
 for (const [file, label] of requiredFiles) {
@@ -102,4 +125,33 @@ assert(intelligence.experiments.length >= 7, "V6 deve gerar experimentos editori
 assert(intelligence.roadmap.adaptiveCalendar.length === 7, "V6 deve gerar calendario adaptativo de 7 dias.");
 assert(intelligence.exports.etusManual.startsWith("Data\tCanal"), "V6 deve exportar Etus/manual TSV.");
 
-console.log("Smoke Marketing OS V6: OK");
+const reportImport = parseReportImport({ source: "generic", text: sampleGenericTsv, periodStart: "2026-05-17", periodEnd: "2026-05-30" });
+assert(!reportImport.blocked, "V7 importacao generica padrao nao deve bloquear.");
+assert(reportImport.normalizedRows.length >= 80, "V7 deve ter dataset ficticio com pelo menos 80 registros.");
+const weeklyReview = buildDefaultWeeklyReview();
+assert(weeklyReview.currentRecords.length >= 35, "V7 deve consolidar semana atual.");
+assert(weeklyReview.previousRecords.length >= 35, "V7 deve comparar com semana anterior.");
+assert(weeklyReview.nextWeekPlan.days.length === 7, "V7 deve gerar plano de 7 dias.");
+assert(weeklyReview.exports.etusManual.startsWith("Data\tCanal\tFormato"), "V7 deve exportar Etus/manual.");
+
+const workspace = buildDefaultMarketingWorkspace();
+const workspaceAudit = auditWorkspace(workspace);
+const runbook = generateWeeklyRunbook({ workspace });
+assert(workspace.snapshots.length >= 2, "V8 deve criar snapshots default.");
+assert(workspace.history.length >= 5, "V8 deve criar historico operacional.");
+assert(workspaceAudit.status !== "bloquear", "V8 workspace default nao deve bloquear.");
+assert(runbook.days.length === 7, "V8 deve gerar runbook semanal.");
+
+const flows = getGuidedFlowCatalog();
+const flowValidation = validateGuidedFlowCatalog(flows);
+const flowRun = createFlowRun("fechamento-semanal-completo", { completedStepIds: ["abrir-imports", "colar-relatorio"] });
+const commandCenter = buildCommandCenterDashboard();
+const release = buildDefaultReleaseReadinessReport();
+assert(flows.length >= 15, "V9 deve ter pelo menos 15 fluxos guiados.");
+assert(flowValidation.ok, "V9 deve validar catalogo de fluxos sem bloqueios.");
+assert(flowRun.progressPercent > 0 && flowRun.progressPercent < 100, "V9 flow runner deve calcular progresso parcial.");
+assert(commandCenter.nextAction.recommendedRoute.length > 0, "V9 Command Center deve gerar proxima acao.");
+assert(release.status === "aprovado", "V9 release readiness default deve aprovar.");
+assert(release.prDraft.markdown.includes("Sem API externa"), "V9 PR draft deve registrar ausencia de API externa.");
+
+console.log("Smoke Marketing OS V9: OK");

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { buildStudioDashboardPackage } from "@/lib/content-studio";
+import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 
 export default function ReviewPage() {
   const dashboard = buildStudioDashboardPackage();
+  const weekly = buildDefaultWeeklyReview();
   return (
     <div className="space-y-6">
       <section className="panel">
@@ -15,7 +17,10 @@ export default function ReviewPage() {
               Conteudos gerados pelo Content Studio com score de voz, safety, readiness, riscos e fila de producao. Status local e manual; nada e enviado para fora.
             </p>
           </div>
-          <Link href="/studio" className="w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Gerar novo pacote</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/weekly-review" className="w-fit rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Fechamento V7</Link>
+            <Link href="/studio" className="w-fit rounded-md bg-ocean px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-800">Gerar novo pacote</Link>
+          </div>
         </div>
       </section>
 
@@ -24,6 +29,23 @@ export default function ReviewPage() {
         <MetricCard label="Itens producao" value={dashboard.productionQueue.length} detail="tarefas e gravacao" />
         <MetricCard label="Readiness medio" value={`${dashboard.averageReadiness}/100`} detail="pacotes V5" />
         <MetricCard label="Bloqueados" value={dashboard.blockedItems} detail="na fila padrao" />
+      </section>
+
+      <section className="panel">
+        <p className="text-sm font-medium text-ocean">Itens gerados pela semana</p>
+        <h3 className="mt-1 text-lg font-semibold">Tarefas do fechamento V7 para revisar</h3>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {weekly.tasks.slice(0, 6).map((task) => (
+            <article key={task.id} className="rounded-lg border border-slate-200 p-4">
+              <div className="flex flex-wrap gap-2">
+                <span className="badge bg-slate-100 text-slate-700">{task.status}</span>
+                <span className="badge bg-cyan-50 text-ocean">{task.priority}</span>
+              </div>
+              <h4 className="mt-3 font-semibold">{task.title}</h4>
+              <p className="mt-2 text-sm text-slate-600">{task.route}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

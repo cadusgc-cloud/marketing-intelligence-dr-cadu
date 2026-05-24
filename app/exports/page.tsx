@@ -4,6 +4,10 @@ import { buildMarketingOpsState } from "@/lib/marketing-ops";
 import { buildPilotWeekScenario } from "@/lib/marketing-scenarios";
 import { buildStudioDashboardPackage } from "@/lib/content-studio";
 import { buildIntelligenceDashboard } from "@/lib/marketing-intelligence";
+import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
+import { buildDefaultMarketingWorkspace, buildWorkspaceExports } from "@/lib/marketing-workspace";
+import { buildFlowExportBundle, createFlowRun, getGuidedFlowById } from "@/lib/guided-flows";
+import { buildDefaultReleaseReadinessReport } from "@/lib/release-readiness";
 
 export default function ExportsPage() {
   const state = buildMarketingOpsState();
@@ -11,6 +15,13 @@ export default function ExportsPage() {
   const pilot = buildPilotWeekScenario();
   const studio = buildStudioDashboardPackage();
   const intelligence = buildIntelligenceDashboard();
+  const weeklyReview = buildDefaultWeeklyReview();
+  const workspace = buildDefaultMarketingWorkspace();
+  const workspaceExports = buildWorkspaceExports(workspace);
+  const weeklyFlow = getGuidedFlowById("fechamento-semanal-completo");
+  const flowRun = createFlowRun("fechamento-semanal-completo", { completedStepIds: ["abrir-imports", "colar-relatorio", "validar-importacao"] });
+  const flowExports = weeklyFlow ? buildFlowExportBundle(weeklyFlow, flowRun) : undefined;
+  const releaseReport = buildDefaultReleaseReadinessReport();
 
   return (
     <div className="space-y-6">
@@ -39,6 +50,26 @@ export default function ExportsPage() {
       <section className="panel">
         <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
           <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v9</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes de fluxos e release</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Resumo do fluxo guiado, checklist, outputs TSV, release readiness e rascunho de PR. Push continua sendo apenas comando sugerido.
+            </p>
+          </div>
+          <LocalCopyButton text={releaseReport.prDraft.markdown} label="Copiar PR draft" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {flowExports ? <PilotExportBlock title="Resumo do fluxo" text={flowExports.flowSummaryMarkdown} /> : null}
+          {flowExports ? <PilotExportBlock title="Checklist do fluxo" text={flowExports.flowChecklistMarkdown} /> : null}
+          {flowExports ? <PilotExportBlock title="Outputs TSV" text={flowExports.flowOutputsTsv} /> : null}
+          <PilotExportBlock title="Release readiness" text={releaseReport.reportMarkdown} />
+          <PilotExportBlock title="PR draft" text={releaseReport.prDraft.markdown} />
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
             <p className="text-sm font-medium text-ocean">Marketing OS v4</p>
             <h3 className="mt-1 text-lg font-semibold">Exportacoes da semana piloto</h3>
             <p className="mt-2 text-sm text-slate-500">
@@ -52,6 +83,48 @@ export default function ExportsPage() {
           <PilotExportBlock title="Etus/manual" text={pilot.exports.etusManual} />
           <PilotExportBlock title="Google Sheets TSV" text={pilot.exports.googleSheetsTsv} />
           <PilotExportBlock title="Google Agenda" text={pilot.exports.googleAgendaText} />
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v8</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes do Workspace Local</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Backup tecnico JSON, historico Markdown/TSV, runbook, snapshots e integridade local. Nada e enviado para servidor.
+            </p>
+          </div>
+          <LocalCopyButton text={workspaceExports.backupJson} label="Copiar backup v8" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <PilotExportBlock title="Backup tecnico" text={workspaceExports.backupJson} />
+          <PilotExportBlock title="Historico Markdown" text={workspaceExports.historyMarkdown} />
+          <PilotExportBlock title="Historico TSV" text={workspaceExports.historyTsv} />
+          <PilotExportBlock title="Runbook" text={workspaceExports.runbookMarkdown} />
+          <PilotExportBlock title="Snapshots" text={workspaceExports.snapshotsMarkdown} />
+          <PilotExportBlock title="Integridade" text={workspaceExports.integrityMarkdown} />
+        </div>
+      </section>
+
+      <section className="panel">
+        <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+          <div>
+            <p className="text-sm font-medium text-ocean">Marketing OS v7</p>
+            <h3 className="mt-1 text-lg font-semibold">Exportacoes do Fechamento Semanal</h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Relatorio semanal, resumo executivo, TSV, Google Agenda, Etus/manual, tarefas, plano de gravacao, Ads manual e checklist da proxima coleta.
+            </p>
+          </div>
+          <LocalCopyButton text={weeklyReview.exports.weeklyMarkdown} label="Copiar V7" />
+        </div>
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <PilotExportBlock title="Relatorio semanal" text={weeklyReview.exports.weeklyMarkdown} />
+          <PilotExportBlock title="Resumo executivo" text={weeklyReview.exports.executiveSummary} />
+          <PilotExportBlock title="Google Sheets TSV v7" text={weeklyReview.exports.googleSheetsTsv} />
+          <PilotExportBlock title="Google Agenda v7" text={weeklyReview.exports.googleAgenda} />
+          <PilotExportBlock title="Etus/manual v7" text={weeklyReview.exports.etusManual} />
+          <PilotExportBlock title="Checklist de coleta" text={weeklyReview.exports.nextCollectionChecklist} />
         </div>
       </section>
 

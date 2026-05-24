@@ -1,0 +1,9 @@
+import { spawnSync } from "node:child_process";
+
+const args = process.argv.slice(2).map((arg) => JSON.stringify(arg)).join(" ");
+const result = spawnSync(`npx tsx scripts/ui-content-v10-check.ts ${args}`.trim(), {
+  stdio: "inherit",
+  shell: true
+});
+
+process.exit(result.status ?? 1);

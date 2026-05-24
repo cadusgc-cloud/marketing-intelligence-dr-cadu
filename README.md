@@ -368,3 +368,120 @@ npm run health:routes
 ```
 
 A V6 continua sem API externa, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.
+
+## Marketing OS v7 - Coleta Semanal Guiada
+
+A V7 adiciona a rotina semanal para importar relatorios manuais, validar qualidade, fechar desempenho e gerar o plano da proxima semana.
+
+Rotas principais da V7:
+
+- `/imports` - colagem de CSV/TSV, origem do relatorio, mapeamento de colunas, validacao e normalizacao.
+- `/weekly-review` - assistente de fechamento semanal em sete etapas.
+- `/performance` - comparacao semanal, ranking de conteudos, pilares, formatos, oportunidades e Ads manual.
+
+Scripts da V7:
+
+```bash
+npm run import:check
+npm run weekly:check
+npm run qa:weekly
+```
+
+Fluxo semanal recomendado:
+
+1. Exportar os relatorios agregados manualmente.
+2. Colar em `/imports`.
+3. Conferir qualidade, duplicidades, datas e dados sensiveis.
+4. Abrir `/weekly-review`.
+5. Copiar relatorio semanal, TSV, Agenda, Etus/manual e tarefas.
+6. Abrir `/performance` para revisar sinais e priorizar a proxima semana.
+
+A V7 nao conecta APIs, nao publica, nao faz upload, nao altera banco, nao salva credenciais e nao deve receber dados identificaveis.
+
+## Marketing OS v8 - Workspace local e historico operacional
+
+A V8 adiciona uma camada de continuidade local para o Marketing OS:
+
+- `/workspace`: estado local, semana ativa, snapshots, backup, restore e integridade.
+- `/history`: historico operacional sanitizado.
+- `/runbook`: checklist semanal por dia.
+- `/settings`: configuracoes locais sem backend.
+- `/audit-log`: eventos de auditoria e severidade.
+
+Scripts novos:
+
+```bash
+npm run workspace:check
+npm run backup:check
+npm run qa:workspace
+```
+
+Fluxo semanal recomendado:
+
+1. Domingo: abrir `/weekly-review`, importar metricas manuais e fechar a semana.
+2. Criar snapshot em `/workspace`.
+3. Seguir o checklist em `/runbook`.
+4. Usar `/operations`, `/studio`, `/review` e `/exports` para execucao manual.
+5. Sabado: exportar backup tecnico local e criar novo snapshot.
+
+A V8 continua sem API externa, sem backend real, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.
+
+## Marketing OS v9 - Fluxos guiados e release candidate local
+
+A V9 transforma o Marketing OS em uma experiencia operacional guiada. O usuario pode comecar por `/command-center`, escolher um fluxo em `/flows`, executar etapas em `/flows/[id]`, revisar prontidao em `/release` e aprender o uso do zero em `/onboarding`.
+
+Rotas novas:
+
+- `/command-center` - status geral, proxima acao, alertas, atalhos e release resumido.
+- `/flows` - catalogo com pelo menos 15 fluxos guiados.
+- `/flows/[id]` - runner local com progresso, pre-requisitos, etapas e exportacao.
+- `/release` - Release Candidate local, checklist e PR draft.
+- `/onboarding` - primeiros passos para usar o OS sem depender de memoria.
+
+Scripts novos:
+
+```bash
+npm run flows:check
+npm run rc:check
+npm run qa:flows
+```
+
+Fluxo recomendado:
+
+1. Abrir `/command-center`.
+2. Seguir a proxima acao.
+3. Abrir `/flows` e executar o fluxo certo para a rotina.
+4. Usar `/release` antes de preparar push/PR.
+
+A V9 continua sem API externa, sem backend real, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.
+
+## Marketing OS v10 - Product Hardening e Release Polish
+
+A V10 melhora o Marketing OS como produto local: Product Shell, manifesto de rotas, navegacao agrupada, home direcionando para `/command-center`, estados de erro, QA de UI, acessibilidade basica, visual QA leve, release polish e hub de documentacao.
+
+Rotas principais:
+
+- `/command-center` - entrada operacional principal.
+- `/flows` e `/flows/[id]` - fluxos guiados e runner local.
+- `/release` - release score, readiness e PR draft.
+- `/onboarding` - guia de uso semanal/mensal.
+- `/documentation` - docs, relatorios, scripts e troubleshooting.
+
+Scripts novos:
+
+```bash
+npm run ui:a11y
+npm run ui:content
+npm run visual:check
+npm run product:check
+```
+
+Fluxo recomendado de validacao:
+
+1. Abrir `/command-center`.
+2. Rodar `npm run product:check`.
+3. Rodar `npm run health:routes`.
+4. Rodar `npm run build`.
+5. Com o servidor em `http://localhost:3010`, rodar `npm run health:routes:local`.
+
+A V10 continua sem API externa, sem backend real, sem publicacao automatica, sem upload, sem dados de pacientes e sem alteracao de `.env`.

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { LocalCopyButton } from "@/components/LocalCopyButton";
 import { generateRecordingSession } from "@/lib/content-studio";
+import { buildDefaultWeeklyReview } from "@/lib/weekly-review";
 
 export default function RecordingPage() {
   const session = generateRecordingSession();
+  const weekly = buildDefaultWeeklyReview();
   return (
     <div className="space-y-6">
       <section className="panel">
@@ -18,6 +20,7 @@ export default function RecordingPage() {
           <div className="flex flex-wrap gap-2">
             <LocalCopyButton text={session.exportText} label="Copiar sessao" />
             <Link href="/studio" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Studio</Link>
+            <Link href="/weekly-review" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Plano V7</Link>
           </div>
         </div>
       </section>
@@ -27,6 +30,20 @@ export default function RecordingPage() {
         <MetricCard label="Antes" value={session.beforeChecklist.length} detail="checklist" />
         <MetricCard label="Depois" value={session.afterChecklist.length} detail="checklist" />
         <MetricCard label="Reaproveitamentos" value={session.topics.reduce((total, topic) => total + topic.repurposing.length, 0)} detail="derivados" />
+      </section>
+
+      <section className="panel">
+        <p className="text-sm font-medium text-ocean">Sugestao do fechamento semanal</p>
+        <h3 className="mt-1 text-lg font-semibold">Gravar a partir dos temas vencedores</h3>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {weekly.nextWeekPlan.days.filter((day) => day.format === "reel").slice(0, 3).map((day) => (
+            <article key={day.date} className="rounded-lg border border-slate-200 p-4">
+              <span className="badge bg-cyan-50 text-ocean">{day.date}</span>
+              <h4 className="mt-3 font-semibold">{day.theme}</h4>
+              <p className="mt-2 text-sm text-slate-600">{day.rationale}</p>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">

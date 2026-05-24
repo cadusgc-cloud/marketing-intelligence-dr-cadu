@@ -11,6 +11,27 @@ body {
   color: #17202a;
 }
 
+* {
+  min-width: 0;
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  outline-color: #0f7490;
+  outline-offset: 2px;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #0f7490;
+}
+
 textarea,
 input {
   color: #17202a;

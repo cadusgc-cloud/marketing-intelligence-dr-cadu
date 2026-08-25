@@ -38,6 +38,7 @@ export function ImportsClient() {
           </div>
           <div className="flex flex-wrap gap-2">
             <LocalCopyButton text={result.exports.normalizedTsv} label="Copiar normalizado" />
+            <Link href="/real-week" className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Semana real (Meta)</Link>
             <Link href="/workspace" className="rounded-md border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Workspace</Link>
           </div>
         </div>

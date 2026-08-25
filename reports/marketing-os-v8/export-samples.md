@@ -39,7 +39,7 @@
       ],
       "priorityPillars": [
         "expectativa_realista",
-
+        
 
 ## Historico TSV
 Data	Tipo	Severidade	Modulo	Rota	Titulo

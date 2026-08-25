@@ -1,7 +1,7 @@
 # Visual QA report V10
 
 Status: aprovado
-Rotas no manifesto: 29
+Rotas no manifesto: 30
 
 ## Arquivos
 - todos os arquivos de rota existem
@@ -11,6 +11,7 @@ Rotas no manifesto: 29
 - /campaigns: texto esperado nao encontrado no fonte
 - /operations: texto esperado nao encontrado no fonte
 - /imports: texto esperado nao encontrado no fonte
+- /real-week: texto esperado nao encontrado no fonte
 - /metrics: texto esperado nao encontrado no fonte
 - /weekly-review: texto esperado nao encontrado no fonte
 - /settings: texto esperado nao encontrado no fonte

@@ -1,10 +1,10 @@
 import type { CanonicalReportField, ReportSource, SourceSchemaPreset } from "@/lib/report-imports/types";
 
 const commonHeaders: Record<CanonicalReportField, string[]> = {
-  date: ["data", "date", "dia", "created at", "criado em", "periodo"],
+  date: ["data", "date", "dia", "created at", "criado em", "periodo", "horario de publicacao", "publish time", "data de publicacao", "publish date"],
   channel: ["canal", "channel", "rede", "network", "plataforma"],
   profile: ["perfil", "profile", "conta", "account"],
-  format: ["formato", "format", "tipo", "content type", "tipo de conteudo"],
+  format: ["formato", "format", "tipo", "content type", "tipo de conteudo", "tipo de publicacao", "post type"],
   title: ["titulo", "title", "publicacao", "postagem", "ad", "campaign", "campanha"],
   theme: ["tema", "theme", "assunto"],
   pillar: ["pilar", "pillar", "linha editorial"],

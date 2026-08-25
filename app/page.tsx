@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppShell, LocalOnlyNotice, MetricCard, PageHeader, RouteLinkCard, SafetyNotice, SectionHeader } from "@/components/product";
+import { RealWeekHomeCard } from "@/app/real-week/RealWeekHomeCard";
 import { buildCommandCenterDashboard } from "@/lib/guided-flows";
 import { getRouteByPath } from "@/lib/product-routes";
 
@@ -24,6 +25,8 @@ export default function DashboardPage() {
           { href: "/onboarding", label: "Ver primeiros passos" }
         ]}
       />
+
+      <RealWeekHomeCard />
 
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Sistema" value={dashboard.systemStatus} detail="operacao local" tone="success" />

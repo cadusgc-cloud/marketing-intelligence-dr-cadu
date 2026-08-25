@@ -22,6 +22,7 @@ Status: aprovado
 - /experiments: Experimentos | localOnly=true | usesExternalApi=false
 ## Metricas
 - /imports: Importacoes | localOnly=true | usesExternalApi=false
+- /real-week: Semana real | localOnly=true | usesExternalApi=false
 - /metrics: Metricas | localOnly=true | usesExternalApi=false
 - /performance: Performance | localOnly=true | usesExternalApi=false
 - /insights: Insights | localOnly=true | usesExternalApi=false

@@ -16,6 +16,7 @@
     "intelligence:check": "node scripts/marketing-intelligence-v6-check.mjs",
     "qa:intelligence": "node scripts/marketing-intelligence-v6-check.mjs --qa",
     "import:check": "node scripts/report-import-v7-check.mjs",
+    "semana-real": "node scripts/semana-real.mjs",
     "weekly:check": "node scripts/weekly-review-v7-check.mjs",
     "qa:weekly": "node scripts/weekly-review-v7-check.mjs --qa",
     "workspace:check": "node scripts/workspace-v8-check.mjs",

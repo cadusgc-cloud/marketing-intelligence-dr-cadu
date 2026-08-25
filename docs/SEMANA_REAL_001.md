@@ -18,6 +18,28 @@ Tudo roda no navegador. Nenhum dado sai da maquina, nenhuma API e chamada, nada 
 5. Volte em Insights > Resultados.
 6. Mesmo periodo, clique em Exportar e baixe o(s) CSV(s) de alcance por dia e de seguidores. Estes sao os arquivos de conta.
 
+## Modo automatico (recomendado): pasta de entrada
+
+O Cadu nao precisa operar o app. Basta soltar os CSVs exportados em:
+
+```
+C:\CaduSync\05_CAIXA_DE_ENTRADA\meta-insights\
+```
+
+E rodar (ou pedir ao Claude para rodar):
+
+```bash
+npm run semana-real
+```
+
+O comando classifica cada arquivo sozinho (posts ou conta), ignora arquivos estranhos explicando o motivo, remove exports duplicados e grava na propria pasta:
+
+- `RELATORIO-SEMANA-REAL.md`: painel semanal + baseline, pronto para ler;
+- `baseline.tsv`: os indicadores em formato de planilha;
+- `semana-real-dados.json`: dados normalizados para analises futuras.
+
+Aceita `--dir <pasta>` para analisar outra pasta. Arquivo que nao e entendido nunca falha mudo: o relatorio e o terminal dizem qual coluna faltou e o que fazer.
+
 ## Como importar no app
 
 1. Abra `/real-week`.

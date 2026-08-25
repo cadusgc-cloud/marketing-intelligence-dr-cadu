@@ -295,6 +295,22 @@ export const productRoutes: ProductRoute[] = [
     riskLevel: "medio"
   },
   {
+    path: "/real-week",
+    title: "Semana real",
+    group: "metricas",
+    description: "Importacao dos CSVs reais do Meta Business Suite e baseline da equipe atual.",
+    maturity: "operacional",
+    visibility: "primary",
+    localOnly: true,
+    usesExternalApi: false,
+    filePath: "app/real-week/page.tsx",
+    expectedTexts: ["Semana real"],
+    relatedScripts: ["npm test"],
+    relatedDocs: ["docs/SEMANA_REAL_001.md"],
+    safetyNotes: commonSafety,
+    riskLevel: "medio"
+  },
+  {
     path: "/metrics",
     title: "Metricas",
     group: "metricas",

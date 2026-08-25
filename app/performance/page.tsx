@@ -6,6 +6,10 @@ export default function PerformancePage() {
   const review = buildDefaultWeeklyReview();
   return (
     <div className="space-y-6">
+      <p className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+        Esta pagina usa dados de demonstracao. Os numeros reais importados do Meta Business Suite ficam em{" "}
+        <Link href="/real-week" className="font-semibold underline">Semana real</Link>.
+      </p>
       <section className="panel">
         <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-start">
           <div>

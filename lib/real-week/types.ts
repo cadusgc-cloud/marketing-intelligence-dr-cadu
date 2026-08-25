@@ -19,6 +19,25 @@ export type MetaContentPost = {
   comments: number | null;
   shares: number | null;
   saves: number | null;
+  follows: number | null;
+};
+
+export type MetaStoryRow = {
+  date: string;
+  reach: number | null;
+  replies: number | null;
+  navigation: number | null;
+  stickerTaps: number | null;
+  profileVisits: number | null;
+};
+
+export type MetaStoriesParseResult = {
+  ok: boolean;
+  headerLanguage: MetaHeaderLanguage;
+  stories: MetaStoryRow[];
+  errors: RealWeekImportError[];
+  warnings: string[];
+  ignoredRowCount: number;
 };
 
 export type MetaContentParseResult = {
@@ -58,6 +77,7 @@ export type RealWeekSummary = {
   comments: number;
   shares: number;
   saves: number;
+  follows: number;
   engagementTotal: number;
   accountReach: number | null;
   followerGrowth: number | null;
@@ -71,6 +91,7 @@ export type RealWeekTotals = {
   comments: number;
   shares: number;
   saves: number;
+  follows: number;
   engagementTotal: number;
   engagementOnPostsWithReach: number;
 };
@@ -96,6 +117,7 @@ export type RealWeekBaseline = {
   engagementRate: number | null;
   followerGrowth: number | null;
   followerGrowthBasis: FollowerGrowthBasis | null;
+  followsFromPosts: number;
   accountReachDailyAvg: number | null;
   markdown: string;
   tsv: string;

@@ -7,6 +7,7 @@ import {
   buildRealWeekBaseline,
   buildRealWeekPanel,
   buildRealWeekStoredData,
+  decodeMetaCsvBuffer,
   formatBrDate,
   formatBrNumber,
   parseMetaAccountCsv,
@@ -65,10 +66,15 @@ export function RealWeekClient() {
   const activeSource = previewPanel ? "previa" : storedPanel ? "salvo" : null;
   const baseline = useMemo(() => (activePanel ? buildRealWeekBaseline(activePanel) : null), [activePanel]);
 
+  // Ler bytes: os cartoes de Insights > Resultados saem em UTF-16.
+  async function readCsvFile(file: File): Promise<string> {
+    return decodeMetaCsvBuffer(new Uint8Array(await file.arrayBuffer()));
+  }
+
   async function handleContentFile(files: FileList | null) {
     const file = files?.[0];
     if (!file) return;
-    setContentText(await file.text());
+    setContentText(await readCsvFile(file));
     setContentLabel(file.name);
   }
 
@@ -76,7 +82,7 @@ export function RealWeekClient() {
     if (!files?.length) return;
     const loaded: AccountReport[] = [];
     for (const file of Array.from(files)) {
-      loaded.push({ label: file.name, text: await file.text() });
+      loaded.push({ label: file.name, text: await readCsvFile(file) });
     }
     setAccountReports((current) => [...current, ...loaded]);
   }

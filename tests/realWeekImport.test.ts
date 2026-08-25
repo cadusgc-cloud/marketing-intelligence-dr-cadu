@@ -31,7 +31,8 @@ describe("Semana Real 001 - CSV de Conteudo do Meta Business Suite", () => {
       likes: 100,
       comments: 10,
       shares: 5,
-      saves: 20
+      saves: 20,
+      follows: 3
     });
     expect(result.posts.map((post) => post.date)).toEqual([
       "2026-08-03",
@@ -76,7 +77,7 @@ describe("Semana Real 001 - CSV de Conteudo do Meta Business Suite", () => {
 
     expect(result.ok).toBe(true);
     expect(result.posts).toEqual([
-      { date: "2026-08-13", postType: "reel", reach: 2000, likes: 150, comments: 20, shares: 10, saves: 40 }
+      { date: "2026-08-13", postType: "reel", reach: 2000, likes: 150, comments: 20, shares: 10, saves: 40, follows: null }
     ]);
   });
 
@@ -220,8 +221,8 @@ describe("Semana Real 001 - painel semanal", () => {
 
   it("semana sem post aparece zerada no painel", () => {
     const posts = [
-      { date: "2026-08-03", postType: "reel", reach: 100, likes: 10, comments: 1, shares: 1, saves: 1 },
-      { date: "2026-08-18", postType: "post", reach: 200, likes: 20, comments: 2, shares: 2, saves: 2 }
+      { date: "2026-08-03", postType: "reel", reach: 100, likes: 10, comments: 1, shares: 1, saves: 1, follows: 0 },
+      { date: "2026-08-18", postType: "post", reach: 200, likes: 20, comments: 2, shares: 2, saves: 2, follows: 0 }
     ];
     const panel = buildRealWeekPanel(posts, []);
 

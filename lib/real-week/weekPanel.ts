@@ -33,9 +33,14 @@ export function buildRealWeekPanel(posts: MetaContentPost[], days: MetaDailyRow[
 
 export function buildRealWeekBaseline(panel: RealWeekPanel): RealWeekBaseline {
   const mergedDays = panel.days;
-  const weeksCovered = panel.weeks.length;
+  // Semanas pela duracao real do periodo. Contar as caixas de semana do painel
+  // inflaria o denominador quando o periodo comeca ou termina no meio da semana.
+  const periodDays =
+    panel.periodStart && panel.periodEnd ? daysBetweenInclusive(panel.periodStart, panel.periodEnd) : 0;
+  const exactWeeks = periodDays / 7;
+  const weeksCovered = round1(exactWeeks);
   const postsTotal = panel.totals.posts;
-  const postsPerWeek = weeksCovered > 0 ? round1(postsTotal / weeksCovered) : null;
+  const postsPerWeek = exactWeeks > 0 ? round1(postsTotal / exactWeeks) : null;
   const reachAvgPerPost =
     panel.totals.postsWithReach > 0 ? round1(panel.totals.reachTotal / panel.totals.postsWithReach) : null;
   const engagementAvgPerPost = postsTotal > 0 ? round1(panel.totals.engagementTotal / postsTotal) : null;
@@ -69,6 +74,7 @@ export function buildRealWeekBaseline(panel: RealWeekPanel): RealWeekBaseline {
     engagementRate,
     followerGrowth,
     followerGrowthBasis,
+    followsFromPosts: panel.totals.follows,
     accountReachDailyAvg,
     markdown: "",
     tsv: ""
@@ -90,6 +96,7 @@ function buildWeekSummary(weekStart: string, posts: MetaContentPost[], days: Met
   const comments = sum(weekPosts.map((post) => post.comments ?? 0));
   const shares = sum(weekPosts.map((post) => post.shares ?? 0));
   const saves = sum(weekPosts.map((post) => post.saves ?? 0));
+  const follows = sum(weekPosts.map((post) => post.follows ?? 0));
 
   const reachDays = weekDays.filter((day) => day.accountReach !== null);
   const followerDays = weekDays.filter((day) => day.followersTotal !== null);
@@ -114,6 +121,7 @@ function buildWeekSummary(weekStart: string, posts: MetaContentPost[], days: Met
     comments,
     shares,
     saves,
+    follows,
     engagementTotal: likes + comments + shares + saves,
     accountReach: reachDays.length > 0 ? sum(reachDays.map((day) => day.accountReach ?? 0)) : null,
     followerGrowth
@@ -133,6 +141,7 @@ function buildTotals(posts: MetaContentPost[]): RealWeekTotals {
     comments: sum(posts.map((post) => post.comments ?? 0)),
     shares: sum(posts.map((post) => post.shares ?? 0)),
     saves: sum(posts.map((post) => post.saves ?? 0)),
+    follows: sum(posts.map((post) => post.follows ?? 0)),
     engagementTotal: sum(posts.map(engagementOf)),
     engagementOnPostsWithReach: sum(postsWithReach.map(engagementOf))
   };
@@ -178,6 +187,7 @@ function buildBaselineMarkdown(baseline: RealWeekBaseline): string {
     `- Alcance medio por post: ${formatOrDash(baseline.reachAvgPerPost)}`,
     `- Engajamento medio por post: ${formatOrDash(baseline.engagementAvgPerPost)} (curtidas + comentarios + compartilhamentos + salvamentos)`,
     `- Taxa de engajamento sobre alcance: ${baseline.engagementRate === null ? "-" : `${formatBrNumber(round1(baseline.engagementRate * 100))}%`}`,
+    `- Seguidores ganhos direto pelos posts (Seguimentos): ${formatBrNumber(baseline.followsFromPosts)}`,
     `- Crescimento de seguidores no periodo: ${followerLine}`,
     `- Alcance diario medio da conta: ${accountReachLine}`,
     "",
@@ -196,11 +206,18 @@ function buildBaselineTsv(baseline: RealWeekBaseline): string {
     ["alcance_medio_por_post", baseline.reachAvgPerPost === null ? "" : String(baseline.reachAvgPerPost)],
     ["engajamento_medio_por_post", baseline.engagementAvgPerPost === null ? "" : String(baseline.engagementAvgPerPost)],
     ["taxa_engajamento", baseline.engagementRate === null ? "" : String(baseline.engagementRate)],
+    ["seguimentos_pelos_posts", String(baseline.followsFromPosts)],
     ["crescimento_seguidores", baseline.followerGrowth === null ? "" : String(baseline.followerGrowth)],
     ["base_crescimento_seguidores", baseline.followerGrowthBasis ?? ""],
     ["alcance_diario_medio_conta", baseline.accountReachDailyAvg === null ? "" : String(baseline.accountReachDailyAvg)]
   ];
   return ["indicador\tvalor", ...lines.map(([key, value]) => `${key}\t${value}`)].join("\n");
+}
+
+export function daysBetweenInclusive(startIso: string, endIso: string): number {
+  const start = new Date(`${startIso}T00:00:00Z`).getTime();
+  const end = new Date(`${endIso}T00:00:00Z`).getTime();
+  return Math.round((end - start) / 86400000) + 1;
 }
 
 export function startOfWeek(dateIso: string): string {

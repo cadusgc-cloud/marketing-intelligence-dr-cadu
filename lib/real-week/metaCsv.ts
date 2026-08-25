@@ -1,4 +1,4 @@
-import { detectDelimiter, splitDelimitedLine } from "@/lib/report-imports/parser";
+import { detectDelimiter } from "@/lib/report-imports/parser";
 import { parseNumber, cleanText } from "@/lib/report-imports/normalization";
 import { normalizeHeader } from "@/lib/report-imports/sources";
 import type {
@@ -7,8 +7,20 @@ import type {
   MetaContentPost,
   MetaDailyRow,
   MetaHeaderLanguage,
+  MetaStoriesParseResult,
+  MetaStoryRow,
   RealWeekImportError
 } from "@/lib/real-week/types";
+
+export function decodeMetaCsvBuffer(data: Uint8Array): string {
+  if (data.length >= 2 && data[0] === 0xff && data[1] === 0xfe) {
+    return new TextDecoder("utf-16le").decode(data.subarray(2));
+  }
+  if (data.length >= 2 && data[0] === 0xfe && data[1] === 0xff) {
+    return new TextDecoder("utf-16be").decode(data.subarray(2));
+  }
+  return new TextDecoder("utf-8").decode(data);
+}
 
 type ColumnSpec = {
   key: string;
@@ -20,6 +32,7 @@ type ColumnSpec = {
 
 const exportHint = "Confira se o arquivo veio do Meta Business Suite: Insights > Conteudo > Exportar dados (CSV).";
 const accountHint = "Confira se o arquivo veio do Meta Business Suite: Insights > Resultados > Exportar (CSV).";
+const exportStoriesHint = "Confira se o arquivo veio do Meta Business Suite: Insights > Conteudo > filtro Stories > Exportar dados (CSV).";
 
 const contentColumns: ColumnSpec[] = [
   {
@@ -32,8 +45,8 @@ const contentColumns: ColumnSpec[] = [
   {
     key: "postType",
     label: "tipo de conteudo",
-    searchedFor: "Tipo de publicacao, Post type",
-    ptAliases: ["tipo de publicacao", "tipo de conteudo", "tipo", "formato"],
+    searchedFor: "Tipo de publicacao, Tipo de post, Post type",
+    ptAliases: ["tipo de publicacao", "tipo de post", "tipo de conteudo", "tipo", "formato"],
     enAliases: ["post type", "content type", "type", "media type", "media product type"]
   },
   {
@@ -70,20 +83,71 @@ const contentColumns: ColumnSpec[] = [
     searchedFor: "Salvamentos, Saves",
     ptAliases: ["salvamentos", "salvos"],
     enAliases: ["saves", "saved"]
+  },
+  {
+    key: "follows",
+    label: "seguimentos",
+    searchedFor: "Seguimentos, Follows",
+    ptAliases: ["seguimentos", "comecaram a seguir"],
+    enAliases: ["follows", "new follows"]
+  }
+];
+
+const storyColumns: ColumnSpec[] = [
+  {
+    key: "date",
+    label: "data de publicacao",
+    searchedFor: "Horario de publicacao, Publish time",
+    ptAliases: ["horario de publicacao", "hora de publicacao", "data de publicacao", "data", "dia"],
+    enAliases: ["publish time", "publish date", "date", "created time"]
+  },
+  {
+    key: "reach",
+    label: "alcance",
+    searchedFor: "Alcance, Reach",
+    ptAliases: ["alcance", "contas alcancadas"],
+    enAliases: ["reach", "accounts reached"]
+  },
+  {
+    key: "replies",
+    label: "respostas",
+    searchedFor: "Respostas, Replies",
+    ptAliases: ["respostas"],
+    enAliases: ["replies", "story replies"]
+  },
+  {
+    key: "navigation",
+    label: "navegacao",
+    searchedFor: "Navegacao, Navigation",
+    ptAliases: ["navegacao"],
+    enAliases: ["navigation"]
+  },
+  {
+    key: "stickerTaps",
+    label: "toques em figurinhas",
+    searchedFor: "Toques em figurinhas, Sticker taps",
+    ptAliases: ["toques em figurinhas"],
+    enAliases: ["sticker taps", "sticker tap"]
+  },
+  {
+    key: "profileVisits",
+    label: "visitas ao perfil",
+    searchedFor: "Visitas ao perfil, Profile visits",
+    ptAliases: ["visitas ao perfil"],
+    enAliases: ["profile visits"]
   }
 ];
 
 const contentKnownIgnored: ColumnSpec[] = [
-  spec("postId", "identificacao da publicacao", ["identificacao da publicacao", "id da publicacao"], ["post id"]),
+  spec("postId", "identificacao da publicacao", ["identificacao da publicacao", "identificacao do post", "id da publicacao", "id do post"], ["post id"]),
   spec("accountId", "identificacao da conta", ["identificacao da conta", "id da conta"], ["account id"]),
   spec("accountUsername", "nome de usuario da conta", ["nome de usuario da conta"], ["account username"]),
   spec("accountName", "nome da conta", ["nome da conta"], ["account name"]),
   spec("description", "descricao", ["descricao", "legenda"], ["description", "caption"]),
-  spec("duration", "duracao", ["duracao segundos", "duracao"], ["duration sec", "duration secs", "duration"]),
+  spec("duration", "duracao", ["duracao segundos", "duracao s", "duracao"], ["duration sec", "duration secs", "duration s", "duration"]),
   spec("permalink", "link permanente", ["link permanente"], ["permalink"]),
   spec("dataComment", "comentario de dados", ["comentario de dados"], ["data comment"]),
-  spec("views", "visualizacoes", ["visualizacoes", "impressoes"], ["views", "impressions"]),
-  spec("follows", "seguimentos", ["seguimentos", "comecaram a seguir"], ["follows", "new follows"])
+  spec("views", "visualizacoes", ["visualizacoes", "impressoes"], ["views", "impressions"])
 ];
 
 const accountColumns: ColumnSpec[] = [
@@ -105,8 +169,8 @@ const accountColumns: ColumnSpec[] = [
     key: "followersTotal",
     label: "seguidores totais",
     searchedFor: "Seguidores, Followers",
-    ptAliases: ["seguidores", "total de seguidores", "seguidores totais"],
-    enAliases: ["followers", "total followers", "followers total"]
+    ptAliases: ["seguidores", "seguidores no instagram", "total de seguidores", "seguidores totais"],
+    enAliases: ["followers", "instagram followers", "followers on instagram", "total followers", "followers total"]
   },
   {
     key: "newFollowers",
@@ -182,7 +246,8 @@ export function parseMetaContentCsv(rawText: string): MetaContentParseResult {
       likes: parseMetaNumber(readCell(row, columnIndex.likes), base.headerLanguage),
       comments: parseMetaNumber(readCell(row, columnIndex.comments), base.headerLanguage),
       shares: parseMetaNumber(readCell(row, columnIndex.shares), base.headerLanguage),
-      saves: parseMetaNumber(readCell(row, columnIndex.saves), base.headerLanguage)
+      saves: parseMetaNumber(readCell(row, columnIndex.saves), base.headerLanguage),
+      follows: parseMetaNumber(readCell(row, columnIndex.follows), base.headerLanguage)
     });
   }
 
@@ -192,6 +257,71 @@ export function parseMetaContentCsv(rawText: string): MetaContentParseResult {
 
   posts.sort((a, b) => a.date.localeCompare(b.date));
   return { ok: true, headerLanguage: base.headerLanguage, posts, errors: [], warnings, ignoredRowCount };
+}
+
+export function parseMetaStoriesCsv(rawText: string): MetaStoriesParseResult {
+  const base = parseMetaTable(rawText, storyColumns, contentKnownIgnored, exportStoriesHint);
+  if (base.errors.length > 0) {
+    return {
+      ok: false,
+      headerLanguage: base.headerLanguage,
+      stories: [],
+      errors: base.errors,
+      warnings: base.warnings,
+      ignoredRowCount: 0
+    };
+  }
+
+  const columnIndex = base.columnIndex;
+  // So e export de Stories se tiver metrica exclusiva de story; o export do feed
+  // tem data e alcance, mas nunca navegacao, toques em figurinha ou respostas.
+  const hasStorySignal =
+    columnIndex.navigation !== undefined || columnIndex.stickerTaps !== undefined || columnIndex.replies !== undefined;
+
+  if (columnIndex.date === undefined || !hasStorySignal) {
+    return {
+      ok: false,
+      headerLanguage: base.headerLanguage,
+      stories: [],
+      errors: [
+        {
+          code: "formato-nao-reconhecido",
+          message:
+            "Este arquivo nao parece o export de Stories: faltam as colunas exclusivas de story (Navegacao, Toques em figurinhas ou Respostas).",
+          hint: exportStoriesHint
+        }
+      ],
+      warnings: base.warnings,
+      ignoredRowCount: 0
+    };
+  }
+
+  const dayMonthOrder = detectDayMonthOrder(
+    base.dataRows.map((row) => row[columnIndex.date!] ?? ""),
+    base.headerLanguage,
+    base.warnings
+  );
+
+  const stories: MetaStoryRow[] = [];
+  let ignoredRowCount = 0;
+  for (const row of base.dataRows) {
+    const date = parseMetaDate(row[columnIndex.date!] ?? "", dayMonthOrder);
+    if (!date) {
+      ignoredRowCount += 1;
+      continue;
+    }
+    stories.push({
+      date,
+      reach: parseMetaNumber(readCell(row, columnIndex.reach), base.headerLanguage),
+      replies: parseMetaNumber(readCell(row, columnIndex.replies), base.headerLanguage),
+      navigation: parseMetaNumber(readCell(row, columnIndex.navigation), base.headerLanguage),
+      stickerTaps: parseMetaNumber(readCell(row, columnIndex.stickerTaps), base.headerLanguage),
+      profileVisits: parseMetaNumber(readCell(row, columnIndex.profileVisits), base.headerLanguage)
+    });
+  }
+
+  stories.sort((a, b) => a.date.localeCompare(b.date));
+  return { ok: true, headerLanguage: base.headerLanguage, stories, errors: [], warnings: base.warnings, ignoredRowCount };
 }
 
 export function parseMetaAccountCsv(rawText: string): MetaAccountParseResult {
@@ -246,11 +376,16 @@ export function parseMetaAccountCsv(rawText: string): MetaAccountParseResult {
       ignoredRowCount += 1;
       continue;
     }
+    const followersValue = parseMetaNumber(readCell(row, columnIndex.followersTotal), base.headerLanguage);
     days.push({
       date,
       accountReach: parseMetaNumber(readCell(row, columnIndex.accountReach), base.headerLanguage),
-      followersTotal: parseMetaNumber(readCell(row, columnIndex.followersTotal), base.headerLanguage),
-      newFollowers: parseMetaNumber(readCell(row, columnIndex.newFollowers), base.headerLanguage)
+      // Cartao de Insights > Resultados e sempre serie diaria: "Seguidores" ali
+      // e quantos entraram no dia, nao o total acumulado da conta.
+      followersTotal: base.isCardExport ? null : followersValue,
+      newFollowers:
+        parseMetaNumber(readCell(row, columnIndex.newFollowers), base.headerLanguage) ??
+        (base.isCardExport ? followersValue : null)
     });
   }
 
@@ -268,6 +403,7 @@ type MetaTableBase = {
   dataRows: string[][];
   errors: RealWeekImportError[];
   warnings: string[];
+  isCardExport: boolean;
 };
 
 function parseMetaTable(
@@ -289,14 +425,34 @@ function parseMetaTable(
           hint
         }
       ],
-      warnings: []
+      warnings: [],
+      isCardExport: false
     };
   }
 
-  const delimiter = detectDelimiter(text);
-  const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
-  const headers = splitDelimitedLine(lines[0], delimiter).map((header) => cleanText(header));
-  const dataRows = lines.slice(1).map((line) => splitDelimitedLine(line, delimiter).map((cell) => cleanText(cell)));
+  let working = text;
+  let forcedDelimiter: string | null = null;
+  const sepMatch = working.match(/^"?sep=(.)"?\s*\r?\n/i);
+  if (sepMatch) {
+    forcedDelimiter = sepMatch[1];
+    working = working.slice(sepMatch[0].length);
+  }
+
+  const delimiter = forcedDelimiter ?? detectDelimiter(working);
+  let records = splitDelimitedRecords(working, delimiter).map((row) => row.map((cell) => cleanText(cell)));
+
+  // Formato dos cartoes de Insights > Resultados: uma linha-titulo ("Alcance")
+  // acima do cabecalho "Data","Primary" - o titulo e o nome real da metrica.
+  let cardTitle: string | null = null;
+  if (records.length >= 2 && records[0].filter(Boolean).length === 1 && records[1].filter(Boolean).length >= 2) {
+    cardTitle = records[0].find(Boolean) ?? null;
+    records = records.slice(1);
+  }
+
+  const headers = (records[0] ?? []).map((header) =>
+    cardTitle && normalizeHeaderLoose(header) === "primary" ? cardTitle : header
+  );
+  const dataRows = records.slice(1);
 
   const columnIndex: Record<string, number | undefined> = {};
   let ptMatches = 0;
@@ -341,7 +497,8 @@ function parseMetaTable(
           hint
         }
       ],
-      warnings: []
+      warnings: [],
+      isCardExport: false
     };
   }
 
@@ -355,7 +512,8 @@ function parseMetaTable(
     columnIndex,
     dataRows,
     errors: [],
-    warnings
+    warnings,
+    isCardExport: cardTitle !== null
   };
 }
 
@@ -438,6 +596,46 @@ export function normalizePostType(value: string | undefined): string {
   if (text.includes("video")) return "video";
   if (text.includes("story") || text.includes("stories")) return "story";
   return text;
+}
+
+function splitDelimitedRecords(text: string, delimiter: string): string[][] {
+  const records: string[][] = [];
+  let row: string[] = [];
+  let current = "";
+  let quoted = false;
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index];
+    const next = text[index + 1];
+
+    if (char === '"' && quoted && next === '"') {
+      current += '"';
+      index += 1;
+      continue;
+    }
+    if (char === '"') {
+      quoted = !quoted;
+      continue;
+    }
+    if (!quoted && char === delimiter) {
+      row.push(current);
+      current = "";
+      continue;
+    }
+    if (!quoted && (char === "\n" || char === "\r")) {
+      if (char === "\r" && next === "\n") index += 1;
+      row.push(current);
+      records.push(row);
+      row = [];
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+
+  row.push(current);
+  records.push(row);
+  return records.filter((record) => record.some((cell) => cell.trim() !== ""));
 }
 
 function readCell(row: string[], index: number | undefined): string | undefined {

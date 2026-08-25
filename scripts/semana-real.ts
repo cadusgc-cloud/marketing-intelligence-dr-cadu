@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { buildRealWeekFolderReport, type RealWeekFolderFile } from "../lib/real-week";
+import { buildRealWeekFolderReport, decodeMetaCsvBuffer, type RealWeekFolderFile } from "../lib/real-week";
 
 const DEFAULT_DIR = "C:\\CaduSync\\05_CAIXA_DE_ENTRADA\\meta-insights";
 
@@ -39,9 +39,10 @@ function main(): number {
   if (!existsSync(readmePath)) writeFileSync(readmePath, readmeText, "utf8");
 
   const csvNames = readdirSync(dir).filter((name) => name.toLowerCase().endsWith(".csv"));
+  // Ler como bytes: os cartoes de Insights > Resultados saem em UTF-16.
   const files: RealWeekFolderFile[] = csvNames.map((name) => ({
     name,
-    text: readFileSync(path.join(dir, name), "utf8")
+    text: decodeMetaCsvBuffer(readFileSync(path.join(dir, name)))
   }));
 
   const generatedAt = new Date().toISOString();
